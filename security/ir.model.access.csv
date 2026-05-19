@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lista_utiles_grado,access.lista.utiles.grado,model_lista_utiles_grado,base.group_user,1,1,1,1
+access_lista_utiles_grado_linea,access.lista.utiles.grado.linea,model_lista_utiles_grado_linea,base.group_user,1,1,1,1
+access_recepcion_utiles_escolar,recepcion.utiles.escolar,model_recepcion_utiles_escolar,base.group_user,1,1,1,1
+access_recepcion_utiles_linea,recepcion.utiles.linea,model_recepcion_utiles_linea,base.group_user,1,1,1,1

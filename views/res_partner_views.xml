@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_partner_form_gestion_utiles_escolares" model="ir.ui.view">
+        <field name="name">res.partner.form.gestion.utiles.escolares</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <data>
+
+                <xpath expr="//sheet/notebook" position="inside">
+    <page string="Datos escolares">
+
+        <group string="Datos de identificación">
+            <field name="dni_escolar"/>
+        </group>
+
+        <group string="Clasificación escolar">
+            <field name="tipo_contacto_escolar"/>
+            <field name="cargo_institucional"/>
+        </group>
+
+        <group string="Datos del estudiante" invisible="tipo_contacto_escolar != 'estudiante'">
+            <field name="grado_escolar"/>
+            <field name="apoderado_principal_id"/>
+            <field name="apoderado_secundario_id"/>
+        </group>
+
+        <group string="Relación con estudiantes" invisible="tipo_contacto_escolar != 'apoderado'">
+            <field name="cantidad_estudiantes_relacionados" readonly="1"/>
+
+            <field name="estudiante_principal_ids" readonly="1" nolabel="1">
+                <kanban>
+                    <templates>
+                        <t t-name="card">
+                            <div class="oe_kanban_card">
+                                <strong>
+                                    <field name="name"/>
+                                </strong>
+                                <br/>
+                                <span>Grado: </span>
+                                <field name="grado_escolar"/>
+                                <br/>
+                                <span>Tipo de apoderado: </span>
+                                <strong>Apoderado principal</strong>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+
+            <field name="estudiante_secundario_ids" readonly="1" nolabel="1">
+                <kanban>
+                    <templates>
+                        <t t-name="card">
+                            <div class="oe_kanban_card">
+                                <strong>
+                                    <field name="name"/>
+                                </strong>
+                                <br/>
+                                <span>Grado: </span>
+                                <field name="grado_escolar"/>
+                                <br/>
+                                <span>Tipo de apoderado: </span>
+                                <strong>Apoderado secundario</strong>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </group>
+
+    </page>
+</xpath>
+
+                <xpath expr="//field[@name='company_type']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='parent_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='function']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='vat']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='website']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='street']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='street2']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='city']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='state_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='zip']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='country_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//page[@name='contact_addresses']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//page[@name='sales_purchases']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//field[@name='email']/.." position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//div[contains(@class, 'o_address_format')]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//span[@name='address_name']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+            </data>
+        </field>
+    </record>
+</odoo>

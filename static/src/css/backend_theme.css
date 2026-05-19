@@ -1,0 +1,414 @@
+/* =========================================================
+   TEMA VERDE LIMÓN - GESTIÓN DE ÚTILES ESCOLARES
+   ========================================================= */
+
+/* Variables generales */
+:root,
+body,
+.o_web_client,
+.o_main_navbar {
+    --o-brand-primary: #8CC63F !important;
+    --o-brand-odoo: #8CC63F !important;
+    --o-navbar-background: #8CC63F !important;
+    --o-navbar-color: #1F2D00 !important;
+
+    --NavBar-entry-backgroundColor: #8CC63F !important;
+    --NavBar-entry-backgroundColor-hover: #74B72E !important;
+    --NavBar-entry-backgroundColor-active: #74B72E !important;
+    --NavBar-entry-color: #1F2D00 !important;
+}
+
+/* Barra superior completa */
+.o_main_navbar {
+    background: #8CC63F !important;
+    background-color: #8CC63F !important;
+    border-bottom: 1px solid #6FA82F !important;
+    color: #1F2D00 !important;
+}
+
+/* Marca de la app: Inventario, Aplicaciones, etc. */
+.o_main_navbar .o_menu_brand,
+.o_main_navbar .o_navbar_apps_menu,
+.o_main_navbar .o_menu_toggle {
+    background: #8CC63F !important;
+    background-color: #8CC63F !important;
+    color: #1F2D00 !important;
+}
+
+/* Contenedor de menús superiores */
+.o_main_navbar .o_menu_sections,
+.o_main_navbar .o_menu_sections > *,
+.o_main_navbar .o_menu_sections .o-dropdown,
+.o_main_navbar .o_menu_sections .dropdown,
+.o_main_navbar .o_menu_sections .dropdown-toggle,
+.o_main_navbar .o_menu_sections .o_nav_entry,
+.o_main_navbar .o_menu_sections button,
+.o_main_navbar .o_menu_sections a {
+    background: #8CC63F !important;
+    background-color: #8CC63F !important;
+    color: #1F2D00 !important;
+    border-color: transparent !important;
+}
+
+/* Forzar entradas específicas del navbar de Odoo */
+html body .o_main_navbar .o_menu_sections .o_nav_entry,
+html body .o_main_navbar .o_menu_sections .dropdown-toggle,
+html body .o_main_navbar .o_menu_sections button.o-dropdown,
+html body .o_main_navbar .o_menu_sections button.o-dropdown.dropdown-toggle,
+html body .o_main_navbar .o_menu_sections button.o-dropdown.dropdown-toggle.dropdown,
+html body .o_main_navbar .o_menu_sections a.o_nav_entry,
+html body .o_main_navbar button.o-dropdown.dropdown-toggle.dropdown {
+    --NavBar-entry-backgroundColor: #8CC63F !important;
+    --NavBar-entry-backgroundColor-hover: #74B72E !important;
+    --NavBar-entry-backgroundColor-active: #74B72E !important;
+
+    background: #8CC63F !important;
+    background-color: #8CC63F !important;
+    color: #1F2D00 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+/* Menú activo, seleccionado o abierto */
+html body .o_main_navbar .o_menu_sections .o_nav_entry.active,
+html body .o_main_navbar .o_menu_sections .o_nav_entry:focus,
+html body .o_main_navbar .o_menu_sections .dropdown-toggle.show,
+html body .o_main_navbar .o_menu_sections button.show,
+html body .o_main_navbar .o_menu_sections button[aria-expanded="true"],
+html body .o_main_navbar .o_menu_sections a[aria-expanded="true"],
+html body .o_main_navbar button.o-dropdown.dropdown-toggle.dropdown.show,
+html body .o_main_navbar button.o-dropdown.dropdown-toggle.dropdown[aria-expanded="true"] {
+    --NavBar-entry-backgroundColor: #74B72E !important;
+
+    background: #74B72E !important;
+    background-color: #74B72E !important;
+    color: #1F2D00 !important;
+}
+
+/* Hover del menú superior */
+html body .o_main_navbar .o_menu_sections .o_nav_entry:hover,
+html body .o_main_navbar .o_menu_sections .dropdown-toggle:hover,
+html body .o_main_navbar .o_menu_sections button:hover,
+html body .o_main_navbar .o_menu_sections a:hover,
+html body .o_main_navbar button.o-dropdown.dropdown-toggle.dropdown:hover,
+.o_main_navbar .o_menu_brand:hover,
+.o_main_navbar .o_navbar_apps_menu:hover,
+.o_main_navbar .o_menu_toggle:hover {
+    --NavBar-entry-backgroundColor: #74B72E !important;
+
+    background: #74B72E !important;
+    background-color: #74B72E !important;
+    color: #1F2D00 !important;
+}
+
+/* Íconos y textos de la derecha: mensajes, reloj, empresa, usuario */
+.o_main_navbar .o_menu_systray,
+.o_main_navbar .o_menu_systray > *,
+.o_main_navbar .o_menu_systray a,
+.o_main_navbar .o_menu_systray button,
+.o_main_navbar .o_menu_systray .dropdown-toggle {
+    background: #8CC63F !important;
+    background-color: #8CC63F !important;
+    color: #1F2D00 !important;
+}
+
+/* Hover de íconos de la derecha */
+.o_main_navbar .o_menu_systray a:hover,
+.o_main_navbar .o_menu_systray button:hover,
+.o_main_navbar .o_menu_systray .dropdown-toggle:hover {
+    background: #74B72E !important;
+    background-color: #74B72E !important;
+    color: #1F2D00 !important;
+}
+
+/* Menús desplegables */
+.o_main_navbar .dropdown-menu {
+    background-color: #FFFFFF !important;
+    border: 1px solid #D6EEC2 !important;
+}
+
+/* Opciones dentro del desplegable */
+.o_main_navbar .dropdown-menu .dropdown-item,
+.o_main_navbar .dropdown-menu a,
+.o_main_navbar .dropdown-menu button {
+    background-color: #FFFFFF !important;
+    color: #1F2D00 !important;
+}
+
+/* Hover dentro del desplegable */
+.o_main_navbar .dropdown-menu .dropdown-item:hover,
+.o_main_navbar .dropdown-menu a:hover,
+.o_main_navbar .dropdown-menu button:hover {
+    background-color: #DFF5C4 !important;
+    color: #1F2D00 !important;
+}
+
+/* Botones principales */
+.btn-primary,
+.o_form_button_save,
+.o_list_button_add,
+.o-kanban-button-new {
+    background-color: #8CC63F !important;
+    border-color: #6FA82F !important;
+    color: #1F2D00 !important;
+}
+
+/* Hover botones principales */
+.btn-primary:hover,
+.o_form_button_save:hover,
+.o_list_button_add:hover,
+.o-kanban-button-new:hover {
+    background-color: #74B72E !important;
+    border-color: #5D9128 !important;
+    color: #1F2D00 !important;
+}
+
+/* Botones secundarios activos o seleccionados */
+.btn-secondary.active,
+.btn-secondary:active,
+.btn-secondary:hover {
+    background-color: #DFF5C4 !important;
+    border-color: #8CC63F !important;
+    color: #1F2D00 !important;
+}
+
+/* Botón de filtros cuando está activo */
+.o_searchview .o_facet_value,
+.o_searchview .o_searchview_facet .o_facet_values {
+    background-color: #DFF5C4 !important;
+    color: #1F2D00 !important;
+}
+
+/* Iconos de filtros/búsqueda activos */
+.o_searchview .o_searchview_facet .o_facet_remove,
+.o_searchview .o_searchview_facet .o_searchview_facet_label {
+    color: #1F2D00 !important;
+}
+
+/* Evitar fondos morados heredados */
+.o_main_navbar [style*="background"],
+.o_main_navbar [style*="background-color"] {
+    background-color: inherit !important;
+}
+
+/* =========================================================
+   AJUSTE DE TEXTOS, ÍCONOS Y ENLACES MORADOS
+   ========================================================= */
+
+/* Variables de color secundario de Odoo */
+:root,
+body,
+.o_web_client {
+    --o-brand-primary: #8CC63F !important;
+    --o-brand-secondary: #1F2D00 !important;
+    --o-action: #1F2D00 !important;
+    --o-enterprise-primary-color: #8CC63F !important;
+    --o-enterprise-color: #8CC63F !important;
+}
+
+/* Enlaces generales que salen morados */
+a,
+.btn-link,
+.o_form_view a,
+.o_list_view a,
+.o_kanban_view a {
+    color: #1F2D00 !important;
+}
+
+/* Hover de enlaces */
+a:hover,
+.btn-link:hover,
+.o_form_view a:hover,
+.o_list_view a:hover,
+.o_kanban_view a:hover {
+    color: #5D9128 !important;
+}
+
+/* Pestañas: Información general / Inventario */
+.nav-tabs .nav-link,
+.o_notebook .nav-link {
+    color: #1F2D00 !important;
+}
+
+.nav-tabs .nav-link.active,
+.o_notebook .nav-link.active {
+    color: #1F2D00 !important;
+    border-top-color: #8CC63F !important;
+}
+
+/* Botones superiores tipo estadística: documentos, reglas, entrada/salida */
+.o_stat_button,
+.oe_stat_button {
+    color: #1F2D00 !important;
+}
+
+.o_stat_button .o_stat_text,
+.o_stat_button .o_stat_value,
+.oe_stat_button .o_stat_text,
+.oe_stat_button .o_stat_value {
+    color: #1F2D00 !important;
+}
+
+/* Íconos dentro de botones estadísticos */
+.o_stat_button i,
+.o_stat_button .fa,
+.oe_stat_button i,
+.oe_stat_button .fa {
+    color: #5D9128 !important;
+}
+
+/* Íconos morados generales */
+.fa,
+.o_icon,
+.o_button_icon,
+.o_searchview_icon,
+.o_cp_action_menus i {
+    color: #1F2D00 !important;
+}
+
+/* Botón Nuevo y otros botones con borde morado */
+.btn-outline-primary,
+.o_list_button_add,
+.o_form_button_create {
+    color: #1F2D00 !important;
+    border-color: #8CC63F !important;
+}
+
+.btn-outline-primary:hover,
+.o_list_button_add:hover,
+.o_form_button_create:hover {
+    background-color: #8CC63F !important;
+    border-color: #6FA82F !important;
+    color: #1F2D00 !important;
+}
+
+/* Checkbox y radio seleccionados */
+.form-check-input:checked,
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background-color: #8CC63F !important;
+    border-color: #6FA82F !important;
+}
+
+/* Textos tipo morado en formularios */
+.text-primary,
+.o_field_widget.text-primary,
+.o_form_label.text-primary {
+    color: #1F2D00 !important;
+}
+
+/* Breadcrumb o ruta superior del formulario */
+.o_breadcrumb,
+.o_breadcrumb a,
+.o_control_panel .breadcrumb a,
+.o_control_panel .o_breadcrumb a {
+    color: #1F2D00 !important;
+}
+
+/* Botones de acciones superiores */
+.o_control_panel .btn,
+.o_cp_buttons .btn {
+    color: #1F2D00 !important;
+}
+
+/* Íconos de búsqueda, clip, usuario, etc. */
+.o_ChatterTopbar_button,
+.o-mail-Chatter-topbar button,
+.o-mail-Chatter button {
+    color: #1F2D00 !important;
+}
+
+/* Botón activo en chatter: Enviar mensaje */
+.o-mail-Chatter-topbar .btn-primary,
+.o_ChatterTopbar_button.btn-primary {
+    background-color: #8CC63F !important;
+    border-color: #6FA82F !important;
+    color: #1F2D00 !important;
+}
+
+/* =========================================================
+   AJUSTE DE MORADO EN CONVERSACIONES / DISCUSS
+   ========================================================= */
+
+/* Variables usadas en Discuss / Mail */
+:root,
+body,
+.o_web_client {
+    --DiscussSidebarCategoryItem-activeBackground: #DFF5C4 !important;
+    --DiscussSidebarCategoryItem-hoverBackground: #EEF9E5 !important;
+    --DiscussSidebarCategoryItem-color: #1F2D00 !important;
+    --mail-DiscussSidebarCategoryItem-activeBackground: #DFF5C4 !important;
+    --mail-DiscussSidebarCategoryItem-hoverBackground: #EEF9E5 !important;
+}
+
+/* Elementos seleccionados en la barra lateral de conversaciones */
+.o-mail-DiscussSidebarChannel.o-active,
+.o-mail-DiscussSidebarChannel.active,
+.o-mail-DiscussSidebarChannel:hover,
+.o_DiscussSidebar_item.o-active,
+.o_DiscussSidebar_item.active,
+.o_DiscussSidebar_item:hover {
+    background-color: #DFF5C4 !important;
+    border-color: #8CC63F !important;
+    color: #1F2D00 !important;
+}
+
+/* Iconos de canales: # general, Administrators, etc. */
+.o-mail-DiscussSidebarChannel i,
+.o-mail-DiscussSidebarChannel .fa,
+.o_DiscussSidebar_item i,
+.o_DiscussSidebar_item .fa,
+.o-mail-DiscussSidebarChannel .o-mail-DiscussSidebarChannel-icon {
+    color: #1F2D00 !important;
+}
+
+/* Fondo de iconos de canal */
+.o-mail-DiscussSidebarChannel .o-mail-DiscussSidebarChannel-icon,
+.o-mail-ThreadIcon,
+.o-mail-DiscussSidebarChannel img,
+.o_DiscussSidebar_item img {
+    background-color: #8CC63F !important;
+    border-color: #6FA82F !important;
+}
+
+/* Botones verdes de llamadas, búsqueda, usuario, etc. */
+.o-mail-Discuss button,
+.o-mail-Discuss .btn,
+.o-mail-Thread button,
+.o-mail-DiscussSidebar button {
+    color: #1F2D00 !important;
+}
+
+/* Avatares o círculos que salen morados */
+.o_avatar,
+.o-mail-Avatar,
+.o-mail-Avatar img,
+.o-mail-DiscussSidebarChannel-avatar,
+.o-mail-ImStatus,
+.o-mail-ThreadIcon {
+    border-color: #8CC63F !important;
+}
+
+/* Gota / marcador morado o fondos de color primario dentro de Discuss */
+.o-mail-Discuss [style*="background-color: rgb(113, 99, 158)"],
+.o-mail-Discuss [style*="background-color:#71639e"],
+.o-mail-Discuss [style*="background: rgb(113, 99, 158)"],
+.o-mail-Discuss [style*="background:#71639e"] {
+    background-color: #8CC63F !important;
+    background: #8CC63F !important;
+}
+
+/* Texto o iconos morados dentro de Discuss */
+.o-mail-Discuss .text-primary,
+.o-mail-Discuss a,
+.o-mail-Discuss .btn-link,
+.o-mail-Discuss i,
+.o-mail-Discuss .fa {
+    color: #1F2D00 !important;
+}
+
+/* Hover más suave en la lista lateral */
+.o-mail-DiscussSidebarChannel:hover,
+.o-mail-DiscussSidebarChannel.o-active {
+    background-color: #DFF5C4 !important;
+}

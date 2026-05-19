@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.log
+*.zip
+*.rar
+*.bak
+*.tmp
+.vscode/
+.idea/
+odoo.conf

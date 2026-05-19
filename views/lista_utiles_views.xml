@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Vista de lista principal -->
+    <record id="view_lista_utiles_grado_list" model="ir.ui.view">
+        <field name="name">lista.utiles.grado.list</field>
+        <field name="model">lista.utiles.grado</field>
+        <field name="arch" type="xml">
+            <list string="Listas de útiles por grado">
+                <field name="name" string="Nombre de la lista"/>
+                <field name="anio" string="Año escolar"/>
+                <field name="grado_escolar" string="Grado escolar"/>
+                <field name="cantidad_productos" string="Cantidad de productos"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de formulario -->
+    <record id="view_lista_utiles_grado_form" model="ir.ui.view">
+        <field name="name">lista.utiles.grado.form</field>
+        <field name="model">lista.utiles.grado</field>
+        <field name="arch" type="xml">
+            <form string="Lista de útiles por grado">
+                <sheet>
+
+                    <group string="Datos de la lista">
+                        <group>
+                            <field name="anio"/>
+                            <field name="grado_escolar"/>
+                            <field name="cantidad_productos" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Productos esperados">
+                            <field name="linea_ids">
+                                <list editable="bottom">
+                                    <field name="product_id" string="Producto"/>
+                                    <field name="cantidad_esperada" string="Cantidad esperada"/>
+                                    <field name="uom_id" string="Unidad"/>
+                                    <field name="categoria_id" string="Categoría" readonly="1"/>
+                                    <field name="tipo_uso_escolar" string="Tipo de uso escolar"/>
+                                    <field name="observacion" string="Observación"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir la pantalla -->
+    <record id="action_lista_utiles_grado" model="ir.actions.act_window">
+        <field name="name">Listas de útiles por grado</field>
+        <field name="res_model">lista.utiles.grado</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menú dentro de Inventario > Productos -->
+    <menuitem
+        id="menu_lista_utiles_grado"
+        name="Listas de útiles por grado"
+        parent="stock.menu_stock_inventory_control"
+        action="action_lista_utiles_grado"
+        sequence="25"/>
+
+</odoo>

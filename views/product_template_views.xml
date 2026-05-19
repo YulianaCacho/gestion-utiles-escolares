@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Vista formulario de productos -->
+    <record id="view_product_template_form_gestion_utiles_escolares" model="ir.ui.view">
+        <field name="name">product.template.form.gestion.utiles.escolares</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Reemplazar responsable individual por responsables múltiples y ubicación escolar -->
+            <xpath expr="//field[@name='responsible_id']" position="replace">
+                 <field name="responsable_escolar_ids"
+                        widget="many2many_tags"
+                        options="{'no_create': True}"/>
+            </xpath>
+
+            <!-- Mostrar Tipo de uso escolar debajo de Referencia interna -->
+            <xpath expr="//field[@name='default_code']" position="after">
+                <field name="tipo_uso_escolar"/>
+            </xpath>
+
+            <!-- OCULTAR CAMPOS QUE NO USAREMOS EN INFORMACIÓN GENERAL -->
+
+            <!-- Ocultar checkbox de Ventas -->
+            <xpath expr="//field[@name='sale_ok']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar bloque completo de precio de venta -->
+            <xpath expr="//label[@for='list_price']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='list_price']/.." position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar bloque completo de costo -->
+            <xpath expr="//label[@for='standard_price']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='standard_price']/.." position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar código de barras -->
+            <xpath expr="//field[@name='barcode']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- OCULTAR CAMPOS QUE NO USAREMOS EN INVENTARIO -->
+
+            <!-- Ocultar peso completo -->
+            <xpath expr="//label[@for='weight']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='weight']/ancestor::div[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar volumen completo -->
+            <xpath expr="//label[@for='volume']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='volume']/ancestor::div[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar plazo completo -->
+            <xpath expr="//label[@for='sale_delay']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='sale_delay']/ancestor::div[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar ubicación de producción -->
+            <xpath expr="//field[@name='property_stock_production']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ocultar ubicación de inventario estándar de Odoo -->
+            <xpath expr="//field[@name='property_stock_inventory']" position="replace">
+                <field name="ubicacion_fisica_id"
+                        options="{'no_create': True}"
+                        placeholder="Ejemplo: A-N1"/>
+
+                <field name="codigo_ubicacion_fisica"
+                       readonly="1"/>
+            </xpath>
+
+            <!-- Ocultar todo el bloque: Descripción para recepciones -->
+            <xpath expr="//field[@name='description_pickingin']/.." position="replace"/>
+
+            <!-- Ocultar todo el bloque: Descripción para órdenes de entrega -->
+            <xpath expr="//field[@name='description_pickingout']/.." position="replace"/>
+
+        </field>
+    </record>
+
+    <!-- Vista kanban de productos -->
+    <record id="view_product_template_kanban_gestion_utiles_escolares" model="ir.ui.view">
+        <field name="name">product.template.kanban.gestion.utiles.escolares</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Ocultar precio en las tarjetas de productos -->
+            <xpath expr="//field[@name='list_price']/.." position="replace"/>
+
+        </field>
+    </record>
+
+</odoo>

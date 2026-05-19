@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_report_recepcion_utiles" model="ir.actions.report">
+        <field name="name">Reporte de recepción de útiles</field>
+        <field name="model">recepcion.utiles.escolar</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">gestion_utiles_escolares.report_recepcion_utiles_document</field>
+        <field name="report_file">gestion_utiles_escolares.report_recepcion_utiles_document</field>
+        <field name="binding_model_id" ref="model_recepcion_utiles_escolar"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_recepcion_utiles_document">
+    <t t-call="web.html_container">
+
+        <t t-if="not docs">
+            <div class="page">
+                <h2>Reporte de recepción de útiles escolares</h2>
+                <p>No se seleccionaron recepciones para imprimir.</p>
+            </div>
+        </t>
+
+        <t t-if="docs">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <h2 style="text-align:center;">Reporte de recepción de útiles escolares</h2>
+
+                    <p>
+                        <strong>Institución:</strong>
+                        I.E.P. Genios del Millennium
+                    </p>
+
+                    <p>
+                        <strong>Total de recepciones seleccionadas:</strong>
+                        <span t-esc="len(docs)"/>
+                    </p>
+
+                    <h3>Resumen general</h3>
+
+                    <table class="table table-sm" style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="border:1px solid #000;">Estudiante</th>
+                                <th style="border:1px solid #000;">Grado</th>
+                                <th style="border:1px solid #000;">Lista</th>
+                                <th style="border:1px solid #000;">Total</th>
+                                <th style="border:1px solid #000;">Completos</th>
+                                <th style="border:1px solid #000;">Faltantes</th>
+                                <th style="border:1px solid #000;">Avance</th>
+                                <th style="border:1px solid #000;">Estado entrega</th>
+                                <th style="border:1px solid #000;">Estado proceso</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr t-foreach="docs" t-as="doc">
+                                <td style="border:1px solid #000;">
+                                    <span t-esc="doc.estudiante_id.name or ''"/>
+                                </td>
+
+                                <td style="border:1px solid #000;">
+                                    <span t-field="doc.grado_escolar"/>
+                                </td>
+
+                                <td style="border:1px solid #000;">
+                                    <span t-esc="doc.lista_id.name or ''"/>
+                                </td>
+
+                                <td style="border:1px solid #000; text-align:center;">
+                                    <span t-esc="doc.total_productos"/>
+                                </td>
+
+                                <td style="border:1px solid #000; text-align:center;">
+                                    <span t-esc="doc.total_completos"/>
+                                </td>
+
+                                <td style="border:1px solid #000; text-align:center;">
+                                    <span t-esc="doc.total_faltantes"/>
+                                </td>
+
+                                <td style="border:1px solid #000; text-align:center;">
+                                    <span t-esc="str(int(doc.porcentaje_avance or 0)) + '%'"/>
+                                </td>
+
+                                <td style="border:1px solid #000;">
+                                    <span t-field="doc.estado_entrega"/>
+                                </td>
+
+                                <td style="border:1px solid #000;">
+                                    <span t-field="doc.estado"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 style="margin-top:25px;">Detalle de productos faltantes</h3>
+
+                    <t t-foreach="docs" t-as="doc">
+
+                        <div style="margin-top:18px;">
+                            <h4>
+                                Estudiante:
+                                <span t-esc="doc.estudiante_id.name or ''"/>
+                            </h4>
+
+                            <p>
+                                <strong>Lista:</strong>
+                                <span t-esc="doc.lista_id.name or ''"/>
+                            </p>
+
+                            <t t-set="faltantes"
+                               t-value="doc.linea_ids.filtered(lambda l: l.cantidad_faltante &gt; 0)"/>
+
+                            <t t-if="faltantes">
+                                <table class="table table-sm" style="width:100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr>
+                                            <th style="border:1px solid #000;">Producto</th>
+                                            <th style="border:1px solid #000;">Esperado</th>
+                                            <th style="border:1px solid #000;">Entregado</th>
+                                            <th style="border:1px solid #000;">Faltante</th>
+                                            <th style="border:1px solid #000;">Unidad</th>
+                                            <th style="border:1px solid #000;">Observación</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <tr t-foreach="faltantes" t-as="linea">
+                                            <td style="border:1px solid #000;">
+                                                <span t-esc="linea.product_id.display_name or ''"/>
+                                            </td>
+
+                                            <td style="border:1px solid #000; text-align:center;">
+                                                <span t-esc="linea.cantidad_esperada"/>
+                                            </td>
+
+                                            <td style="border:1px solid #000; text-align:center;">
+                                                <span t-esc="linea.cantidad_entregada"/>
+                                            </td>
+
+                                            <td style="border:1px solid #000; text-align:center;">
+                                                <span t-esc="linea.cantidad_faltante"/>
+                                            </td>
+
+                                            <td style="border:1px solid #000;">
+                                                <span t-esc="linea.unidad_id.name or ''"/>
+                                            </td>
+
+                                            <td style="border:1px solid #000;">
+                                                <span t-esc="linea.observacion or ''"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+
+                            <t t-if="not faltantes">
+                                <p>
+                                    Este estudiante no tiene productos faltantes.
+                                </p>
+                            </t>
+                        </div>
+
+                    </t>
+
+                </div>
+            </t>
+        </t>
+
+    </t>
+</template>
+
+</odoo>
