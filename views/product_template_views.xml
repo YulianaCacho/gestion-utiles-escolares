@@ -116,4 +116,38 @@
         </field>
     </record>
 
+    <!-- Vista lista de productos -->
+    <record id="view_product_template_list_gestion_utiles_escolares" model="ir.ui.view">
+        <field name="name">product.template.list.gestion.utiles.escolares</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Ocultar precio de venta -->
+            <xpath expr="//field[@name='list_price']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <!-- Ocultar costo -->
+            <xpath expr="//field[@name='standard_price']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <!-- Ocultar stock pronosticado -->
+            <xpath expr="//field[@name='virtual_available']" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <!-- Mostrar categoría después de referencia interna -->
+            <xpath expr="//field[@name='default_code']" position="after">
+                <field name="categ_id" optional="show"/>
+            </xpath>
+
+            <!-- Mostrar tipo de uso escolar después de unidad -->
+            <xpath expr="//field[@name='uom_id']" position="after">
+                <field name="tipo_uso_escolar" optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
 </odoo>
