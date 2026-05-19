@@ -25,7 +25,7 @@
 
                     <group string="Datos de la lista">
                         <group>
-                            <field name="anio"/>
+                            <field name="anio" options="{'format': false}"/>
                             <field name="grado_escolar"/>
                             <field name="cantidad_productos" readonly="1"/>
                         </group>

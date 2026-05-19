@@ -73,7 +73,7 @@
                     <group string="Datos de la recepción">
                         <group>
                             <field name="fecha"/>
-                            <field name="anio"/>
+                            <field name="anio" options="{'format': false}"/>
                             <field name="estudiante_id"/>
                             <field name="grado_escolar"/>
                             <field name="lista_id"/>
