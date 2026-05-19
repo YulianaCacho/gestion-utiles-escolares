@@ -21,9 +21,9 @@ class RecepcionUtilesEscolar(models.Model):
         required=True
     )
 
-    anio = fields.Integer(
+    anio = fields.Char(
         string="Año escolar",
-        default=lambda self: fields.Date.context_today(self).year,
+        default=lambda self: str(fields.Date.today().year),
         required=True
     )
 
