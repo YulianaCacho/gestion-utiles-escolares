@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- Cambiar favicon de Odoo por la insignia del colegio -->
-    <template id="custom_favicon_genios" inherit_id="web.layout" name="Favicon Genios del Millennium">
-        <xpath expr="//head" position="inside">
-            <link rel="icon"
-                  type="image/png"
-                  href="/gestion_utiles_escolares/static/src/img/favicon_genios.png"/>
+    <!-- Cambiar título e ícono de la pestaña del navegador -->
+    <template id="custom_favicon_genios" inherit_id="web.layout" name="Favicon y título Genios del Millennium">
+
+        <!-- Cambiar título de la pestaña -->
+        <xpath expr="//title" position="replace">
+            <title>I.E.P. Genios del Millennium</title>
+        </xpath>
+
+        <!-- Reemplazar favicon original de Odoo -->
+        <xpath expr="//link[@rel='shortcut icon']" position="replace">
             <link rel="shortcut icon"
                   type="image/png"
-                  href="/gestion_utiles_escolares/static/src/img/favicon_genios.png"/>
+                  href="/gestion_utiles_escolares/static/src/img/favicon_genios.png?v=2"/>
+            <link rel="icon"
+                  type="image/png"
+                  href="/gestion_utiles_escolares/static/src/img/favicon_genios.png?v=2"/>
         </xpath>
+
     </template>
 
 </odoo>
