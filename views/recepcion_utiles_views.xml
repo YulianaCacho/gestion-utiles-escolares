@@ -126,6 +126,9 @@
                                     <field name="unidad_id"/>
                                     <field name="tipo_uso_escolar"/>
                                     <field name="destino_recepcion"/>
+                                    <field name="cantidad_enviada_almacen"/>
+                                    <field name="cantidad_pendiente_almacen"/>
+                                    <field name="estado_envio_almacen"/>
                                     <field name="estado_linea"/>
                                     <field name="estado_linea"/>
                                     <field name="observacion"/>

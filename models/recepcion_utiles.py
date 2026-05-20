@@ -115,7 +115,8 @@ class RecepcionUtilesEscolar(models.Model):
     estado_almacen = fields.Selection(
     [
         ("pendiente", "Pendiente"),
-        ("enviado", "Productos de almacén enviados"),
+        ("parcial", "Envío parcial"),
+        ("enviado", "Enviado a almacén"),
         ("sin_productos", "Sin productos para almacén"),
     ],
     string="Estado de almacén",
@@ -332,60 +333,64 @@ class RecepcionUtilesEscolar(models.Model):
         sin_productos = 0
 
         for rec in self:
-            # Solo procesa recepciones validadas
             if rec.estado != "validado":
                omitidas += 1
                continue
-
-            # Evita enviar dos veces la misma recepción
-            if rec.estado_almacen != "pendiente":
-               omitidas += 1
-               continue
-
+ 
             productos_almacen = rec.linea_ids.filtered(
-                lambda l: l.destino_recepcion == "almacen" and l.cantidad_entregada > 0
-                )
+                lambda l: l.destino_recepcion == "almacen"
+                and l.cantidad_pendiente_almacen > 0
+            )
 
             if not productos_almacen:
                 rec.write({
-                   "estado_almacen": "sin_productos",
-                   "fecha_envio_almacen": fields.Datetime.now(),
-                   "usuario_envio_almacen_id": self.env.user.id,
+                    "estado_almacen": "sin_productos",
+                    "fecha_envio_almacen": fields.Datetime.now(),
+                    "usuario_envio_almacen_id": self.env.user.id,
                 })
                 sin_productos += 1
                 continue
 
             for linea in productos_almacen:
+                cantidad_a_enviar = linea.cantidad_pendiente_almacen
+
                 self.env["almacen.utiles.movimiento"].create({
                     "tipo_movimiento": "entrada",
                     "recepcion_id": rec.id,
                     "product_id": linea.product_id.id,
-                    "cantidad": linea.cantidad_entregada,
+                    "cantidad": cantidad_a_enviar,
                     "unidad_id": linea.unidad_id.id if linea.unidad_id else False,
                     "categoria_id": linea.categoria_id.id if linea.categoria_id else False,
                     "responsable_id": self.env.user.id,
                     "destino": "Almacén general",
                     "observacion": f"Producto enviado a almacén desde la recepción {rec.name}",
                 })
+ 
+                linea.cantidad_enviada_almacen += cantidad_a_enviar
 
-            rec.write({
-                 "estado_almacen": "enviado",
-                 "fecha_envio_almacen": fields.Datetime.now(),
-                 "usuario_envio_almacen_id": self.env.user.id,
-           })
+        pendientes = rec.linea_ids.filtered(
+            lambda l: l.destino_recepcion == "almacen"
+            and l.cantidad_pendiente_almacen > 0
+        )
 
-            procesadas += 1
+        rec.write({
+            "estado_almacen": "parcial" if pendientes else "enviado",
+            "fecha_envio_almacen": fields.Datetime.now(),
+            "usuario_envio_almacen_id": self.env.user.id,
+        })
+
+        procesadas += 1
 
         return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": "Envío a almacén",
-                "message": f"Recepciones procesadas: {procesadas}. Omitidas: {omitidas}. Sin productos para almacén: {sin_productos}.",
-                "type": "success",
-                "sticky": False,
-            }
+           "type": "ir.actions.client",
+           "tag": "display_notification",
+           "params": {
+               "title": "Envío a almacén",
+               "message": f"Recepciones procesadas: {procesadas}. Omitidas: {omitidas}. Sin productos para almacén: {sin_productos}.",
+               "type": "success",
+               "sticky": False,
         }
+    }
 
 
 class RecepcionUtilesLinea(models.Model):
@@ -457,6 +462,49 @@ class RecepcionUtilesLinea(models.Model):
     )
 
     observacion = fields.Char(string="Observación")
+
+    cantidad_enviada_almacen = fields.Float(
+        string="Cantidad enviada a almacén",
+        default=0,
+        readonly=True
+    )
+
+    cantidad_pendiente_almacen = fields.Float(
+        string="Pendiente de enviar a almacén",
+        compute="_compute_cantidad_pendiente_almacen",
+        store=True
+    )
+
+    estado_envio_almacen = fields.Selection(
+        [
+            ("no_aplica", "No aplica"),
+            ("pendiente", "Pendiente"),
+            ("parcial", "Parcial"),
+            ("enviado", "Enviado"),
+        ],
+        string="Estado almacén",
+        compute="_compute_cantidad_pendiente_almacen",
+        store=True
+   )
+
+    @api.depends("destino_recepcion", "cantidad_entregada", "cantidad_enviada_almacen")
+    def _compute_cantidad_pendiente_almacen(self):
+        for rec in self:
+            if rec.destino_recepcion != "almacen":
+               rec.cantidad_pendiente_almacen = 0
+               rec.estado_envio_almacen = "no_aplica"
+            else:
+               pendiente = rec.cantidad_entregada - rec.cantidad_enviada_almacen
+               rec.cantidad_pendiente_almacen = pendiente if pendiente > 0 else 0
+
+               if rec.cantidad_entregada <= 0:
+                   rec.estado_envio_almacen = "pendiente"
+               elif rec.cantidad_enviada_almacen <= 0:
+                   rec.estado_envio_almacen = "pendiente"
+               elif rec.cantidad_enviada_almacen < rec.cantidad_entregada:
+                   rec.estado_envio_almacen = "parcial"
+               else:
+                   rec.estado_envio_almacen = "enviado"
 
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
