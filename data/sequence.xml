@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="seq_salida_utiles" model="ir.sequence">
+        <field name="name">Secuencia de salidas de útiles</field>
+        <field name="code">salida.utiles</field>
+        <field name="prefix">SAL-</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

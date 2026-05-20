@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="group_salidas_utiles" model="res.groups">
+        <field name="name">Responsable de salidas de útiles</field>
+    </record>
+</odoo>
