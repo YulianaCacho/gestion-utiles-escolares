@@ -327,27 +327,65 @@ class RecepcionUtilesEscolar(models.Model):
 
 
     def action_enviar_productos_almacen(self):
+        procesadas = 0
+        omitidas = 0
+        sin_productos = 0
+
         for rec in self:
+            # Solo procesa recepciones validadas
             if rec.estado != "validado":
-               raise UserError("Solo puedes enviar a almacén una recepción validada.")
+               omitidas += 1
+               continue
+
+            # Evita enviar dos veces la misma recepción
+            if rec.estado_almacen != "pendiente":
+               omitidas += 1
+               continue
 
             productos_almacen = rec.linea_ids.filtered(
-               lambda l: l.destino_recepcion == "almacen" and l.cantidad_entregada > 0
-        )
+                lambda l: l.destino_recepcion == "almacen" and l.cantidad_entregada > 0
+                )
 
-        if not productos_almacen:
+            if not productos_almacen:
+                rec.write({
+                   "estado_almacen": "sin_productos",
+                   "fecha_envio_almacen": fields.Datetime.now(),
+                   "usuario_envio_almacen_id": self.env.user.id,
+                })
+                sin_productos += 1
+                continue
+
+            for linea in productos_almacen:
+                self.env["almacen.utiles.movimiento"].create({
+                    "tipo_movimiento": "entrada",
+                    "recepcion_id": rec.id,
+                    "product_id": linea.product_id.id,
+                    "cantidad": linea.cantidad_entregada,
+                    "unidad_id": linea.unidad_id.id if linea.unidad_id else False,
+                    "categoria_id": linea.categoria_id.id if linea.categoria_id else False,
+                    "responsable_id": self.env.user.id,
+                    "destino": "Almacén general",
+                    "observacion": f"Producto enviado a almacén desde la recepción {rec.name}",
+                })
+
             rec.write({
-                "estado_almacen": "sin_productos",
-                "fecha_envio_almacen": fields.Datetime.now(),
-                "usuario_envio_almacen_id": self.env.user.id,
-            })
-            return
+                 "estado_almacen": "enviado",
+                 "fecha_envio_almacen": fields.Datetime.now(),
+                 "usuario_envio_almacen_id": self.env.user.id,
+           })
 
-        rec.write({
-            "estado_almacen": "enviado",
-            "fecha_envio_almacen": fields.Datetime.now(),
-            "usuario_envio_almacen_id": self.env.user.id,
-        })
+            procesadas += 1
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Envío a almacén",
+                "message": f"Recepciones procesadas: {procesadas}. Omitidas: {omitidas}. Sin productos para almacén: {sin_productos}.",
+                "type": "success",
+                "sticky": False,
+            }
+        }
 
 
 class RecepcionUtilesLinea(models.Model):

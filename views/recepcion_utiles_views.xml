@@ -148,6 +148,14 @@
     <field name="arch" type="xml">
         <search string="Buscar recepción de útiles">
 
+            <filter name="filtro_validadas_pendientes_almacen"
+                    string="Validadas pendientes de almacén"
+                    domain="[('estado','=','validado'), ('estado_almacen','=','pendiente')]"/>
+
+            <filter name="filtro_enviadas_almacen"
+                    string="Enviadas a almacén"
+                    domain="[('estado_almacen','=','enviado')]"/>
+
             <field name="name"/>
             <field name="matricula_id"/>
             <field name="estudiante_id"/>
@@ -217,5 +225,14 @@
           parent="menu_utiles_escolares_root"
           action="action_recepcion_utiles_escolar"
           sequence="20"/>
+
+    <record id="action_enviar_recepciones_seleccionadas_almacen" model="ir.actions.server">
+        <field name="name">Enviar seleccionadas a almacén</field>
+        <field name="model_id" ref="model_recepcion_utiles_escolar"/>
+        <field name="binding_model_id" ref="model_recepcion_utiles_escolar"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_enviar_productos_almacen()</field>
+    </record>
 
 </odoo>
