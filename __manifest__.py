@@ -10,7 +10,7 @@
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/sequence.xml',
-        'views/salida_utiles_views.xml',
+        #'views/salida_utiles_views.xml',
 
         "views/res_partner_views.xml",
         "views/product_template_views.xml",
