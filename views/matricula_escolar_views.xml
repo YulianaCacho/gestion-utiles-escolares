@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <list string="Matrículas">
                 <field name="estudiante_id"/>
-                <field name="anio_escolar" options="{'format': false}"/>
+                <field name="anio_escolar_visual"/>
                 <field name="grado_escolar"/>
                 <field name="lista_utiles_id"/>
                 <field name="apoderado_principal_id"/>
@@ -24,7 +24,8 @@
                 <sheet>
                     <group string="Datos de matrícula">
                         <field name="estudiante_id"/>
-                        <field name="anio_escolar"/>
+                        <field name="anio_escolar" invisible="1"/>
+                        <field name="anio_escolar_visual"/>
                         <field name="grado_escolar"/>
                         <field name="lista_utiles_id"/>
                         <field name="estado"/>
