@@ -165,6 +165,12 @@ class RecepcionUtilesEscolar(models.Model):
         "linea_ids.cantidad_faltante",
         "linea_ids.cantidad_entregada",
     )
+
+    def action_recalcular_destinos(self):
+        for rec in self:
+            for linea in rec.linea_ids:
+                linea.destino_recepcion = rec._calcular_destino_recepcion(linea.tipo_uso_escolar)
+
     def _compute_resumen(self):
         for rec in self:
             total = len(rec.linea_ids)
@@ -303,11 +309,20 @@ class RecepcionUtilesEscolar(models.Model):
 
 
     def _calcular_destino_recepcion(self, tipo_uso):
-        texto = (tipo_uso or "").lower()
+        texto = (tipo_uso or "").lower().strip()
 
-        if "personal" in texto or "niño" in texto or "estudiante" in texto:
-           return "estudiante"
-   
+        # Útiles que se quedan con el estudiante
+        if (
+            "personal" in texto
+             or "util personal" in texto
+             or "útil personal" in texto
+             or "niño" in texto
+             or "niña" in texto
+             or "estudiante" in texto
+        ):
+            return "estudiante"
+
+        # Todo lo demás pasa a almacén
         return "almacen"
 
 

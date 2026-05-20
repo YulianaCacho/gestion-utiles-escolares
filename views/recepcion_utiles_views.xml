@@ -65,6 +65,12 @@
                            widget="statusbar"
                            statusbar_visible="borrador,incompleto,completo,validado"/>
 
+                    <button name="action_recalcular_destinos"
+                            type="object"
+                            string="Recalcular destinos"
+                            class="btn-secondary"
+                            invisible="estado == 'validado' and estado_almacen == 'enviado'"/>                   
+                   
                     <button name="action_enviar_productos_almacen"
                             type="object"
                             string="Enviar productos de almacén"
