@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_matricula_escolar_list" model="ir.ui.view">
+        <field name="name">matricula.escolar.list</field>
+        <field name="model">matricula.escolar</field>
+        <field name="arch" type="xml">
+            <list string="Matrículas">
+                <field name="estudiante_id"/>
+                <field name="anio_escolar"/>
+                <field name="grado_escolar"/>
+                <field name="lista_utiles_id"/>
+                <field name="apoderado_principal_id"/>
+                <field name="estado"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_matricula_escolar_form" model="ir.ui.view">
+        <field name="name">matricula.escolar.form</field>
+        <field name="model">matricula.escolar</field>
+        <field name="arch" type="xml">
+            <form string="Matrícula escolar">
+                <sheet>
+                    <group string="Datos de matrícula">
+                        <field name="estudiante_id"/>
+                        <field name="anio_escolar"/>
+                        <field name="grado_escolar"/>
+                        <field name="lista_utiles_id"/>
+                        <field name="estado"/>
+                    </group>
+
+                    <group string="Relación familiar">
+                        <field name="apoderado_principal_id"/>
+                        <field name="apoderado_secundario_id"/>
+                    </group>
+
+                    <group string="Observación">
+                        <field name="observacion"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_matricula_escolar" model="ir.actions.act_window">
+        <field name="name">Matrículas</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Cambia el parent si tu menú principal tiene otro ID -->
+    <menuitem id="menu_matricula_escolar"
+              name="Matrículas"
+              parent="menu_utiles_escolares_root"
+              action="action_matricula_escolar"
+              sequence="5"/>
+
+</odoo>

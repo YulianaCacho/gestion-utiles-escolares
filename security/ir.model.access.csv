@@ -5,3 +5,4 @@ access_recepcion_utiles_escolar,recepcion.utiles.escolar,model_recepcion_utiles_
 access_recepcion_utiles_linea,recepcion.utiles.linea,model_recepcion_utiles_linea,base.group_user,1,1,1,1
 access_salida_utiles_responsable,salida.utiles.responsable,model_salida_utiles,gestion_utiles_escolares.group_salidas_utiles,1,1,1,1
 access_salida_utiles_linea_responsable,salida.utiles.linea.responsable,model_salida_utiles_linea,gestion_utiles_escolares.group_salidas_utiles,1,1,1,1
+access_matricula_escolar_user,matricula.escolar.user,model_matricula_escolar,base.group_user,1,1,1,1

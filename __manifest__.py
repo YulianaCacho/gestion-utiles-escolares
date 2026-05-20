@@ -15,6 +15,7 @@
         'views/recepcion_utiles_views.xml',
         'reports/reporte_recepcion_utiles.xml',
         'views/favicon_views.xml',
+        'views/matricula_escolar_views.xml',
     ],
    'assets': {
         'web.assets_backend': [
