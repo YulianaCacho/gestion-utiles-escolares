@@ -22,7 +22,9 @@
                   decoration-muted="estado == 'borrador'">
                 <field name="name"/>
                 <field name="fecha"/>
+                <field name="matricula_id"/>
                 <field name="estudiante_id"/>
+                <field name="anio"/>
                 <field name="grado_escolar"/>
                 <field name="lista_id"/>
                 <field name="total_productos"/>
@@ -73,8 +75,9 @@
                     <group string="Datos de la recepción">
                         <group>
                             <field name="fecha"/>
-                            <field name="anio"/>
+                            <field name="matricula_id" required="1"/>
                             <field name="estudiante_id"/>
+                            <field name="anio"/>
                             <field name="grado_escolar"/>
                             <field name="lista_id"/>
                         </group>
@@ -125,6 +128,7 @@
         <search string="Buscar recepción de útiles">
 
             <field name="name"/>
+            <field name="matricula_id"/>
             <field name="estudiante_id"/>
             <field name="grado_escolar"/>
             <field name="lista_id"/>
@@ -188,7 +192,7 @@
           sequence="90"/>
 
     <menuitem id="menu_recepcion_utiles_escolar"
-          name="Recepción por estudiante"
+          name="Recepción por matrícula"
           parent="menu_utiles_escolares_root"
           action="action_recepcion_utiles_escolar"
           sequence="20"/>

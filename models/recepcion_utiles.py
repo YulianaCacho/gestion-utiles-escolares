@@ -21,21 +21,30 @@ class RecepcionUtilesEscolar(models.Model):
         required=True
     )
 
-    anio = fields.Char(
-        string="Año escolar",
-        default=lambda self: str(fields.Date.today().year),
-        required=True
+    matricula_id = fields.Many2one(
+        "matricula.escolar",
+        string="Matrícula",
+        domain="[('estado', '=', 'activo')]",
+        ondelete="restrict"
     )
 
     estudiante_id = fields.Many2one(
         "res.partner",
         string="Estudiante",
-        required=True,
-        domain="[('tipo_contacto_escolar', '=', 'estudiante')]"
+        related="matricula_id.estudiante_id",
+        store=True,
+        readonly=True
+    )
+
+    anio = fields.Char(
+        string="Año escolar",
+        compute="_compute_datos_matricula",
+        store=True,
+        readonly=True
     )
 
     grado_escolar = fields.Selection(
-        related="estudiante_id.grado_escolar",
+        related="matricula_id.grado_escolar",
         string="Grado escolar",
         store=True,
         readonly=True
@@ -44,7 +53,9 @@ class RecepcionUtilesEscolar(models.Model):
     lista_id = fields.Many2one(
         "lista.utiles.grado",
         string="Lista de útiles",
-        domain="[('grado_escolar', '=', grado_escolar)]"
+        related="matricula_id.lista_utiles_id",
+        store=True,
+        readonly=True
     )
 
     linea_ids = fields.One2many(
@@ -67,39 +78,44 @@ class RecepcionUtilesEscolar(models.Model):
     observacion = fields.Text(string="Observación general")
 
     total_productos = fields.Integer(
-    string="Total de productos",
-    compute="_compute_resumen",
-    store=True
-)
+        string="Total de productos",
+        compute="_compute_resumen",
+        store=True
+    )
 
     total_completos = fields.Integer(
-    string="Productos completos",
-    compute="_compute_resumen",
-    store=True
-)
+        string="Productos completos",
+        compute="_compute_resumen",
+        store=True
+    )
 
     total_faltantes = fields.Integer(
-    string="Productos con faltantes",
-    compute="_compute_resumen",
-    store=True
-)
+        string="Productos con faltantes",
+        compute="_compute_resumen",
+        store=True
+    )
 
     porcentaje_avance = fields.Float(
-    string="Porcentaje de avance",
-    compute="_compute_resumen",
-    store=True
-)
+        string="Porcentaje de avance",
+        compute="_compute_resumen",
+        store=True
+    )
 
     estado_entrega = fields.Selection(
-    [
-        ("sin_cargar", "Sin cargar"),
-        ("incompleto", "Incompleto"),
-        ("completo", "Completo"),
-    ],
-    string="Estado de entrega",
-    compute="_compute_resumen",
-    store=True
-)
+        [
+            ("sin_cargar", "Sin cargar"),
+            ("incompleto", "Incompleto"),
+            ("completo", "Completo"),
+        ],
+        string="Estado de entrega",
+        compute="_compute_resumen",
+        store=True
+    )
+
+    @api.depends("matricula_id", "matricula_id.anio_escolar")
+    def _compute_datos_matricula(self):
+        for rec in self:
+            rec.anio = str(rec.matricula_id.anio_escolar or "") if rec.matricula_id else ""
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -127,34 +143,11 @@ class RecepcionUtilesEscolar(models.Model):
             rec.porcentaje_avance = (completos / total * 100) if total else 0
 
             if total == 0:
-               rec.estado_entrega = "sin_cargar"
+                rec.estado_entrega = "sin_cargar"
             elif faltantes > 0 or completos < total:
-               rec.estado_entrega = "incompleto"
+                rec.estado_entrega = "incompleto"
             else:
-               rec.estado_entrega = "completo"
-
-    @api.onchange("estudiante_id", "anio")
-    def _onchange_estudiante_id(self):
-        for rec in self:
-            rec.lista_id = False
-
-            if not rec.estudiante_id or not rec.estudiante_id.grado_escolar:
-                continue
-
-            grado = rec.estudiante_id.grado_escolar
-
-            lista = self.env["lista.utiles.grado"].search([
-                ("grado_escolar", "=", grado),
-                ("anio", "=", rec.anio),
-            ], limit=1)
-
-            if not lista:
-                lista = self.env["lista.utiles.grado"].search([
-                    ("grado_escolar", "=", grado),
-                    ("anio", "=", str(rec.anio)),
-                ], limit=1)
-
-            rec.lista_id = lista
+                rec.estado_entrega = "completo"
 
     def _obtener_valor_linea(self, linea, posibles_campos, valor_default=False):
         for campo in posibles_campos:
@@ -164,8 +157,11 @@ class RecepcionUtilesEscolar(models.Model):
 
     def action_cargar_lista(self):
         for rec in self:
+            if not rec.matricula_id:
+                raise UserError("Primero debes seleccionar una matrícula.")
+
             if not rec.lista_id:
-                raise UserError("Primero debes seleccionar una lista de útiles.")
+                raise UserError("La matrícula seleccionada no tiene una lista de útiles asociada.")
 
             if "linea_ids" not in rec.lista_id._fields:
                 raise UserError(
