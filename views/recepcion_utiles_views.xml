@@ -42,6 +42,7 @@
         <field name="arch" type="xml">
             <form string="Recepción de útiles escolares">
                 <header>
+
                     <button name="action_cargar_lista"
                             type="object"
                             string="Cargar lista de útiles"
@@ -63,6 +64,13 @@
                     <field name="estado"
                            widget="statusbar"
                            statusbar_visible="borrador,incompleto,completo,validado"/>
+
+                    <button name="action_enviar_productos_almacen"
+                            type="object"
+                            string="Enviar productos de almacén"
+                            class="btn-secondary"
+                            invisible="estado != 'validado' or estado_almacen != 'pendiente'"/>
+                
                 </header>
 
                 <sheet>
@@ -89,6 +97,11 @@
                             <field name="porcentaje_avance"/>
                             <field name="estado_entrega"/>
                             <field name="estado"/>
+                            <field name="total_para_estudiante"/>
+                            <field name="total_para_almacen"/>
+                            <field name="estado_almacen"/>
+                            <field name="fecha_envio_almacen"/>
+                            <field name="usuario_envio_almacen_id"/>
                         </group>
                     </group>
 
@@ -106,6 +119,8 @@
                                     <field name="cantidad_faltante"/>
                                     <field name="unidad_id"/>
                                     <field name="tipo_uso_escolar"/>
+                                    <field name="destino_recepcion"/>
+                                    <field name="estado_linea"/>
                                     <field name="estado_linea"/>
                                     <field name="observacion"/>
                                 </list>

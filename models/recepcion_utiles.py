@@ -112,6 +112,40 @@ class RecepcionUtilesEscolar(models.Model):
         store=True
     )
 
+    estado_almacen = fields.Selection(
+    [
+        ("pendiente", "Pendiente"),
+        ("enviado", "Productos de almacén enviados"),
+        ("sin_productos", "Sin productos para almacén"),
+    ],
+    string="Estado de almacén",
+    default="pendiente",
+    readonly=True
+)
+
+    fecha_envio_almacen = fields.Datetime(
+        string="Fecha y hora de envío a almacén",
+        readonly=True
+)
+
+    usuario_envio_almacen_id = fields.Many2one(
+        "res.users",
+        string="Usuario que envió a almacén",
+        readonly=True
+)
+
+    total_para_almacen = fields.Float(
+        string="Cantidad para almacén",
+        compute="_compute_totales_destino",
+        store=True
+)
+
+    total_para_estudiante = fields.Float(
+       string="Cantidad para estudiante",
+       compute="_compute_totales_destino",
+       store=True
+)
+
     @api.depends("matricula_id", "matricula_id.anio_escolar")
     def _compute_datos_matricula(self):
         for rec in self:
@@ -229,6 +263,7 @@ class RecepcionUtilesEscolar(models.Model):
                     "unidad_id": unidad.id if unidad else False,
                     "categoria_id": categoria.id if categoria else False,
                     "tipo_uso_escolar": tipo_uso_texto,
+                    "destino_recepcion": rec._calcular_destino_recepcion(tipo_uso_texto),
                     "observacion": observacion,
                 }))
 
@@ -250,11 +285,68 @@ class RecepcionUtilesEscolar(models.Model):
         for rec in self:
             rec.action_calcular_faltantes()
             rec.estado = "validado"
+    
+    @api.depends("linea_ids.cantidad_entregada", "linea_ids.destino_recepcion")
+    def _compute_totales_destino(self):
+        for rec in self:
+            rec.total_para_almacen = sum(
+                rec.linea_ids.filtered(
+                    lambda l: l.destino_recepcion == "almacen"
+            ).mapped("cantidad_entregada")
+        )
+
+            rec.total_para_estudiante = sum(
+                rec.linea_ids.filtered(
+                    lambda l: l.destino_recepcion == "estudiante"
+            ).mapped("cantidad_entregada")
+        )
+
+
+    def _calcular_destino_recepcion(self, tipo_uso):
+        texto = (tipo_uso or "").lower()
+
+        if "personal" in texto or "niño" in texto or "estudiante" in texto:
+           return "estudiante"
+   
+        return "almacen"
+
+
+    def action_enviar_productos_almacen(self):
+        for rec in self:
+            if rec.estado != "validado":
+               raise UserError("Solo puedes enviar a almacén una recepción validada.")
+
+            productos_almacen = rec.linea_ids.filtered(
+               lambda l: l.destino_recepcion == "almacen" and l.cantidad_entregada > 0
+        )
+
+        if not productos_almacen:
+            rec.write({
+                "estado_almacen": "sin_productos",
+                "fecha_envio_almacen": fields.Datetime.now(),
+                "usuario_envio_almacen_id": self.env.user.id,
+            })
+            return
+
+        rec.write({
+            "estado_almacen": "enviado",
+            "fecha_envio_almacen": fields.Datetime.now(),
+            "usuario_envio_almacen_id": self.env.user.id,
+        })
 
 
 class RecepcionUtilesLinea(models.Model):
     _name = "recepcion.utiles.linea"
     _description = "Detalle de recepción de útiles escolares"
+
+    destino_recepcion = fields.Selection(
+    [
+        ("estudiante", "Se queda con estudiante"),
+        ("almacen", "Enviar a almacén"),
+    ],
+    string="Destino",
+    default="almacen"
+   )
 
     recepcion_id = fields.Many2one(
         "recepcion.utiles.escolar",
@@ -326,3 +418,13 @@ class RecepcionUtilesLinea(models.Model):
                 linea.estado_linea = "faltante"
             else:
                 linea.estado_linea = "completo"
+
+    @api.onchange("tipo_uso_escolar")
+    def _onchange_tipo_uso_escolar_destino(self):
+        for rec in self:
+            texto = (rec.tipo_uso_escolar or "").lower()
+
+            if "personal" in texto or "niño" in texto or "estudiante" in texto:
+                rec.destino_recepcion = "estudiante"
+            else:
+                rec.destino_recepcion = "almacen"
