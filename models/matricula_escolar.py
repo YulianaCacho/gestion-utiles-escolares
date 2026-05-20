@@ -20,11 +20,17 @@ class MatriculaEscolar(models.Model):
         domain="[('tipo_contacto_escolar', '=', 'estudiante')]"
     )
 
+    anio_escolar = fields.Integer(
+        string='Año escolar',
+        required=True,
+        default=2026
+    )
+
     anio_escolar_visual = fields.Char(
         string='Año escolar',
         compute='_compute_anio_escolar_visual',
         store=True
-   )
+    )
 
     grado_escolar = fields.Selection([
         ('inicial_3', 'Inicial 3 años'),
@@ -74,6 +80,11 @@ class MatriculaEscolar(models.Model):
             anio = rec.anio_escolar or ''
             rec.name = f'{estudiante} - {grado} - {anio}'
 
+    @api.depends('anio_escolar')
+    def _compute_anio_escolar_visual(self):
+        for rec in self:
+            rec.anio_escolar_visual = str(rec.anio_escolar or '')
+
     @api.onchange('grado_escolar', 'anio_escolar')
     def _onchange_grado_anio(self):
         for rec in self:
@@ -83,11 +94,6 @@ class MatriculaEscolar(models.Model):
                     ('anio', '=', rec.anio_escolar)
                 ], limit=1)
                 rec.lista_utiles_id = lista.id if lista else False
-
-    @api.depends('anio_escolar')
-    def _compute_anio_escolar_visual(self):
-        for rec in self:
-            rec.anio_escolar_visual = str(rec.anio_escolar or '')
 
     @api.constrains('estudiante_id', 'anio_escolar')
     def _check_matricula_unica_por_anio(self):
