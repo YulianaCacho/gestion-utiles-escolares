@@ -4,3 +4,4 @@ access_lista_utiles_grado_linea,access.lista.utiles.grado.linea,model_lista_util
 access_recepcion_utiles_escolar,recepcion.utiles.escolar,model_recepcion_utiles_escolar,base.group_user,1,1,1,1
 access_recepcion_utiles_linea,recepcion.utiles.linea,model_recepcion_utiles_linea,base.group_user,1,1,1,1
 access_matricula_escolar_user,matricula.escolar.user,model_matricula_escolar,base.group_user,1,1,1,1
+access_almacen_utiles_movimiento_user,almacen.utiles.movimiento.user,model_almacen_utiles_movimiento,base.group_user,1,1,1,1

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_almacen_utiles_movimiento_list" model="ir.ui.view">
+        <field name="name">almacen.utiles.movimiento.list</field>
+        <field name="model">almacen.utiles.movimiento</field>
+        <field name="arch" type="xml">
+            <list string="Movimientos de almacén">
+                <field name="fecha"/>
+                <field name="tipo_movimiento"/>
+                <field name="recepcion_id"/>
+                <field name="estudiante_id"/>
+                <field name="grado_escolar"/>
+                <field name="product_id"/>
+                <field name="cantidad"/>
+                <field name="unidad_id"/>
+                <field name="destino"/>
+                <field name="responsable_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_almacen_utiles_movimiento" model="ir.actions.act_window">
+        <field name="name">Almacén / movimientos</field>
+        <field name="res_model">almacen.utiles.movimiento</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_almacen_utiles_movimiento"
+              name="Almacén / movimientos"
+              parent="menu_utiles_escolares_root"
+              action="action_almacen_utiles_movimiento"
+              sequence="30"/>
+
+</odoo>

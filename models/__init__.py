@@ -5,3 +5,4 @@ from . import lista_utiles
 from . import recepcion_utiles
 from . import salida_utiles
 from . import matricula_escolar
+from . import almacen_utiles

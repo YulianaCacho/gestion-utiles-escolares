@@ -7,6 +7,11 @@
     "category": "Inventory",
     "depends": ["base", "contacts", "stock", "product"],
     "data": [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'views/salida_utiles_views.xml',
+
         "views/res_partner_views.xml",
         "views/product_template_views.xml",
         "views/stock_picking_views.xml",
@@ -16,6 +21,7 @@
         'reports/reporte_recepcion_utiles.xml',
         'views/favicon_views.xml',
         'views/matricula_escolar_views.xml',
+        'views/almacen_utiles_views.xml',
     ],
    'assets': {
         'web.assets_backend': [
