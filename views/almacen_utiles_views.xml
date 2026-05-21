@@ -30,8 +30,8 @@
 
     <menuitem id="menu_almacen_utiles_root"
           name="📦 Almacén de útiles"
-          parent="menu_utiles_escolares_root"
-          sequence="30"/>
+          parent="stock.menu_stock_root"
+          sequence="95"/>
 
     <menuitem id="menu_historial_almacen"
           name="▣ Historial de movimientos"
