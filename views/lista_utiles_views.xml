@@ -60,8 +60,8 @@
     <menuitem
         id="menu_lista_utiles_grado"
         name="☷ Lista de útiles por grado"
-        parent="menu_matricula_escolar"
+        parent="menu_utiles_escolares_root"
         action="action_lista_utiles_grado"
-        sequence="20"/>
+        sequence="30"/>
 
 </odoo>
