@@ -126,7 +126,7 @@
                             class="btn-primary"
                             invisible="estado == 'validado'"/>
 
-                    <field name="estado"
+                    <field name="etapa_recepcion"
                            widget="statusbar"
                            statusbar_visible="borrador,en_cotejo,listo_almacen,ingresado"/>
 
@@ -299,6 +299,7 @@
         <field name="name">Recepciones</field>
         <field name="res_model">recepcion.utiles.escolar</field>
         <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_recepcion_utiles_escolar_kanban"/>
         <field name="search_view_id" ref="view_recepcion_utiles_escolar_search"/>
     </record>
 
