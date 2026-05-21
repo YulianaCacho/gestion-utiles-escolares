@@ -11,7 +11,75 @@
             <field name="number_increment">1</field>
         </record>
     </data>
+        <record id="view_recepcion_utiles_escolar_kanban" model="ir.ui.view">
+            <field name="name">recepcion.utiles.escolar.kanban</field>
+            <field name="model">recepcion.utiles.escolar</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="estado_visual" class="o_kanban_small_column">
+                    <field name="estudiante_id"/>
+                    <field name="grado_escolar"/>
+                    <field name="fecha"/>
+                    <field name="recibido_por_id"/>
+                    <field name="items_resumen"/>
+                    <field name="estado_visual"/>
+                    <field name="porcentaje_avance"/>
 
+                    <templates>
+                        <t t-name="card">
+                           <div class="oe_kanban_card oe_kanban_global_click">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong>
+                                        <field name="estudiante_id"/>
+                                    </strong>
+
+                                    <span t-if="record.estado_visual.raw_value == 'listo'"
+                                          style="background:#d8f5e8; color:#146c43; padding:4px 8px; border-radius:12px; font-size:12px;">
+                                        Listo
+                                    </span>
+
+                                    <span t-if="record.estado_visual.raw_value == 'incompleto'"
+                                          style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:12px; font-size:12px;">
+                                        Incompleto
+                                    </span>
+
+                                    <span t-if="record.estado_visual.raw_value == 'pendiente'"
+                                          style="background:#eeeeee; color:#555; padding:4px 8px; border-radius:12px; font-size:12px;">
+                                        Pendiente
+                                    </span>
+                                </div>
+
+                                <div style="margin-top:10px;">
+                                    <div>
+                                       <strong>Grado / sección:</strong>
+                                       <field name="grado_escolar"/>
+                                    </div>
+
+                                     <div>
+                                       <strong>Fecha:</strong>
+                                       <field name="fecha"/>
+                                    </div>
+
+                                    <div>
+                                       <strong>Recibido por:</strong>
+                                       <field name="recibido_por_id"/>
+                                    </div>
+
+                                    <div>
+                                       <strong>Ítems:</strong>
+                                       <field name="items_resumen"/>
+                                    </div>
+
+                                    <div>
+                                       <strong>% completado:</strong>
+                                      <field name="porcentaje_avance"/>
+                                     </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
     <record id="view_recepcion_utiles_escolar_list" model="ir.ui.view">
         <field name="name">recepcion.utiles.escolar.list</field>
         <field name="model">recepcion.utiles.escolar</field>
@@ -228,10 +296,10 @@
 </record>
 
     <record id="action_recepcion_utiles_escolar" model="ir.actions.act_window">
-    <field name="name">Recepción de útiles</field>
-    <field name="res_model">recepcion.utiles.escolar</field>
-    <field name="view_mode">list,form</field>
-    <field name="search_view_id" ref="view_recepcion_utiles_escolar_search"/>
+        <field name="name">Recepciones</field>
+        <field name="res_model">recepcion.utiles.escolar</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_recepcion_utiles_escolar_search"/>
     </record>
 
     <menuitem id="menu_utiles_escolares_root"
