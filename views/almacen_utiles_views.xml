@@ -26,10 +26,27 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_almacen_utiles_movimiento"
-              name="Almacén / movimientos"
-              parent="menu_utiles_escolares_root"
-              action="action_almacen_utiles_movimiento"
-              sequence="30"/>
+    <menuitem id="menu_almacen_utiles_root"
+          name="📦 Almacén de útiles"
+          parent="menu_utiles_escolares_root"
+          sequence="30"/>
+
+    <menuitem id="menu_almacen_recepciones"
+          name="↧ Recepciones"
+          parent="menu_almacen_utiles_root"
+          action="action_almacen_utiles_movimiento"
+          sequence="10"/>
+
+    <menuitem id="menu_salida_almacen_utiles"
+          name="↥ Entregas"
+          parent="menu_almacen_utiles_root"
+          action="action_salida_almacen_utiles"
+          sequence="20"/>
+
+    <menuitem id="menu_historial_almacen"
+          name="▣ Historial de movimientos"
+          parent="menu_almacen_utiles_root"
+          action="action_almacen_utiles_movimiento"
+          sequence="30"/>
 
 </odoo>
