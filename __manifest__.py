@@ -16,11 +16,12 @@
         "views/stock_picking_views.xml",
         "views/lista_utiles_views.xml",
         "security/ir.model.access.csv",
-        'views/recepcion_utiles_views.xml',
         'reports/reporte_recepcion_utiles.xml',
         'views/favicon_views.xml',
         'views/matricula_escolar_views.xml',
+        
         'views/almacen_utiles_views.xml',
+        'views/recepcion_utiles_views.xml',
         'views/salida_almacen_utiles_views.xml',
     ],
    'assets': {

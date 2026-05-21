@@ -222,10 +222,10 @@
           sequence="90"/>
 
     <menuitem id="menu_recepcion_utiles_escolar"
-          name="Recepción por matrícula"
-          parent="menu_utiles_escolares_root"
+          name="↧ Recepciones"
+          parent="menu_almacen_utiles_root"
           action="action_recepcion_utiles_escolar"
-          sequence="20"/>
+          sequence="10"/>
 
     <record id="action_enviar_recepciones_seleccionadas_almacen" model="ir.actions.server">
         <field name="name">Enviar seleccionadas a almacén</field>

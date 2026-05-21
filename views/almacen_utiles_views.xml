@@ -33,7 +33,7 @@
           parent="stock.menu_stock_root"
           sequence="95"/>
 
-    <menuitem id="menu_historial_almacen"
+    <menuitem id="menu_almacen_utiles_movimiento"
           name="▣ Historial de movimientos"
           parent="menu_almacen_utiles_root"
           action="action_almacen_utiles_movimiento"
