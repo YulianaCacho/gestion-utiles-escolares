@@ -22,6 +22,7 @@
         'views/favicon_views.xml',
         'views/matricula_escolar_views.xml',
         'views/almacen_utiles_views.xml',
+        'views/salida_almacen_utiles_views.xml',
     ],
    'assets': {
         'web.assets_backend': [

@@ -5,3 +5,5 @@ access_recepcion_utiles_escolar,recepcion.utiles.escolar,model_recepcion_utiles_
 access_recepcion_utiles_linea,recepcion.utiles.linea,model_recepcion_utiles_linea,base.group_user,1,1,1,1
 access_matricula_escolar_user,matricula.escolar.user,model_matricula_escolar,base.group_user,1,1,1,1
 access_almacen_utiles_movimiento_user,almacen.utiles.movimiento.user,model_almacen_utiles_movimiento,base.group_user,1,1,1,1
+access_salida_almacen_utiles_user,salida.almacen.utiles.user,model_salida_almacen_utiles,base.group_user,1,1,1,1
+access_salida_almacen_utiles_linea_user,salida.almacen.utiles.linea.user,model_salida_almacen_utiles_linea,base.group_user,1,1,1,1
