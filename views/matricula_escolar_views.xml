@@ -60,26 +60,48 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- Menú padre Matrículas -->
-    <record id="menu_matricula_escolar" model="ir.ui.menu">
-        <field name="name">👥 Matrículas</field>
-        <field name="parent_id" ref="menu_utiles_escolares_root"/>
-        <field name="sequence">5</field>
-        <field name="action" eval="False"/>
+    <!-- Acción: Registrar matrícula -->
+    <record id="action_registrar_matricula" model="ir.actions.act_window">
+        <field name="name">Registrar matrícula</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">form,list</field>
+        <field name="view_id" ref="view_matricula_escolar_form"/>
+        <field name="context">{'default_estado': 'activo', 'default_anio_escolar': 2026}</field>
     </record>
 
-    <!-- Submenú Registrar matrícula -->
+    <!-- Acción: Lista de matrícula -->
+    <record id="action_matricula_escolar" model="ir.actions.act_window">
+        <field name="name">Lista de matrícula</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Acción: Estado por alumno -->
+    <record id="action_estado_por_alumno" model="ir.actions.act_window">
+        <field name="name">Estado por alumno</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Submenú: Registrar matrícula -->
     <menuitem id="menu_registrar_matricula"
               name="✚ Registrar matrícula"
-              parent="menu_matricula_escolar"
+              parent="menu_utiles_escolares_root"
               action="action_registrar_matricula"
               sequence="10"/>
 
-    <!-- Submenú Estado por alumno -->
+    <!-- Submenú: Lista de matrícula -->
+    <menuitem id="menu_matricula_escolar"
+          name="▤ Lista de matrícula"
+          parent="menu_utiles_escolares_root"
+          action="action_matricula_escolar"
+          sequence="20"/>
+
+    <!-- Submenú: Estado por alumno -->
     <menuitem id="menu_estado_por_alumno"
               name="⊙ Estado por alumno"
-              parent="menu_matricula_escolar"
-              action="action_matricula_escolar"
-              sequence="30"/>
+              parent="menu_utiles_escolares_root"
+              action="action_estado_por_alumno"
+              sequence="40"/>
 
 </odoo>
