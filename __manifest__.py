@@ -7,23 +7,30 @@
     "category": "Inventory",
     "depends": ["base", "contacts", "stock", "product"],
     "data": [
-        'security/security.xml',
-        'security/ir.model.access.csv',
-        'data/sequence.xml',
+    'security/security.xml',
+    'security/ir.model.access.csv',
+    'data/sequence.xml',
 
-        "views/res_partner_views.xml",
-        "views/product_template_views.xml",
-        "views/stock_picking_views.xml",
-        "views/lista_utiles_views.xml",
-        "security/ir.model.access.csv",
-        'reports/reporte_recepcion_utiles.xml',
-        'views/favicon_views.xml',
-        'views/matricula_escolar_views.xml',
-        
-        'views/almacen_utiles_views.xml',
-        'views/recepcion_utiles_views.xml',
-        'views/salida_almacen_utiles_views.xml',
-    ],
+    "views/res_partner_views.xml",
+    "views/product_template_views.xml",
+    "views/stock_picking_views.xml",
+
+    # Primero se carga almacén porque Recepciones y Entregas dependen de ese menú
+    'views/almacen_utiles_views.xml',
+    'views/recepcion_utiles_views.xml',
+
+    # Luego Matrículas
+    'views/matricula_escolar_views.xml',
+
+    # Luego Lista de útiles porque ahora irá dentro de Matrículas
+    "views/lista_utiles_views.xml",
+
+    # Luego Entregas
+    'views/salida_almacen_utiles_views.xml',
+
+    'reports/reporte_recepcion_utiles.xml',
+    'views/favicon_views.xml',
+],
    'assets': {
         'web.assets_backend': [
             'gestion_utiles_escolares/static/src/css/backend_theme.css',
