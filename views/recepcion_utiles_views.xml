@@ -304,7 +304,7 @@
     </record>
 
     <menuitem id="menu_utiles_escolares_root"
-          name="Útiles escolares"
+          name="👥 Matrículas"
           parent="stock.menu_stock_root"
           sequence="90"/>
 
