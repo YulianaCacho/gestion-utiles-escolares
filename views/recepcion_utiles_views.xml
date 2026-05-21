@@ -16,22 +16,19 @@
         <field name="name">recepcion.utiles.escolar.list</field>
         <field name="model">recepcion.utiles.escolar</field>
         <field name="arch" type="xml">
-            <list string="Recepción de útiles"
-                  decoration-danger="estado == 'incompleto'"
-                  decoration-success="estado == 'completo'"
-                  decoration-muted="estado == 'borrador'">
-                <field name="name"/>
-                <field name="fecha"/>
-                <field name="matricula_id"/>
-                <field name="estudiante_id"/>
-                <field name="anio"/>
-                <field name="grado_escolar"/>
-                <field name="lista_id"/>
-                <field name="total_productos"/>
-                <field name="total_completos"/>
-                <field name="total_faltantes"/>
-                <field name="porcentaje_avance"/>
-                <field name="estado"/>
+            <list string="Recepciones"
+                  decoration-success="estado_visual == 'listo'"
+                  decoration-warning="estado_visual == 'incompleto'"
+                  decoration-muted="estado_visual == 'pendiente'">
+
+                <field name="name" string="Código" optional="hide"/>
+                <field name="estudiante_id" string="Alumno"/>
+                <field name="grado_escolar" string="Grado / sección"/>
+                <field name="fecha" string="Fecha"/>
+                <field name="recibido_por_id" string="Recibido por"/>
+                <field name="items_resumen" string="Ítems"/>
+                <field name="estado_visual" string="Estado"/>
+
             </list>
         </field>
     </record>
@@ -63,7 +60,7 @@
 
                     <field name="estado"
                            widget="statusbar"
-                           statusbar_visible="borrador,incompleto,completo,validado"/>
+                           statusbar_visible="borrador,en_cotejo,listo_almacen,ingresado"/>
 
                     <button name="action_recalcular_destinos"
                             type="object"
@@ -88,50 +85,51 @@
 
                     <group string="Datos de la recepción">
                         <group>
-                            <field name="fecha"/>
                             <field name="matricula_id" required="1"/>
-                            <field name="estudiante_id"/>
-                            <field name="anio"/>
-                            <field name="grado_escolar"/>
-                            <field name="lista_id"/>
+                            <field name="estudiante_id" string="Alumno"/>
+                            <field name="grado_escolar" string="Grado / sección"/>
+                            <field name="lista_id" string="Lista de útiles"/>
                         </group>
 
                         <group>
-                            <field name="total_productos"/>
-                            <field name="total_completos"/>
-                            <field name="total_faltantes"/>
-                            <field name="porcentaje_avance"/>
-                            <field name="estado_entrega"/>
-                            <field name="estado"/>
-                            <field name="total_para_estudiante"/>
-                            <field name="total_para_almacen"/>
-                            <field name="estado_almacen"/>
-                            <field name="fecha_envio_almacen"/>
-                            <field name="usuario_envio_almacen_id"/>
+                            <field name="fecha" string="Fecha de recepción"/>
+                            <field name="recibido_por_id" string="Recibido por"/>
+                            <field name="estado_visual" string="Estado"/>
+                            <field name="estado_almacen" string="Estado de almacén"/>
                         </group>
                     </group>
 
                     <notebook>
-                        <page string="Productos recibidos">
-                            <field name="linea_ids">
-                                <list editable="bottom"
-                                      decoration-danger="estado_linea == 'faltante'"
-                                      decoration-success="estado_linea == 'completo'"
-                                      decoration-muted="estado_linea == 'pendiente'">
-                                    <field name="product_id"/>
-                                    <field name="categoria_id"/>
-                                    <field name="cantidad_esperada"/>
-                                    <field name="cantidad_entregada"/>
-                                    <field name="cantidad_faltante"/>
-                                    <field name="unidad_id"/>
-                                    <field name="tipo_uso_escolar"/>
-                                    <field name="destino_recepcion"/>
-                                    <field name="cantidad_enviada_almacen"/>
-                                    <field name="cantidad_pendiente_almacen"/>
-                                    <field name="estado_linea"/>
-                                    <field name="observacion"/>
+                        <page string="Cotejo de útiles">
+                           <field name="linea_ids">
+                               <list editable="bottom"
+                                     decoration-danger="estado_linea == 'faltante'"
+                                     decoration-success="estado_linea == 'completo'"
+                                     decoration-muted="estado_linea == 'pendiente'">
+
+                                  <field name="product_id" string="Útil"/>
+                                  <field name="cantidad_esperada" string="Cant. requerida"/>
+                                  <field name="cantidad_entregada" string="Cant. recibida"/>
+                                  <field name="cantidad_faltante" string="Faltante"/>
+                                  <field name="destino_recepcion" string="Destino"/>
+                                  <field name="cantidad_enviada_almacen" string="Enviado almacén"/>
+                                  <field name="cantidad_pendiente_almacen" string="Pendiente almacén"/>
+                                  <field name="estado_linea" string="Estado"/>
+                                  <field name="observacion" string="Observación"/>
+
                                 </list>
                             </field>
+
+                            <group string="Resumen de recepción">
+                                <group>
+                                    <field name="total_productos" string="Ítems en lista"/>
+                                    <field name="total_completos" string="Recibidos completos"/>
+                                </group>
+                                <group>
+                                    <field name="total_faltantes" string="Faltantes"/>
+                                    <field name="porcentaje_avance" string="% completado"/>
+                                </group>
+                            </group>
                         </page>
 
                         <page string="Observaciones">
@@ -149,6 +147,26 @@
     <field name="arch" type="xml">
         <search string="Buscar recepción de útiles">
 
+            <filter name="filtro_listo"
+                    string="Listo"
+                    domain="[('estado_visual','=','listo')]"/>
+
+           <filter name="filtro_incompleto"
+                   string="Incompleto"
+                   domain="[('estado_visual','=','incompleto')]"/>
+
+            <filter name="filtro_pendiente"
+                    string="Pendiente"
+                    domain="[('estado_visual','=','pendiente')]"/>
+
+            <filter name="filtro_listo_almacen"
+                    string="Listo para almacén"
+                    domain="[('etapa_recepcion','=','listo_almacen')]"/>
+
+           <filter name="filtro_ingresado"
+                   string="Ingresado"
+                   domain="[('etapa_recepcion','=','ingresado')]"/>
+            
             <filter name="filtro_validadas_pendientes_almacen"
                     string="Validadas pendientes de almacén"
                     domain="[('estado','=','validado'), ('estado_almacen','=','pendiente')]"/>

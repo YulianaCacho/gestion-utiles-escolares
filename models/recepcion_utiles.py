@@ -487,6 +487,73 @@ class RecepcionUtilesLinea(models.Model):
         store=True
    )
 
+    recibido_por_id = fields.Many2one(
+        "res.users",
+        string="Recibido por",
+        default=lambda self: self.env.user,
+        readonly=True
+    )
+
+    items_resumen = fields.Char(
+        string="Ítems",
+        compute="_compute_items_resumen",
+        store=True
+    )
+
+    estado_visual = fields.Selection(
+       [
+           ("pendiente", "Pendiente"),
+           ("incompleto", "Incompleto"),
+           ("listo", "Listo"),
+       ],
+       string="Estado",
+       compute="_compute_estado_visual",
+       store=True
+    )
+
+    etapa_recepcion = fields.Selection(
+       [
+           ("borrador", "Borrador"),
+           ("en_cotejo", "En cotejo"),
+           ("listo_almacen", "Listo para almacén"),
+           ("ingresado", "Ingresado"),
+       ],
+       string="Etapa",
+       compute="_compute_etapa_recepcion",
+       store=True
+    )
+
+    @api.depends("total_completos", "total_productos")
+    def _compute_items_resumen(self):
+        for rec in self:
+            rec.items_resumen = f"{rec.total_completos or 0}/{rec.total_productos or 0}"
+
+
+    @api.depends("total_productos", "total_faltantes", "estado")
+    def _compute_estado_visual(self):
+        for rec in self:
+            if rec.estado == "borrador" or rec.total_productos == 0:
+               rec.estado_visual = "pendiente"
+            elif rec.total_faltantes > 0:
+               rec.estado_visual = "incompleto"
+            else:
+               rec.estado_visual = "listo"
+
+
+    @api.depends("estado", "estado_almacen", "total_productos")
+    def _compute_etapa_recepcion(self):
+        for rec in self:
+            if rec.estado == "borrador":
+               rec.etapa_recepcion = "borrador"
+            elif rec.estado in ["incompleto", "completo"]:
+                rec.etapa_recepcion = "en_cotejo"
+            elif rec.estado == "validado" and rec.estado_almacen in ["pendiente", "parcial", "sin_productos"]:
+                rec.etapa_recepcion = "listo_almacen"
+            elif rec.estado == "validado" and rec.estado_almacen == "enviado":
+                rec.etapa_recepcion = "ingresado"
+            else:
+                rec.etapa_recepcion = "en_cotejo"
+
     @api.depends("destino_recepcion", "cantidad_entregada", "cantidad_enviada_almacen")
     def _compute_cantidad_pendiente_almacen(self):
         for rec in self:
