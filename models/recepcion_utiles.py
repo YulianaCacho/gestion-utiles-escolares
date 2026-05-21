@@ -58,10 +58,23 @@ class RecepcionUtilesEscolar(models.Model):
         readonly=True
     )
 
+    recibido_por_id = fields.Many2one(
+        "res.users",
+        string="Recibido por",
+        default=lambda self: self.env.user,
+        readonly=True
+    )
+
     linea_ids = fields.One2many(
         "recepcion.utiles.linea",
         "recepcion_id",
         string="Productos recibidos"
+    )
+
+    movimiento_almacen_ids = fields.One2many(
+        "almacen.utiles.movimiento",
+        "recepcion_id",
+        string="Movimientos de almacén"
     )
 
     estado = fields.Selection(
@@ -71,7 +84,7 @@ class RecepcionUtilesEscolar(models.Model):
             ("completo", "Completo"),
             ("validado", "Validado"),
         ],
-        string="Estado",
+        string="Estado interno",
         default="borrador"
     )
 
@@ -112,66 +125,80 @@ class RecepcionUtilesEscolar(models.Model):
         store=True
     )
 
+    items_resumen = fields.Char(
+        string="Ítems",
+        compute="_compute_items_resumen",
+        store=True
+    )
+
+    estado_visual = fields.Selection(
+        [
+            ("pendiente", "Pendiente"),
+            ("incompleto", "Incompleto"),
+            ("listo", "Listo"),
+        ],
+        string="Estado",
+        compute="_compute_estado_visual",
+        store=True
+    )
+
     estado_almacen = fields.Selection(
-    [
-        ("pendiente", "Pendiente"),
-        ("parcial", "Envío parcial"),
-        ("enviado", "Enviado a almacén"),
-        ("sin_productos", "Sin productos para almacén"),
-    ],
-    string="Estado de almacén",
-    default="pendiente",
-    readonly=True
-)
+        [
+            ("pendiente", "Pendiente"),
+            ("parcial", "Envío parcial"),
+            ("enviado", "Enviado a almacén"),
+            ("sin_productos", "Sin productos para almacén"),
+        ],
+        string="Estado de almacén",
+        compute="_compute_estado_almacen",
+        store=True
+    )
+
+    etapa_recepcion = fields.Selection(
+        [
+            ("borrador", "Borrador"),
+            ("en_cotejo", "En cotejo"),
+            ("listo_almacen", "Listo para almacén"),
+            ("ingresado", "Ingresado"),
+        ],
+        string="Etapa",
+        compute="_compute_etapa_recepcion",
+        store=True
+    )
 
     fecha_envio_almacen = fields.Datetime(
         string="Fecha y hora de envío a almacén",
         readonly=True
-)
+    )
 
     usuario_envio_almacen_id = fields.Many2one(
         "res.users",
         string="Usuario que envió a almacén",
         readonly=True
-)
+    )
 
     total_para_almacen = fields.Float(
         string="Cantidad para almacén",
         compute="_compute_totales_destino",
         store=True
-)
+    )
 
     total_para_estudiante = fields.Float(
-       string="Cantidad para estudiante",
-       compute="_compute_totales_destino",
-       store=True
-)
+        string="Cantidad para estudiante",
+        compute="_compute_totales_destino",
+        store=True
+    )
 
     @api.depends("matricula_id", "matricula_id.anio_escolar")
     def _compute_datos_matricula(self):
         for rec in self:
             rec.anio = str(rec.matricula_id.anio_escolar or "") if rec.matricula_id else ""
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            if vals.get("name", "Nueva") == "Nueva":
-                vals["name"] = self.env["ir.sequence"].next_by_code(
-                    "recepcion.utiles.escolar"
-                ) or "Nueva"
-        return super().create(vals_list)
-
     @api.depends(
         "linea_ids.estado_linea",
         "linea_ids.cantidad_faltante",
         "linea_ids.cantidad_entregada",
     )
-
-    def action_recalcular_destinos(self):
-        for rec in self:
-            for linea in rec.linea_ids:
-                linea.destino_recepcion = rec._calcular_destino_recepcion(linea.tipo_uso_escolar)
-
     def _compute_resumen(self):
         for rec in self:
             total = len(rec.linea_ids)
@@ -190,11 +217,121 @@ class RecepcionUtilesEscolar(models.Model):
             else:
                 rec.estado_entrega = "completo"
 
+    @api.depends("total_completos", "total_productos")
+    def _compute_items_resumen(self):
+        for rec in self:
+            rec.items_resumen = f"{rec.total_completos or 0}/{rec.total_productos or 0}"
+
+    @api.depends("total_productos", "total_faltantes", "estado")
+    def _compute_estado_visual(self):
+        for rec in self:
+            if rec.estado == "borrador" or rec.total_productos == 0:
+                rec.estado_visual = "pendiente"
+            elif rec.total_faltantes > 0:
+                rec.estado_visual = "incompleto"
+            else:
+                rec.estado_visual = "listo"
+
+    @api.depends(
+        "linea_ids.destino_recepcion",
+        "linea_ids.cantidad_entregada",
+        "linea_ids.cantidad_enviada_almacen",
+    )
+    def _compute_estado_almacen(self):
+        for rec in self:
+            lineas_almacen = rec.linea_ids.filtered(
+                lambda l: l.destino_recepcion == "almacen"
+            )
+
+            if not lineas_almacen:
+                rec.estado_almacen = "sin_productos"
+                continue
+
+            total_entregado_almacen = sum(lineas_almacen.mapped("cantidad_entregada"))
+            total_enviado_almacen = sum(lineas_almacen.mapped("cantidad_enviada_almacen"))
+            total_pendiente_almacen = sum(lineas_almacen.mapped("cantidad_pendiente_almacen"))
+
+            if total_entregado_almacen <= 0:
+                rec.estado_almacen = "pendiente"
+            elif total_enviado_almacen <= 0:
+                rec.estado_almacen = "pendiente"
+            elif total_pendiente_almacen > 0:
+                rec.estado_almacen = "parcial"
+            else:
+                rec.estado_almacen = "enviado"
+
+    @api.depends("estado", "estado_almacen", "total_productos")
+    def _compute_etapa_recepcion(self):
+        for rec in self:
+            if rec.estado == "borrador":
+                rec.etapa_recepcion = "borrador"
+            elif rec.estado in ["incompleto", "completo"]:
+                rec.etapa_recepcion = "en_cotejo"
+            elif rec.estado == "validado" and rec.estado_almacen in ["pendiente", "parcial"]:
+                rec.etapa_recepcion = "listo_almacen"
+            elif rec.estado == "validado" and rec.estado_almacen in ["enviado", "sin_productos"]:
+                rec.etapa_recepcion = "ingresado"
+            else:
+                rec.etapa_recepcion = "en_cotejo"
+
+    @api.depends("linea_ids.cantidad_entregada", "linea_ids.destino_recepcion")
+    def _compute_totales_destino(self):
+        for rec in self:
+            rec.total_para_almacen = sum(
+                rec.linea_ids.filtered(
+                    lambda l: l.destino_recepcion == "almacen"
+                ).mapped("cantidad_entregada")
+            )
+
+            rec.total_para_estudiante = sum(
+                rec.linea_ids.filtered(
+                    lambda l: l.destino_recepcion == "estudiante"
+                ).mapped("cantidad_entregada")
+            )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("name", "Nueva") == "Nueva":
+                vals["name"] = self.env["ir.sequence"].next_by_code(
+                    "recepcion.utiles.escolar"
+                ) or "Nueva"
+        return super().create(vals_list)
+
     def _obtener_valor_linea(self, linea, posibles_campos, valor_default=False):
         for campo in posibles_campos:
             if campo in linea._fields:
                 return linea[campo]
         return valor_default
+
+    def _calcular_destino_recepcion(self, tipo_uso):
+        texto = (tipo_uso or "").lower().strip()
+
+        if (
+            "personal" in texto
+            or "util personal" in texto
+            or "útil personal" in texto
+            or "niño" in texto
+            or "niña" in texto
+            or "estudiante" in texto
+        ):
+            return "estudiante"
+
+        return "almacen"
+
+    def action_recalcular_destinos(self):
+        for rec in self:
+            for linea in rec.linea_ids:
+                destino = rec._calcular_destino_recepcion(linea.tipo_uso_escolar)
+
+                valores = {
+                    "destino_recepcion": destino
+                }
+
+                if destino == "estudiante":
+                    valores["cantidad_enviada_almacen"] = 0
+
+                linea.write(valores)
 
     def action_cargar_lista(self):
         for rec in self:
@@ -263,6 +400,8 @@ class RecepcionUtilesEscolar(models.Model):
                         except Exception:
                             tipo_uso_texto = tipo_uso
 
+                destino = rec._calcular_destino_recepcion(tipo_uso_texto)
+
                 comandos.append((0, 0, {
                     "product_id": producto.id,
                     "cantidad_esperada": cantidad,
@@ -270,13 +409,16 @@ class RecepcionUtilesEscolar(models.Model):
                     "unidad_id": unidad.id if unidad else False,
                     "categoria_id": categoria.id if categoria else False,
                     "tipo_uso_escolar": tipo_uso_texto,
-                    "destino_recepcion": rec._calcular_destino_recepcion(tipo_uso_texto),
+                    "destino_recepcion": destino,
+                    "cantidad_enviada_almacen": 0,
                     "observacion": observacion,
                 }))
 
             rec.write({
                 "linea_ids": comandos,
                 "estado": "borrador",
+                "fecha_envio_almacen": False,
+                "usuario_envio_almacen_id": False,
             })
 
     def action_calcular_faltantes(self):
@@ -292,40 +434,6 @@ class RecepcionUtilesEscolar(models.Model):
         for rec in self:
             rec.action_calcular_faltantes()
             rec.estado = "validado"
-    
-    @api.depends("linea_ids.cantidad_entregada", "linea_ids.destino_recepcion")
-    def _compute_totales_destino(self):
-        for rec in self:
-            rec.total_para_almacen = sum(
-                rec.linea_ids.filtered(
-                    lambda l: l.destino_recepcion == "almacen"
-            ).mapped("cantidad_entregada")
-        )
-
-            rec.total_para_estudiante = sum(
-                rec.linea_ids.filtered(
-                    lambda l: l.destino_recepcion == "estudiante"
-            ).mapped("cantidad_entregada")
-        )
-
-
-    def _calcular_destino_recepcion(self, tipo_uso):
-        texto = (tipo_uso or "").lower().strip()
-
-        # Útiles que se quedan con el estudiante
-        if (
-            "personal" in texto
-             or "util personal" in texto
-             or "útil personal" in texto
-             or "niño" in texto
-             or "niña" in texto
-             or "estudiante" in texto
-        ):
-            return "estudiante"
-
-        # Todo lo demás pasa a almacén
-        return "almacen"
-
 
     def action_enviar_productos_almacen(self):
         procesadas = 0
@@ -334,27 +442,24 @@ class RecepcionUtilesEscolar(models.Model):
 
         for rec in self:
             if rec.estado != "validado":
-               omitidas += 1
-               continue
- 
+                omitidas += 1
+                continue
+
             productos_almacen = rec.linea_ids.filtered(
                 lambda l: l.destino_recepcion == "almacen"
                 and l.cantidad_pendiente_almacen > 0
             )
 
             if not productos_almacen:
-                rec.write({
-                    "estado_almacen": "sin_productos",
-                    "fecha_envio_almacen": fields.Datetime.now(),
-                    "usuario_envio_almacen_id": self.env.user.id,
-                })
                 sin_productos += 1
                 continue
+
+            Movimiento = self.env["almacen.utiles.movimiento"]
 
             for linea in productos_almacen:
                 cantidad_a_enviar = linea.cantidad_pendiente_almacen
 
-                self.env["almacen.utiles.movimiento"].create({
+                valores_movimiento = {
                     "tipo_movimiento": "entrada",
                     "recepcion_id": rec.id,
                     "product_id": linea.product_id.id,
@@ -364,47 +469,70 @@ class RecepcionUtilesEscolar(models.Model):
                     "responsable_id": self.env.user.id,
                     "destino": "Almacén general",
                     "observacion": f"Producto enviado a almacén desde la recepción {rec.name}",
+                }
+
+                if "recepcion_linea_id" in Movimiento._fields:
+                    valores_movimiento["recepcion_linea_id"] = linea.id
+
+                Movimiento.create(valores_movimiento)
+
+                linea.write({
+                    "cantidad_enviada_almacen": linea.cantidad_enviada_almacen + cantidad_a_enviar
                 })
- 
-                linea.cantidad_enviada_almacen += cantidad_a_enviar
 
-        pendientes = rec.linea_ids.filtered(
-            lambda l: l.destino_recepcion == "almacen"
-            and l.cantidad_pendiente_almacen > 0
-        )
+            rec.write({
+                "fecha_envio_almacen": fields.Datetime.now(),
+                "usuario_envio_almacen_id": self.env.user.id,
+            })
 
-        rec.write({
-            "estado_almacen": "parcial" if pendientes else "enviado",
-            "fecha_envio_almacen": fields.Datetime.now(),
-            "usuario_envio_almacen_id": self.env.user.id,
-        })
-
-        procesadas += 1
+            procesadas += 1
 
         return {
-           "type": "ir.actions.client",
-           "tag": "display_notification",
-           "params": {
-               "title": "Envío a almacén",
-               "message": f"Recepciones procesadas: {procesadas}. Omitidas: {omitidas}. Sin productos para almacén: {sin_productos}.",
-               "type": "success",
-               "sticky": False,
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Envío a almacén",
+                "message": f"Recepciones procesadas: {procesadas}. Omitidas: {omitidas}. Sin productos pendientes para almacén: {sin_productos}.",
+                "type": "success",
+                "sticky": False,
+            }
         }
-    }
+
+    def action_sincronizar_envios_almacen(self):
+        Movimiento = self.env["almacen.utiles.movimiento"]
+
+        for rec in self:
+            for linea in rec.linea_ids:
+                if linea.destino_recepcion != "almacen":
+                    linea.write({
+                        "cantidad_enviada_almacen": 0
+                    })
+                    continue
+
+                movimientos = Movimiento.search([
+                    ("recepcion_id", "=", rec.id),
+                    ("product_id", "=", linea.product_id.id),
+                    ("tipo_movimiento", "=", "entrada"),
+                ])
+
+                total_enviado = sum(movimientos.mapped("cantidad"))
+
+                if total_enviado > linea.cantidad_entregada:
+                    total_enviado = linea.cantidad_entregada
+
+                linea.write({
+                    "cantidad_enviada_almacen": total_enviado
+                })
+
+            rec.write({
+                "fecha_envio_almacen": fields.Datetime.now(),
+                "usuario_envio_almacen_id": self.env.user.id,
+            })
 
 
 class RecepcionUtilesLinea(models.Model):
     _name = "recepcion.utiles.linea"
     _description = "Detalle de recepción de útiles escolares"
-
-    destino_recepcion = fields.Selection(
-    [
-        ("estudiante", "Se queda con estudiante"),
-        ("almacen", "Enviar a almacén"),
-    ],
-    string="Destino",
-    default="almacen"
-   )
 
     recepcion_id = fields.Many2one(
         "recepcion.utiles.escolar",
@@ -450,18 +578,14 @@ class RecepcionUtilesLinea(models.Model):
         string="Tipo de uso escolar"
     )
 
-    estado_linea = fields.Selection(
+    destino_recepcion = fields.Selection(
         [
-            ("pendiente", "Pendiente"),
-            ("faltante", "Faltante"),
-            ("completo", "Completo"),
+            ("estudiante", "Se queda con estudiante"),
+            ("almacen", "Enviar a almacén"),
         ],
-        string="Estado",
-        compute="_compute_cantidad_faltante",
-        store=True
+        string="Destino",
+        default="almacen"
     )
-
-    observacion = fields.Char(string="Observación")
 
     cantidad_enviada_almacen = fields.Float(
         string="Cantidad enviada a almacén",
@@ -485,93 +609,20 @@ class RecepcionUtilesLinea(models.Model):
         string="Estado almacén",
         compute="_compute_cantidad_pendiente_almacen",
         store=True
-   )
-
-    recibido_por_id = fields.Many2one(
-        "res.users",
-        string="Recibido por",
-        default=lambda self: self.env.user,
-        readonly=True
     )
 
-    items_resumen = fields.Char(
-        string="Ítems",
-        compute="_compute_items_resumen",
+    estado_linea = fields.Selection(
+        [
+            ("pendiente", "Pendiente"),
+            ("faltante", "Faltante"),
+            ("completo", "Completo"),
+        ],
+        string="Estado",
+        compute="_compute_cantidad_faltante",
         store=True
     )
 
-    estado_visual = fields.Selection(
-       [
-           ("pendiente", "Pendiente"),
-           ("incompleto", "Incompleto"),
-           ("listo", "Listo"),
-       ],
-       string="Estado",
-       compute="_compute_estado_visual",
-       store=True
-    )
-
-    etapa_recepcion = fields.Selection(
-       [
-           ("borrador", "Borrador"),
-           ("en_cotejo", "En cotejo"),
-           ("listo_almacen", "Listo para almacén"),
-           ("ingresado", "Ingresado"),
-       ],
-       string="Etapa",
-       compute="_compute_etapa_recepcion",
-       store=True
-    )
-
-    @api.depends("total_completos", "total_productos")
-    def _compute_items_resumen(self):
-        for rec in self:
-            rec.items_resumen = f"{rec.total_completos or 0}/{rec.total_productos or 0}"
-
-
-    @api.depends("total_productos", "total_faltantes", "estado")
-    def _compute_estado_visual(self):
-        for rec in self:
-            if rec.estado == "borrador" or rec.total_productos == 0:
-               rec.estado_visual = "pendiente"
-            elif rec.total_faltantes > 0:
-               rec.estado_visual = "incompleto"
-            else:
-               rec.estado_visual = "listo"
-
-
-    @api.depends("estado", "estado_almacen", "total_productos")
-    def _compute_etapa_recepcion(self):
-        for rec in self:
-            if rec.estado == "borrador":
-               rec.etapa_recepcion = "borrador"
-            elif rec.estado in ["incompleto", "completo"]:
-                rec.etapa_recepcion = "en_cotejo"
-            elif rec.estado == "validado" and rec.estado_almacen in ["pendiente", "parcial", "sin_productos"]:
-                rec.etapa_recepcion = "listo_almacen"
-            elif rec.estado == "validado" and rec.estado_almacen == "enviado":
-                rec.etapa_recepcion = "ingresado"
-            else:
-                rec.etapa_recepcion = "en_cotejo"
-
-    @api.depends("destino_recepcion", "cantidad_entregada", "cantidad_enviada_almacen")
-    def _compute_cantidad_pendiente_almacen(self):
-        for rec in self:
-            if rec.destino_recepcion != "almacen":
-               rec.cantidad_pendiente_almacen = 0
-               rec.estado_envio_almacen = "no_aplica"
-            else:
-               pendiente = rec.cantidad_entregada - rec.cantidad_enviada_almacen
-               rec.cantidad_pendiente_almacen = pendiente if pendiente > 0 else 0
-
-               if rec.cantidad_entregada <= 0:
-                   rec.estado_envio_almacen = "pendiente"
-               elif rec.cantidad_enviada_almacen <= 0:
-                   rec.estado_envio_almacen = "pendiente"
-               elif rec.cantidad_enviada_almacen < rec.cantidad_entregada:
-                   rec.estado_envio_almacen = "parcial"
-               else:
-                   rec.estado_envio_almacen = "enviado"
+    observacion = fields.Char(string="Observación")
 
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
@@ -587,12 +638,38 @@ class RecepcionUtilesLinea(models.Model):
             else:
                 linea.estado_linea = "completo"
 
+    @api.depends("destino_recepcion", "cantidad_entregada", "cantidad_enviada_almacen")
+    def _compute_cantidad_pendiente_almacen(self):
+        for rec in self:
+            if rec.destino_recepcion != "almacen":
+                rec.cantidad_pendiente_almacen = 0
+                rec.estado_envio_almacen = "no_aplica"
+            else:
+                pendiente = rec.cantidad_entregada - rec.cantidad_enviada_almacen
+                rec.cantidad_pendiente_almacen = pendiente if pendiente > 0 else 0
+
+                if rec.cantidad_entregada <= 0:
+                    rec.estado_envio_almacen = "pendiente"
+                elif rec.cantidad_enviada_almacen <= 0:
+                    rec.estado_envio_almacen = "pendiente"
+                elif rec.cantidad_enviada_almacen < rec.cantidad_entregada:
+                    rec.estado_envio_almacen = "parcial"
+                else:
+                    rec.estado_envio_almacen = "enviado"
+
     @api.onchange("tipo_uso_escolar")
     def _onchange_tipo_uso_escolar_destino(self):
         for rec in self:
             texto = (rec.tipo_uso_escolar or "").lower()
 
-            if "personal" in texto or "niño" in texto or "estudiante" in texto:
+            if (
+                "personal" in texto
+                or "util personal" in texto
+                or "útil personal" in texto
+                or "niño" in texto
+                or "niña" in texto
+                or "estudiante" in texto
+            ):
                 rec.destino_recepcion = "estudiante"
             else:
                 rec.destino_recepcion = "almacen"
