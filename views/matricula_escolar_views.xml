@@ -10,9 +10,7 @@
                 <field name="estudiante_id"/>
                 <field name="anio_escolar_visual"/>
                 <field name="grado_escolar"/>
-                <field name="lista_utiles_id"/>
                 <field name="apoderado_principal_id"/>
-                <field name="estado"/>
             </list>
         </field>
     </record>
