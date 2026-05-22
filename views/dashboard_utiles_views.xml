@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Acción del panel visual de Información general -->
+    <record id="action_dashboard_utiles_escolares" model="ir.actions.client">
+        <field name="name">Información general</field>
+        <field name="tag">gestion_utiles_escolares.dashboard</field>
+    </record>
+
+    <!-- Ocultar el menú nativo Operaciones de Odoo -->
+    <function model="ir.ui.menu" name="write">
+        <function model="ir.ui.menu" name="search">
+            <value eval="[('parent_id', '=', ref('stock.menu_stock_root')), ('name', 'in', ['Operations', 'Operaciones'])]"/>
+        </function>
+        <value eval="{'active': False}"/>
+    </function>
+
+    <!-- Ocultar la Información general nativa de Odoo -->
+    <function model="ir.ui.menu" name="write">
+        <function model="ir.ui.menu" name="search">
+            <value eval="[('parent_id', '=', ref('stock.menu_stock_root')), ('name', 'in', ['Overview', 'Información general'])]"/>
+        </function>
+        <value eval="{'active': False}"/>
+    </function>
+
+    <!-- Nueva Información general personalizada -->
+    <record id="menu_informacion_general_utiles" model="ir.ui.menu">
+        <field name="name">Información general</field>
+        <field name="parent_id" ref="stock.menu_stock_root"/>
+        <field name="action" eval="'ir.actions.client,%d' % ref('action_dashboard_utiles_escolares')"/>
+        <field name="sequence">5</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>

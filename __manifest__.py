@@ -30,10 +30,15 @@
 
     'reports/reporte_recepcion_utiles.xml',
     'views/favicon_views.xml',
+
+    "views/dashboard_utiles_views.xml",
 ],
    'assets': {
         'web.assets_backend': [
             'gestion_utiles_escolares/static/src/css/backend_theme.css',
+            "gestion_utiles_escolares/static/src/css/dashboard_utiles.css",
+            "gestion_utiles_escolares/static/src/js/dashboard_utiles.js",
+            "gestion_utiles_escolares/static/src/xml/dashboard_utiles.xml",
         ],
     },
     "installable": True,
