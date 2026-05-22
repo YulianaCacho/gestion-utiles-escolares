@@ -151,7 +151,7 @@
         </field>
     </record>
 
-        <!-- ========================= -->
+     <!-- ========================= -->
     <!-- MENÚ PRODUCTOS ESCOLARES -->
     <!-- ========================= -->
 
@@ -179,14 +179,14 @@
 
     <!-- Menú: Útiles escolares -->
     <menuitem id="menu_productos_utiles_escolares"
-              name="📚 Útiles escolares"
+              name="✎ Útiles escolares"
               parent="stock.menu_stock_inventory_control"
               action="action_productos_utiles_escolares"
               sequence="10"/>
 
     <!-- Menú: Categorías -->
     <menuitem id="menu_categorias_utiles_escolares"
-              name="🏷️ Categorías"
+              name="≡ Categorías"
               parent="stock.menu_stock_inventory_control"
               action="action_categorias_utiles_escolares"
               sequence="20"/>
