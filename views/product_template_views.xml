@@ -84,11 +84,11 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
-            <!-- Ocultar ubicación de inventario estándar de Odoo -->
+            <!-- Reemplazar ubicación de inventario estándar por ubicación física escolar -->
             <xpath expr="//field[@name='property_stock_inventory']" position="replace">
                 <field name="ubicacion_fisica_id"
-                        options="{'no_create': True}"
-                        placeholder="Ejemplo: A-N1"/>
+                       options="{'no_create': True}"
+                       placeholder="Ejemplo: A-N1"/>
 
                 <field name="codigo_ubicacion_fisica"
                        readonly="1"/>
@@ -151,13 +151,13 @@
         </field>
     </record>
 
-     <!-- ========================= -->
+    <!-- ========================= -->
     <!-- MENÚ PRODUCTOS ESCOLARES -->
     <!-- ========================= -->
 
-    <!-- Renombrar el menú superior Productos -->
+    <!-- Menú superior verde -->
     <record id="stock.menu_stock_inventory_control" model="ir.ui.menu">
-        <field name="name">📦 Productos</field>
+        <field name="name">📚 Productos</field>
     </record>
 
     <!-- Acción: Útiles escolares -->
@@ -177,12 +177,23 @@
         <field name="domain">[('complete_name', 'ilike', 'Útiles escolares')]</field>
     </record>
 
-    <!-- Menú: Útiles escolares -->
-    <menuitem id="menu_productos_utiles_escolares"
-              name="✎ Útiles escolares"
-              parent="stock.menu_stock_inventory_control"
-              action="action_productos_utiles_escolares"
-              sequence="10"/>
+    <!-- Convertir el menú estándar Productos en Útiles escolares -->
+    <record id="stock.menu_product_variant_config_stock" model="ir.ui.menu">
+        <field name="name">✎ Útiles escolares</field>
+        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_productos_utiles_escolares')"/>
+        <field name="sequence">10</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Desactivar el menú duplicado que se había creado antes -->
+    <record id="menu_productos_utiles_escolares" model="ir.ui.menu">
+        <field name="name">✎ Útiles escolares</field>
+        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_productos_utiles_escolares')"/>
+        <field name="sequence">10</field>
+        <field name="active" eval="False"/>
+    </record>
 
     <!-- Menú: Categorías -->
     <menuitem id="menu_categorias_utiles_escolares"
