@@ -155,10 +155,13 @@
     <!-- MENÚ PRODUCTOS ESCOLARES -->
     <!-- ========================= -->
 
-    <!-- Menú superior verde -->
-    <record id="stock.menu_stock_inventory_control" model="ir.ui.menu">
-        <field name="name">📚 Productos</field>
-    </record>
+     <!-- Forzar nombre del menú superior verde -->
+    <function model="ir.ui.menu" name="write">
+        <function model="ir.ui.menu" name="browse">
+            <value eval="[ref('stock.menu_stock_inventory_control')]"/>
+        </function>
+        <value eval="{'name': '📚 Productos'}"/>
+    </function>
 
     <!-- Acción: Útiles escolares -->
     <record id="action_productos_utiles_escolares" model="ir.actions.act_window">
@@ -177,16 +180,20 @@
         <field name="domain">[('complete_name', 'ilike', 'Útiles escolares')]</field>
     </record>
 
-    <!-- Convertir el menú estándar Productos en Útiles escolares -->
-    <record id="stock.menu_product_variant_config_stock" model="ir.ui.menu">
-        <field name="name">✎ Útiles escolares</field>
-        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
-        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_productos_utiles_escolares')"/>
-        <field name="sequence">10</field>
-        <field name="active" eval="True"/>
-    </record>
+    <!-- Convertir el menú gris "Productos" de Odoo en "✎ Útiles escolares" -->
+    <function model="ir.ui.menu" name="write">
+        <function model="ir.ui.menu" name="search">
+            <value eval="[('name', '=', 'Productos'), ('parent_id', '=', ref('stock.menu_stock_inventory_control'))]"/>
+        </function>
+        <value eval="{
+            'name': '✎ Útiles escolares',
+            'action': 'ir.actions.act_window,%d' % ref('action_productos_utiles_escolares'),
+            'sequence': 10,
+            'active': True
+        }"/>
+    </function>
 
-    <!-- Desactivar el menú duplicado que se había creado antes -->
+    <!-- Si antes creamos un menú duplicado de útiles, lo ocultamos -->
     <record id="menu_productos_utiles_escolares" model="ir.ui.menu">
         <field name="name">✎ Útiles escolares</field>
         <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
