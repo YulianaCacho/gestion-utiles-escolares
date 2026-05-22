@@ -151,24 +151,27 @@
         </field>
     </record>
 
-    <!-- ========================= -->
-    <!-- OCULTAR MENÚ NATIVO DE ODOO -->
+       <!-- ========================= -->
+    <!-- OCULTAR MENÚ NATIVO PRODUCTOS DE ODOO -->
     <!-- ========================= -->
 
     <record id="stock.menu_stock_inventory_control" model="ir.ui.menu">
         <field name="active" eval="False"/>
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
     </record>
 
 
     <!-- ========================= -->
-    <!-- MENÚ PERSONALIZADO PRODUCTOS -->
+    <!-- MENÚ PERSONALIZADO PRODUCTOS ESCOLARES -->
     <!-- ========================= -->
 
-    <!-- Menú principal personalizado -->
-    <menuitem id="menu_productos_escolares_root"
-              name="📚 Productos"
-              parent="stock.menu_stock_root"
-              sequence="80"/>
+    <!-- Menú principal personalizado en la barra verde -->
+    <record id="menu_productos_escolares_root" model="ir.ui.menu">
+        <field name="name">📚 Productos</field>
+        <field name="parent_id" ref="stock.menu_stock_root"/>
+        <field name="sequence">35</field>
+        <field name="active" eval="True"/>
+    </record>
 
     <!-- Acción: Útiles escolares -->
     <record id="action_productos_utiles_escolares" model="ir.actions.act_window">
@@ -184,20 +187,26 @@
         <field name="name">Categorías</field>
         <field name="res_model">product.category</field>
         <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
     </record>
 
     <!-- Submenú: Útiles escolares -->
-    <menuitem id="menu_productos_utiles_escolares"
-              name="✎ Útiles escolares"
-              parent="menu_productos_escolares_root"
-              action="action_productos_utiles_escolares"
-              sequence="10"/>
+    <record id="menu_productos_utiles_escolares" model="ir.ui.menu">
+        <field name="name">✎ Útiles escolares</field>
+        <field name="parent_id" ref="menu_productos_escolares_root"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_productos_utiles_escolares')"/>
+        <field name="sequence">10</field>
+        <field name="active" eval="True"/>
+    </record>
 
     <!-- Submenú: Categorías -->
-    <menuitem id="menu_categorias_utiles_escolares"
-              name="≡ Categorías"
-              parent="menu_productos_escolares_root"
-              action="action_categorias_utiles_escolares"
-              sequence="20"/>
-
+    <record id="menu_categorias_utiles_escolares" model="ir.ui.menu">
+        <field name="name">≡ Categorías</field>
+        <field name="parent_id" ref="menu_productos_escolares_root"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_categorias_utiles_escolares')"/>
+        <field name="sequence">20</field>
+        <field name="active" eval="True"/>
+    </record>
+    
 </odoo>
