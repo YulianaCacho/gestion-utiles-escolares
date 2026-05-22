@@ -156,25 +156,35 @@
     <!-- ========================= -->
 
     <!--
-        IMPORTANTE:
-        No modificamos el menú nativo "Productos" de Odoo porque en español
-        puede seguir mostrándose por traducciones internas.
-        Por eso lo ocultamos y creamos un menú propio bajo Inventario.
+        CORRECCIÓN:
+        Para evitar que salgan dos menús superiores llamados Productos,
+        usamos el menú nativo de Odoo y lo renombramos con emoji.
+        El menú personalizado anterior queda oculto para que no aparezca duplicado.
     -->
 
-    <!-- Ocultar el menú superior nativo de Odoo: Productos -->
+    <!-- Renombrar el menú superior nativo de Odoo: Productos -->
     <function model="ir.ui.menu" name="write">
         <function model="ir.ui.menu" name="browse">
             <value eval="[ref('stock.menu_stock_inventory_control')]"/>
         </function>
-        <value eval="{'active': False}"/>
+        <value eval="{'name': '📚 Productos', 'active': True, 'sequence': 80}"/>
     </function>
 
-    <!-- Menú superior verde personalizado -->
-    <menuitem id="menu_productos_escolares_root"
-              name="📚 Productos"
-              parent="stock.menu_stock_root"
-              sequence="80"/>
+    <!-- Ocultar el menú superior personalizado anterior para que no quede duplicado -->
+    <record id="menu_productos_escolares_root" model="ir.ui.menu">
+        <field name="name">📚 Productos</field>
+        <field name="parent_id" ref="stock.menu_stock_root"/>
+        <field name="sequence">80</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <!-- Ocultar submenús nativos llamados Products/Productos dentro del menú Productos -->
+    <function model="ir.ui.menu" name="write">
+        <function model="ir.ui.menu" name="search">
+            <value eval="['&amp;', ('parent_id', '=', ref('stock.menu_stock_inventory_control')), '|', ('name', '=', 'Products'), ('name', '=', 'Productos')]"/>
+        </function>
+        <value eval="{'active': False}"/>
+    </function>
 
     <!-- Acción: Útiles escolares -->
     <record id="action_productos_utiles_escolares" model="ir.actions.act_window">
@@ -196,7 +206,7 @@
     <!-- Submenú: Útiles escolares -->
     <record id="menu_productos_utiles_escolares" model="ir.ui.menu">
         <field name="name">✎ Útiles escolares</field>
-        <field name="parent_id" ref="menu_productos_escolares_root"/>
+        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
         <field name="action" eval="'ir.actions.act_window,%d' % ref('action_productos_utiles_escolares')"/>
         <field name="sequence">10</field>
         <field name="active" eval="True"/>
@@ -205,7 +215,7 @@
     <!-- Submenú: Categorías -->
     <record id="menu_categorias_utiles_escolares" model="ir.ui.menu">
         <field name="name">≡ Categorías</field>
-        <field name="parent_id" ref="menu_productos_escolares_root"/>
+        <field name="parent_id" ref="stock.menu_stock_inventory_control"/>
         <field name="action" eval="'ir.actions.act_window,%d' % ref('action_categorias_utiles_escolares')"/>
         <field name="sequence">20</field>
         <field name="active" eval="True"/>
