@@ -157,7 +157,6 @@
 
     <record id="stock.menu_stock_inventory_control" model="ir.ui.menu">
         <field name="active" eval="False"/>
-        <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
     </record>
 
 
