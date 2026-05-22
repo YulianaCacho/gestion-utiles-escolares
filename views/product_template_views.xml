@@ -151,40 +151,16 @@
         </field>
     </record>
 
-    <!-- ========================= -->
+     <!-- ========================= -->
     <!-- MENÚ PRODUCTOS ESCOLARES -->
     <!-- ========================= -->
 
-    <!--
-        CORRECCIÓN:
-        Para evitar que salgan dos menús superiores llamados Productos,
-        usamos el menú nativo de Odoo y lo renombramos con emoji.
-        El menú personalizado anterior queda oculto para que no aparezca duplicado.
-    -->
-
-    <!-- Renombrar el menú superior nativo de Odoo: Productos -->
-    <function model="ir.ui.menu" name="write">
-        <function model="ir.ui.menu" name="browse">
-            <value eval="[ref('stock.menu_stock_inventory_control')]"/>
-        </function>
-        <value eval="{'name': '📚 Productos', 'active': True, 'sequence': 80}"/>
-    </function>
-
-    <!-- Ocultar el menú superior personalizado anterior para que no quede duplicado -->
-    <record id="menu_productos_escolares_root" model="ir.ui.menu">
+    <!-- Renombrar el menú nativo Productos de Odoo -->
+    <record id="stock.menu_stock_inventory_control" model="ir.ui.menu">
         <field name="name">📚 Productos</field>
-        <field name="parent_id" ref="stock.menu_stock_root"/>
         <field name="sequence">80</field>
-        <field name="active" eval="False"/>
+        <field name="active" eval="True"/>
     </record>
-
-    <!-- Ocultar submenús nativos llamados Products/Productos dentro del menú Productos -->
-    <function model="ir.ui.menu" name="write">
-        <function model="ir.ui.menu" name="search">
-            <value eval="['&amp;', ('parent_id', '=', ref('stock.menu_stock_inventory_control')), '|', ('name', '=', 'Products'), ('name', '=', 'Productos')]"/>
-        </function>
-        <value eval="{'active': False}"/>
-    </function>
 
     <!-- Acción: Útiles escolares -->
     <record id="action_productos_utiles_escolares" model="ir.actions.act_window">
