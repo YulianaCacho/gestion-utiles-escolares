@@ -36,7 +36,7 @@
                             <option value="">Por responsable</option>
                             <t t-foreach="state.responsables" t-as="responsable" t-key="responsable.id">
                                 <option t-att-value="responsable.id"
-                                        t-att-selected="String(state.responsableSeleccionado) === String(responsable.id) ? true : undefined">
+                                        t-att-selected="state.responsableSeleccionado == responsable.id ? true : undefined"
                                     <t t-esc="responsable.name"/>
                                 </option>
                             </t>
