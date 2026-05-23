@@ -21,6 +21,7 @@ class RecepcionAlmacenDashboard extends Component {
             total: 0,
             rows: [],
             detalle: null,
+            selectedIds: [],
         });
 
         onWillStart(async () => {
@@ -41,6 +42,9 @@ class RecepcionAlmacenDashboard extends Component {
 
         this.state.total = data.total || 0;
         this.state.rows = data.rows || [];
+
+        const idsVisibles = new Set(this.state.rows.map((row) => row.id));
+        this.state.selectedIds = this.state.selectedIds.filter((id) => idsVisibles.has(id));
     }
 
     async openDetalle(id) {
@@ -89,9 +93,79 @@ class RecepcionAlmacenDashboard extends Component {
     }
 
     async setFiltro(estado) {
+
         this.state.filtroEstado = estado;
         await this.loadList();
     }
+
+isSelected(id) {
+    return this.state.selectedIds.includes(id);
+}
+
+isAllSelected() {
+    return this.state.rows.length > 0 &&
+        this.state.rows.every((row) => this.state.selectedIds.includes(row.id));
+}
+
+toggleSelect(id, ev) {
+    id = Number(id);
+
+    if (ev.target.checked) {
+        if (!this.state.selectedIds.includes(id)) {
+            this.state.selectedIds = [...this.state.selectedIds, id];
+        }
+    } else {
+        this.state.selectedIds = this.state.selectedIds.filter((item) => item !== id);
+    }
+}
+
+toggleSelectAll(ev) {
+    if (ev.target.checked) {
+        this.state.selectedIds = this.state.rows.map((row) => row.id);
+    } else {
+        this.state.selectedIds = [];
+    }
+}
+
+async borrarSeleccionados() {
+    const ids = [...this.state.selectedIds];
+
+    if (!ids.length) {
+        return;
+    }
+
+    const confirmar = window.confirm(
+        `¿Seguro que deseas borrar ${ids.length} recepción(es) seleccionada(s)?`
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    try {
+        const result = await this.orm.call(
+            "recepcion.utiles.escolar",
+            "borrar_recepciones_almacen_dashboard",
+            [ids]
+        );
+
+        this.state.selectedIds = [];
+
+        this.notification.add(
+            `Se borraron ${result.deleted || 0} recepción(es).`,
+            { type: "success" }
+        );
+
+        await this.loadList();
+
+    } catch (error) {
+        this.notification.add(
+            "No se pudo borrar. Revisa si la recepción ya fue validada o tiene movimientos de almacén.",
+            { type: "danger" }
+        );
+    }
+}
+
 
     onChangeCantidad(lineaId, ev) {
         const value = ev.target.value;

@@ -691,6 +691,29 @@ class RecepcionUtilesEscolar(models.Model):
 
         return True
 
+    @api.model
+    def borrar_recepciones_almacen_dashboard(self, recepcion_ids):
+        recepcion_ids = [int(item) for item in recepcion_ids or []]
+        recepciones = self.browse(recepcion_ids).exists()
+
+        if not recepciones:
+            return {"deleted": 0}
+
+        recepciones_bloqueadas = recepciones.filtered(
+            lambda rec: rec.estado == "validado" or rec.movimiento_almacen_ids
+        )
+
+        if recepciones_bloqueadas:
+            nombres = ", ".join(recepciones_bloqueadas.mapped("name"))
+            raise UserError(
+                "No se pueden borrar recepciones validadas o con movimientos de almacén: %s" % nombres
+            )
+
+        total = len(recepciones)
+        recepciones.unlink()
+
+        return {"deleted": total}
+
 class RecepcionUtilesLinea(models.Model):
     _name = "recepcion.utiles.linea"
     _description = "Detalle de recepción de útiles escolares"
