@@ -331,3 +331,23 @@
 .o_ram_month_box input::-webkit-clear-button {
     display: none;
 }
+
+/* ================================ */
+/* PERMITIR SCROLL EN REPORTES */
+/* ================================ */
+
+.o_action_manager,
+.o_content {
+    overflow: hidden !important;
+}
+
+.o_reporte_recepcion_dashboard,
+.o_reporte_almacen_movimientos,
+.o_reporte_linea_tiempo_movimientos {
+    height: calc(100vh - 48px);
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 90px;
+    box-sizing: border-box;
+}
