@@ -8,46 +8,30 @@
     box-sizing: border-box;
 }
 
-.o_ram_header {
-    width: 100%;
-    height: 42px;
-    background: #4d9934;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0 20px;
-    font-size: 16px;
-    box-sizing: border-box;
-}
-
-.o_ram_header strong {
-    font-weight: 800;
-}
-
-.o_ram_header span {
-    opacity: 0.9;
-    font-weight: 600;
-}
-
 .o_ram_body {
     width: 100%;
     max-width: none !important;
-    padding: 16px 20px 32px 20px;
+    padding: 18px 22px 32px 22px;
     box-sizing: border-box;
 }
 
 .o_ram_toolbar {
     width: 100%;
     display: grid;
-    grid-template-columns: 220px 220px 270px 1fr 240px;
-    gap: 14px;
+    grid-template-columns: 220px 220px 260px 1fr 240px;
+    gap: 16px;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
     box-sizing: border-box;
 }
 
-.o_ram_btn {
+.o_ram_spacer {
+    width: 100%;
+}
+
+.o_ram_btn,
+.o_ram_month_box,
+.o_ram_select_box {
     height: 60px;
     border: 1px solid #cfcfc8;
     border-radius: 12px;
@@ -57,25 +41,59 @@
     font-weight: 750;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
+    box-sizing: border-box;
 }
 
-.o_ram_btn:hover {
+.o_ram_btn {
+    justify-content: center;
+}
+
+.o_ram_month_box,
+.o_ram_select_box {
+    padding: 0 18px;
+}
+
+.o_ram_btn:hover,
+.o_ram_month_box:hover,
+.o_ram_select_box:hover {
     background: #efeee8;
 }
 
 .o_ram_btn_pdf {
     justify-self: end;
     width: 240px;
+    margin-right: 0;
+}
+
+.o_ram_month_box input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #252525;
+    font-size: 16px;
+    font-weight: 750;
+    outline: none;
+    cursor: pointer;
+}
+
+.o_ram_select_box select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #252525;
+    font-size: 16px;
+    font-weight: 750;
+    outline: none;
+    cursor: pointer;
 }
 
 .o_ram_kpis {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px;
-    margin-bottom: 16px;
+    gap: 16px;
+    margin-bottom: 18px;
     box-sizing: border-box;
 }
 
@@ -248,9 +266,13 @@
     box-sizing: border-box;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
     .o_ram_toolbar {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .o_ram_spacer {
+        display: none;
     }
 
     .o_ram_btn_pdf {
@@ -283,34 +305,4 @@
     .o_ram_page {
         background: #ffffff;
     }
-}
-.o_ram_select_box {
-    height: 60px;
-    border: 1px solid #cfcfc8;
-    border-radius: 12px;
-    background: #fbfaf6;
-    color: #252525;
-    font-size: 16px;
-    font-weight: 750;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 0 18px;
-    box-sizing: border-box;
-}
-
-.o_ram_select_box select {
-    width: 100%;
-    border: none;
-    background: transparent;
-    color: #252525;
-    font-size: 16px;
-    font-weight: 750;
-    outline: none;
-    cursor: pointer;
-}
-
-.o_ram_select_box:hover {
-    background: #efeee8;
 }

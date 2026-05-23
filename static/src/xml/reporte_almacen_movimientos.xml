@@ -4,39 +4,49 @@
     <t t-name="gestion_utiles_escolares.ReporteAlmacenMovimientos">
         <div class="o_ram_page">
 
-            <div class="o_ram_header">
-                <strong>
-                    <i class="fa fa-clipboard"/>
-                    Reportes
-                </strong>
-                <span>/ ⧗ Historial de movimientos</span>
-            </div>
-
             <div class="o_ram_body">
 
                 <div class="o_ram_toolbar">
+                    <!-- Selector de mes -->
+                    <div class="o_ram_month_box">
+                        <i class="fa fa-calendar"/>
+                        <input type="month"
+                               t-att-value="state.selectedMonth"
+                               t-on-change="onChangeMonth"/>
+                    </div>
+
+                    <!-- Filtro por grado -->
                     <div class="o_ram_select_box">
-                       <i class="fa fa-filter"/>
-                       <select t-on-change="onChangeGrado">
+                        <i class="fa fa-filter"/>
+                        <select t-on-change="onChangeGrado">
                             <option value="">Por grado</option>
                             <t t-foreach="state.grados" t-as="grado" t-key="grado.value">
-                               <option t-att-value="grado.value" t-esc="grado.label"/>
+                                <option t-att-value="grado.value"
+                                        t-att-selected="state.gradoSeleccionado === grado.value ? true : undefined">
+                                    <t t-esc="grado.label"/>
+                                </option>
                             </t>
                         </select>
                     </div>
 
+                    <!-- Filtro por responsable -->
                     <div class="o_ram_select_box">
                         <i class="fa fa-user-o"/>
                         <select t-on-change="onChangeResponsable">
-                              <option value="">Por responsable</option>
-                              <t t-foreach="state.responsables" t-as="responsable" t-key="responsable.id">
-                                 <option t-att-value="responsable.id" t-esc="responsable.name"/>
-                              </t>
+                            <option value="">Por responsable</option>
+                            <t t-foreach="state.responsables" t-as="responsable" t-key="responsable.id">
+                                <option t-att-value="responsable.id"
+                                        t-att-selected="String(state.responsableSeleccionado) === String(responsable.id) ? true : undefined">
+                                    <t t-esc="responsable.name"/>
+                                </option>
+                            </t>
                         </select>
-                </div>
+                    </div>
 
-                    <div></div>
+                    <!-- Espaciador -->
+                    <div class="o_ram_spacer"></div>
 
+                    <!-- Exportar PDF -->
                     <button type="button" class="o_ram_btn o_ram_btn_pdf" t-on-click="exportPdf">
                         <i class="fa fa-download"/>
                         Exportar PDF
@@ -97,8 +107,7 @@
                     </t>
 
                     <div t-else="" class="o_ram_empty">
-                        Todavía no hay movimientos registrados para este mes.
-                        Cuando valides recepciones o entregas, aparecerán aquí automáticamente.
+                        Todavía no hay movimientos registrados para este mes. Cuando valides recepciones o entregas, aparecerán aquí automáticamente.
                     </div>
                 </div>
 
