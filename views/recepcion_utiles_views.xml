@@ -171,7 +171,13 @@
                                 <field name="cantidad_faltante" string="Cantidad faltante" readonly="1"/>
                                 <field name="unidad_id" string="Unidad" readonly="1"/>
                                 <field name="tipo_uso_escolar" string="Tipo de uso escolar" readonly="1"/>
-                                <field name="estado_linea" string="Estado" readonly="1" widget="badge"/>
+                                <field name="estado_linea"
+                                       string="Estado"
+                                       readonly="1"
+                                       widget="badge"
+                                       decoration-success="estado_linea == 'completo'"
+                                       decoration-danger="estado_linea == 'faltante'"
+                                       decoration-muted="estado_linea == 'pendiente'"/>
                                 <field name="observacion" string="Observación"/>
 
                             </list>
