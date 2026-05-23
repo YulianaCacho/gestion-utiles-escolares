@@ -5,15 +5,24 @@
         <field name="name">salida.almacen.utiles.list</field>
         <field name="model">salida.almacen.utiles</field>
         <field name="arch" type="xml">
-            <list string="Entregas de almacén">
-                <field name="name"/>
+            <list string="Entregas" class="o_entregas_clean_list">
+                <field name="name"
+                       string="Código de entrega"
+                       widget="badge"
+                       decoration-success="estado == 'validado'"/>
                 <field name="fecha_salida"/>
                 <field name="responsable_id"/>
-                <field name="miss_id"/>
+                <field name="miss_id"
+                       string="Miss / docente que recibe"
+                       widget="many2one_avatar"/>
                 <field name="grado_escolar"/>
                 <field name="total_productos"/>
                 <field name="total_cantidad"/>
-                <field name="estado"/>
+                <field name="estado"
+                       string="Estado"
+                       widget="badge"
+                       decoration-success="estado == 'validado'"
+                       decoration-warning="estado == 'borrador'"/>
             </list>
         </field>
     </record>

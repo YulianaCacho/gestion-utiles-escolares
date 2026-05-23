@@ -1,0 +1,68 @@
+/* ================================ */
+/* LISTA BONITA DE ENTREGAS */
+/* ================================ */
+
+.o_entregas_clean_list .o_list_table {
+    border-collapse: separate !important;
+    border-spacing: 0 8px !important;
+}
+
+.o_entregas_clean_list thead th {
+    background: #f4f1eb !important;
+    color: #6f6f6f !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    border-bottom: none !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+.o_entregas_clean_list tbody tr {
+    background: #ffffff !important;
+}
+
+.o_entregas_clean_list tbody td {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    vertical-align: middle !important;
+    border-top: 1px solid #eeeeee !important;
+    border-bottom: 1px solid #eeeeee !important;
+    font-weight: 600;
+}
+
+.o_entregas_clean_list tbody td:first-child {
+    border-left: 1px solid #eeeeee !important;
+    border-radius: 10px 0 0 10px !important;
+}
+
+.o_entregas_clean_list tbody td:last-child {
+    border-right: 1px solid #eeeeee !important;
+    border-radius: 0 10px 10px 0 !important;
+}
+
+.o_entregas_clean_list .badge,
+.o_entregas_clean_list .o_badge {
+    border-radius: 999px !important;
+    padding: 6px 10px !important;
+    font-weight: 800 !important;
+}
+
+/* Código ENT-00001 como etiqueta verde */
+.o_entregas_clean_list td[data-name="name"] .badge,
+.o_entregas_clean_list td[data-name="name"] .o_badge {
+    background: #dff5d3 !important;
+    color: #2f8a20 !important;
+}
+
+/* Estado validado */
+.o_entregas_clean_list td[data-name="estado"] .badge,
+.o_entregas_clean_list td[data-name="estado"] .o_badge {
+    background: #dff5d3 !important;
+    color: #2f8a20 !important;
+}
+
+/* Avatar de docente */
+.o_entregas_clean_list .o_m2o_avatar {
+    border-radius: 999px !important;
+}
