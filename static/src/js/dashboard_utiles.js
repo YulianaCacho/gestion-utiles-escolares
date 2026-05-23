@@ -46,7 +46,7 @@ class DashboardUtilesEscolares extends Component {
             "product.product",
             [],
             ["display_name", "default_code", "categ_id"],
-            { limit: 2000, order: "display_name asc" }
+            { limit: 2000, order: "id asc" }
         );
 
         const movimientos = await this.orm.searchRead(
