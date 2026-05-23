@@ -12,16 +12,44 @@ function normalizeText(value) {
         .trim();
 }
 
+function getMany2oneValue(record, fieldName) {
+    const value = record[fieldName];
+
+    if (Array.isArray(value)) {
+        return value[1] || "";
+    }
+
+    return value || "";
+}
+
+function firstExistingValue(record, fields) {
+    for (const field of fields) {
+        const value = record[field];
+
+        if (Array.isArray(value) && value[1]) {
+            return value[1];
+        }
+
+        if (value !== false && value !== null && value !== undefined && value !== "") {
+            return value;
+        }
+    }
+
+    return "";
+}
+
 function inferNivel(grado) {
     const g = normalizeText(grado);
+
     if (
         g.includes("inicial") ||
-        g.includes("3 años") ||
-        g.includes("4 años") ||
-        g.includes("5 años")
+        g.includes("3 anos") ||
+        g.includes("4 anos") ||
+        g.includes("5 anos")
     ) {
         return "Inicial";
     }
+
     return "Primaria";
 }
 
@@ -31,6 +59,7 @@ function inferEstado(estado, avance) {
     if (e.includes("completo") || avance >= 100) {
         return "Completo";
     }
+
     return "Incompleto";
 }
 
@@ -43,7 +72,7 @@ class ReporteRecepcionDashboard extends Component {
 
         this.state = useState({
             search: "",
-            filterMode: "Todos", // Todos | Completos | Incompletos | Inicial | Primaria
+            filterMode: "Todos",
             yearLabel: "2026",
             rows: [],
             selectedIds: [],
@@ -55,43 +84,107 @@ class ReporteRecepcionDashboard extends Component {
     }
 
     async loadData() {
-        // IMPORTANTE:
-        // Si alguno de estos nombres de campo en tu modelo es distinto,
-        // solo cámbialo aquí.
-        const records = await this.orm.searchRead(
-            "recepcion.utiles.escolar",
+        const model = "recepcion.utiles.escolar";
+
+        const fieldsInfo = await this.orm.call(
+            model,
+            "fields_get",
             [],
-            [
-                "name",
-                "estudiante_id",
-                "grado_escolar",
-                "lista_utiles_id",
-                "estado",
-                "cantidad_total",
-                "cantidad_completada",
-                "porcentaje_avance",
-            ],
+            { attributes: ["string", "type"] }
+        );
+
+        const possibleFields = [
+            "name",
+            "codigo_recepcion",
+
+            "estudiante_id",
+            "alumno_id",
+            "student_id",
+
+            "grado_escolar",
+            "grado_id",
+            "grado",
+
+            "lista_utiles_id",
+            "lista_utiles_grado_id",
+            "lista_id",
+
+            "estado",
+            "state",
+
+            "cantidad_total",
+            "total",
+            "total_utiles",
+            "cantidad_esperada",
+
+            "cantidad_completada",
+            "cantidad_entregada",
+            "completado",
+            "utiles_recibidos",
+
+            "porcentaje_avance",
+            "avance",
+            "progreso",
+        ];
+
+        const existingFields = possibleFields.filter((field) => fieldsInfo[field]);
+
+        const records = await this.orm.searchRead(
+            model,
+            [],
+            existingFields,
             { limit: 500, order: "id desc" }
         );
 
         const mapped = records.map((rec) => {
-            const estudiante = rec.estudiante_id ? rec.estudiante_id[1] : "Sin estudiante";
-            const grado = rec.grado_escolar || "Sin grado";
-            const lista = rec.lista_utiles_id ? rec.lista_utiles_id[1] : "Sin lista";
+            const estudiante =
+                firstExistingValue(rec, ["estudiante_id", "alumno_id", "student_id"]) ||
+                firstExistingValue(rec, ["name", "codigo_recepcion"]) ||
+                "Sin estudiante";
 
-            const total = Number(rec.cantidad_total || 0);
-            const completado = Number(rec.cantidad_completada || 0);
+            const grado =
+                firstExistingValue(rec, ["grado_escolar", "grado_id", "grado"]) ||
+                "Sin grado";
 
-            const avance =
-                rec.porcentaje_avance !== false &&
-                rec.porcentaje_avance !== null &&
-                rec.porcentaje_avance !== undefined
-                    ? Number(rec.porcentaje_avance)
-                    : total > 0
-                    ? Math.round((completado / total) * 100)
-                    : 0;
+            const lista =
+                firstExistingValue(rec, [
+                    "lista_utiles_id",
+                    "lista_utiles_grado_id",
+                    "lista_id",
+                ]) || "Lista 2026";
 
-            const estado = inferEstado(rec.estado, avance);
+            const total = Number(
+                firstExistingValue(rec, [
+                    "cantidad_total",
+                    "total",
+                    "total_utiles",
+                    "cantidad_esperada",
+                ]) || 0
+            );
+
+            const completado = Number(
+                firstExistingValue(rec, [
+                    "cantidad_completada",
+                    "cantidad_entregada",
+                    "completado",
+                    "utiles_recibidos",
+                ]) || 0
+            );
+
+            let avance = Number(
+                firstExistingValue(rec, [
+                    "porcentaje_avance",
+                    "avance",
+                    "progreso",
+                ]) || 0
+            );
+
+            if (!avance && total > 0) {
+                avance = Math.round((completado / total) * 100);
+            }
+
+            const estadoRaw = firstExistingValue(rec, ["estado", "state"]);
+            const estado = inferEstado(estadoRaw, avance);
             const nivel = inferNivel(grado);
 
             return {
@@ -108,9 +201,7 @@ class ReporteRecepcionDashboard extends Component {
         });
 
         this.state.rows = mapped;
-
-        // seleccionar por defecto las primeras 2, para que se vea parecido a tu ejemplo
-        this.state.selectedIds = mapped.slice(0, 2).map((r) => r.id);
+        this.state.selectedIds = mapped.slice(0, 2).map((row) => row.id);
     }
 
     get filteredRows() {
@@ -186,7 +277,7 @@ class ReporteRecepcionDashboard extends Component {
 
     generatePdf() {
         this.notification.add(
-            "La vista ya quedó visual. Si quieres, luego conectamos este botón a tu PDF real.",
+            "La vista visual ya está lista. Luego conectamos este botón a la generación real del PDF.",
             { type: "info" }
         );
     }
