@@ -31,119 +31,164 @@
     <record id="view_recepcion_utiles_escolar_form_limpio_almacen" model="ir.ui.view">
         <field name="name">recepcion.utiles.escolar.form.limpio.almacen</field>
         <field name="model">recepcion.utiles.escolar</field>
-        <field name="priority">90</field>
+        <field name="priority">5</field>
         <field name="arch" type="xml">
-            <form string="Recepción de útiles" class="o_recepcion_clean_form">
+           <form string="Recepción de útiles" class="o_recepcion_clean_form">
 
-                <header>
-                    <button name="action_cargar_lista"
-                            string="Cargar lista de útiles"
-                            type="object"
-                            class="btn-primary"/>
+            <header>
+                <button name="action_cargar_lista"
+                        string="Cargar lista de útiles"
+                        type="object"
+                        icon="fa-upload"/>
 
-                    <button name="action_calcular_faltantes"
-                            string="Calcular faltantes"
-                            type="object"/>
+                <button name="action_calcular_faltantes"
+                        string="Calcular faltantes"
+                        type="object"
+                        icon="fa-calculator"/>
 
-                    <button name="action_validar"
-                            string="Validar recepción"
-                            type="object"
-                            class="btn-primary"/>
+                <button name="action_validar"
+                        string="Validar recepción"
+                        type="object"
+                        icon="fa-check"/>
 
-                    <field name="estado"
-                           widget="statusbar"
-                           statusbar_visible="borrador,incompleto,completo,validado"/>
-                </header>
+                <field name="estado"
+                       widget="statusbar"
+                       statusbar_visible="borrador,incompleto,completo,validado"/>
+            </header>
 
-                <sheet>
+            <sheet>
 
-                    <div class="oe_title">
+                <div class="o_recepcion_title_row">
+                    <div class="o_recepcion_title_left">
                         <h1>
                             <field name="name" readonly="1" nolabel="1"/>
                         </h1>
                     </div>
+                    <div class="o_recepcion_title_badge">
+                        <field name="estado" readonly="1" nolabel="1" widget="badge"/>
+                    </div>
+                </div>
 
-                    <group string="DATOS DE LA RECEPCIÓN">
-                        <group>
-                            <field name="fecha" string="Fecha de recepción"/>
-                            <field name="anio" string="Año escolar" readonly="1"/>
+                <div class="o_recepcion_section_title">DATOS DE LA RECEPCIÓN</div>
 
+                <div class="o_recepcion_main_grid">
+
+                    <div class="o_recepcion_left_panel">
+
+                        <div class="o_recepcion_field_row">
+                            <label for="fecha" string="Fecha de recepción"/>
+                            <field name="fecha" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_field_row">
+                            <label for="anio" string="Año escolar"/>
+                            <field name="anio" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_field_row">
+                            <label for="matricula_id" string="Matrícula"/>
                             <field name="matricula_id"
-                                   string="Matrícula"
-                                   options="{'no_create': True, 'no_open': False}"/>
-
-                            <field name="estudiante_id" string="Estudiante" readonly="1"/>
-                            <field name="grado_escolar" string="Grado escolar" readonly="1"/>
-                            <field name="lista_id" string="Lista de útiles" readonly="1"/>
-                            <field name="recibido_por_id" string="Recibido por" readonly="1"/>
-                        </group>
-
-                        <group>
-                            <field name="total_productos" string="Total de productos" readonly="1"/>
-                            <field name="total_completos" string="Productos completos" readonly="1"/>
-                            <field name="total_faltantes" string="Productos faltantes" readonly="1"/>
-                            <field name="porcentaje_avance" string="Porcentaje de avance" readonly="1"/>
-                            <field name="estado_entrega" string="Estado de entrega" readonly="1"/>
-                            <field name="estado_visual" string="Estado" readonly="1"/>
-                        </group>
-                    </group>
-
-                    <notebook>
-                        <page string="Productos recibidos">
-                            <field name="linea_ids" nolabel="1">
-                                <list editable="bottom"
-                                      create="0"
-                                      delete="0"
-                                      string="Productos recibidos">
-
-                                    <field name="product_id"
-                                           string="Producto"
-                                           readonly="1"/>
-
-                                    <field name="categoria_id"
-                                           string="Categoría"
-                                           readonly="1"/>
-
-                                    <field name="cantidad_esperada"
-                                           string="Cantidad esperada"
-                                           readonly="1"/>
-
-                                    <field name="cantidad_entregada"
-                                           string="Cantidad entregada"/>
-
-                                    <field name="cantidad_faltante"
-                                           string="Cantidad faltante"
-                                           readonly="1"/>
-
-                                    <field name="unidad_id"
-                                           string="Unidad"
-                                           readonly="1"/>
-
-                                    <field name="tipo_uso_escolar"
-                                           string="Tipo de uso escolar"
-                                           readonly="1"/>
-
-                                    <field name="estado_linea"
-                                           string="Estado"
-                                           readonly="1"/>
-
-                                    <field name="observacion"
-                                           string="Observación"/>
-                                </list>
-                            </field>
-                        </page>
-
-                        <page string="Observaciones">
-                            <field name="observacion"
                                    nolabel="1"
-                                   placeholder="Escribe una observación general de la recepción..."/>
-                        </page>
-                    </notebook>
+                                   options="{'no_create': True, 'no_open': False}"/>
+                        </div>
 
-                </sheet>
-            </form>
-        </field>
-    </record>
+                        <div class="o_recepcion_field_row">
+                            <label for="estudiante_id" string="Estudiante"/>
+                            <field name="estudiante_id" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_field_row">
+                            <label for="grado_escolar" string="Grado escolar"/>
+                            <field name="grado_escolar" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_field_row">
+                            <label for="lista_id" string="Lista de útiles"/>
+                            <field name="lista_id" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_field_row">
+                            <label for="recibido_por_id" string="Recibido por"/>
+                            <field name="recibido_por_id" readonly="1" nolabel="1"/>
+                        </div>
+
+                    </div>
+
+                    <div class="o_recepcion_cards_grid">
+
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">TOTAL DE PRODUCTOS</span>
+                            <field name="total_productos" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">PRODUCTOS COMPLETOS</span>
+                            <field name="total_completos" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">PRODUCTOS FALTANTES</span>
+                            <field name="total_faltantes" readonly="1" nolabel="1"/>
+                        </div>
+
+                        <div class="o_recepcion_card o_recepcion_card_progress">
+                            <span class="o_form_label">PORCENTAJE DE AVANCE</span>
+                            <div class="o_recepcion_percent">
+                                <field name="porcentaje_avance" readonly="1" nolabel="1"/>
+                                <span>%</span>
+                            </div>
+                            <div class="o_recepcion_progress_track">
+                                <div class="o_recepcion_progress_bar"></div>
+                            </div>
+                        </div>
+
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">ESTADO DE ENTREGA</span>
+                            <field name="estado_entrega" readonly="1" nolabel="1" widget="badge"/>
+                        </div>
+
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">ESTADO</span>
+                            <field name="estado_visual" readonly="1" nolabel="1" widget="badge"/>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <notebook>
+                    <page string="Productos recibidos">
+                        <field name="linea_ids" nolabel="1">
+                            <list editable="bottom"
+                                  create="0"
+                                  delete="0"
+                                  string="Productos recibidos">
+
+                                <field name="product_id" string="Producto" readonly="1"/>
+                                <field name="categoria_id" string="Categoría" readonly="1"/>
+                                <field name="cantidad_esperada" string="Cantidad esperada" readonly="1"/>
+                                <field name="cantidad_entregada" string="Cantidad entregada"/>
+                                <field name="cantidad_faltante" string="Cantidad faltante" readonly="1"/>
+                                <field name="unidad_id" string="Unidad" readonly="1"/>
+                                <field name="tipo_uso_escolar" string="Tipo de uso escolar" readonly="1"/>
+                                <field name="estado_linea" string="Estado" readonly="1" widget="badge"/>
+                                <field name="observacion" string="Observación"/>
+
+                            </list>
+                        </field>
+                    </page>
+
+                    <page string="Observaciones">
+                        <field name="observacion"
+                               nolabel="1"
+                               placeholder="Escribe una observación general de la recepción..."/>
+                    </page>
+                </notebook>
+
+            </sheet>
+        </form>
+    </field>
+</record>
 
 
     <!-- ===================================================== -->
@@ -151,9 +196,14 @@
     <!-- ===================================================== -->
 
     <record id="action_recepcion_utiles_almacen" model="ir.actions.act_window">
-        <field name="name">Recepción</field>
+        <field name="name">Recepción de útiles</field>
         <field name="res_model">recepcion.utiles.escolar</field>
         <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_recepcion_utiles_escolar_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_recepcion_utiles_escolar_form_limpio_almacen')})
+        ]"/>
     </record>
 
 </odoo>
