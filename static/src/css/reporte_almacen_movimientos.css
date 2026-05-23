@@ -306,3 +306,28 @@
         background: #ffffff;
     }
 }
+/* Oculta el calendario nativo negro del input month */
+.o_ram_month_box {
+    position: relative;
+}
+
+.o_ram_month_box input {
+    text-transform: capitalize;
+    padding-right: 0;
+}
+
+/* Chrome / Edge */
+.o_ram_month_box input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Quita estilos nativos extra */
+.o_ram_month_box input::-webkit-inner-spin-button,
+.o_ram_month_box input::-webkit-clear-button {
+    display: none;
+}
