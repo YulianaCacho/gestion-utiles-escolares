@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.RecepcionAlmacenDashboard">
+        <div class="o_rad_page">
+
+            <t t-if="state.modo === 'lista'">
+
+                <div class="o_rad_toolbar">
+                    <button type="button" class="o_rad_btn" t-on-click="nuevaRecepcion">
+                        <i class="fa fa-plus"/>
+                        Nueva recepción
+                    </button>
+
+                    <div class="o_rad_search">
+                        <i class="fa fa-search"/>
+                        <input type="text"
+                               placeholder="Buscar por alumno, grado..."
+                               t-att-value="state.search"
+                               t-on-input="onInputSearch"/>
+                    </div>
+
+                    <button type="button" class="o_rad_btn">
+                        <i class="fa fa-filter"/>
+                        Filtros
+                    </button>
+                </div>
+
+                <div class="o_rad_list_header">
+                    <h2>Recepciones</h2>
+                    <span><t t-esc="state.total"/> registros</span>
+                </div>
+
+                <div class="o_rad_chips">
+                    <button type="button"
+                            t-att-class="state.filtroEstado === 'todos' ? 'active' : ''"
+                            t-on-click="() => this.setFiltro('todos')">
+                        Todos
+                    </button>
+
+                    <button type="button"
+                            t-att-class="state.filtroEstado === 'listo' ? 'active' : ''"
+                            t-on-click="() => this.setFiltro('listo')">
+                        Listo para almacén
+                    </button>
+
+                    <button type="button"
+                            t-att-class="state.filtroEstado === 'incompleto' ? 'active' : ''"
+                            t-on-click="() => this.setFiltro('incompleto')">
+                        En espera
+                    </button>
+
+                    <button type="button"
+                            t-att-class="state.filtroEstado === 'pendiente' ? 'active' : ''"
+                            t-on-click="() => this.setFiltro('pendiente')">
+                        Borrador
+                    </button>
+                </div>
+
+                <table class="o_rad_table">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Grado / sección</th>
+                            <th>Fecha</th>
+                            <th>Recibido por</th>
+                            <th>Ítems</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <t t-if="state.rows.length">
+                            <tr t-foreach="state.rows" t-as="row" t-key="row.id">
+                                <td>
+                                    <button type="button"
+                                            class="o_rad_student"
+                                            t-on-click="() => this.openDetalle(row.id)">
+                                        <span class="o_rad_avatar" t-esc="row.iniciales"/>
+                                        <strong t-esc="row.alumno"/>
+                                    </button>
+                                </td>
+
+                                <td t-esc="row.grado"/>
+                                <td t-esc="row.fecha"/>
+                                <td t-esc="row.recibido_por"/>
+                                <td>
+                                    <strong t-esc="row.items"/>
+                                </td>
+
+                                <td>
+                                    <span t-att-class="'o_rad_status ' + row.estado_class" t-esc="row.estado"/>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <tr t-else="">
+                            <td colspan="6" class="o_rad_empty">
+                                Todavía no hay recepciones registradas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </t>
+
+            <t t-if="state.modo === 'detalle' and state.detalle">
+
+                <div class="o_rad_detail_toolbar">
+                    <button type="button" class="o_rad_btn" t-on-click="validarRecepcion">
+                        <i class="fa fa-check"/>
+                        Validar recepción
+                    </button>
+
+                    <button type="button" class="o_rad_btn" t-on-click="guardar">
+                        <i class="fa fa-save"/>
+                        Guardar
+                    </button>
+
+                    <button type="button" class="o_rad_btn" t-on-click="volverLista">
+                        <i class="fa fa-arrow-left"/>
+                        Volver
+                    </button>
+                </div>
+
+                <div class="o_rad_steps">
+                    <span t-att-class="state.detalle.etapa === 'borrador' ? 'active' : ''">Borrador</span>
+                    <span>›</span>
+                    <span t-att-class="state.detalle.etapa === 'en_cotejo' ? 'active' : ''">En cotejo</span>
+                    <span>›</span>
+                    <span t-att-class="state.detalle.etapa === 'listo_almacen' ? 'active' : ''">Listo para almacén</span>
+                    <span>›</span>
+                    <span t-att-class="state.detalle.etapa === 'ingresado' ? 'active' : ''">Ingresado</span>
+                </div>
+
+                <section class="o_rad_section">
+                    <h3>DATOS DE LA RECEPCIÓN</h3>
+
+                    <div class="o_rad_form_grid">
+                        <div>
+                            <label>Alumno</label>
+                            <div class="o_rad_input active" t-esc="state.detalle.alumno"/>
+                        </div>
+
+                        <div>
+                            <label>Grado / sección</label>
+                            <div class="o_rad_input" t-esc="state.detalle.grado"/>
+                        </div>
+
+                        <div>
+                            <label>Fecha de recepción</label>
+                            <div class="o_rad_input" t-esc="state.detalle.fecha_label"/>
+                        </div>
+
+                        <div>
+                            <label>Recibido por</label>
+                            <div class="o_rad_input" t-esc="state.detalle.recibido_por"/>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="o_rad_section">
+                    <h3>COTEJO DE ÚTILES</h3>
+
+                    <table class="o_rad_detail_table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Útil</th>
+                                <th>Cant. requerida</th>
+                                <th>Cant. recibida</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr t-foreach="state.detalle.lineas" t-as="linea" t-key="linea.id">
+                                <td>
+                                    <span t-att-class="linea.completo ? 'o_rad_check active' : 'o_rad_check'">
+                                        <i t-if="linea.completo" class="fa fa-check"/>
+                                    </span>
+                                </td>
+
+                                <td t-esc="linea.producto"/>
+
+                                <td class="center" t-esc="linea.cantidad_requerida"/>
+
+                                <td>
+                                    <input class="o_rad_qty"
+                                           type="number"
+                                           min="0"
+                                           t-att-value="linea.cantidad_recibida"
+                                           t-on-input="(ev) => this.onChangeCantidad(linea.id, ev)"/>
+                                </td>
+
+                                <td>
+                                    <span t-att-class="'o_rad_line_status ' + linea.estado_class" t-esc="linea.estado"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <div class="o_rad_summary">
+                    <div>
+                        <strong t-esc="state.detalle.totales.items"/>
+                        <span>Ítems en lista</span>
+                    </div>
+
+                    <div>
+                        <strong t-esc="state.detalle.totales.recibidos"/>
+                        <span>Recibidos</span>
+                    </div>
+
+                    <div>
+                        <strong t-esc="state.detalle.totales.faltantes"/>
+                        <span>Faltantes</span>
+                    </div>
+
+                    <div>
+                        <strong t-esc="state.detalle.totales.porcentaje"/>
+                        <span>Completado</span>
+                    </div>
+                </div>
+
+            </t>
+
+        </div>
+    </t>
+
+</templates>

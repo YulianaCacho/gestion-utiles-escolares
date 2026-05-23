@@ -20,10 +20,9 @@
         </field>
     </record>
 
-    <record id="action_recepcion_utiles_almacen" model="ir.actions.act_window">
-        <field name="name">Recepción</field>
-        <field name="res_model">recepcion.utiles.escolar</field>
-        <field name="view_mode">list,form</field>
+    <record id="action_recepcion_utiles_almacen" model="ir.actions.client">
+       <field name="name">Recepción</field>
+       <field name="tag">gestion_utiles_escolares.recepcion_almacen_dashboard</field>
     </record>
 
     <menuitem id="menu_almacen_utiles_root"

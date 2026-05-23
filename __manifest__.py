@@ -55,6 +55,10 @@
             "gestion_utiles_escolares/static/src/css/reporte_linea_tiempo_movimientos.css",
             "gestion_utiles_escolares/static/src/js/reporte_linea_tiempo_movimientos.js",
             "gestion_utiles_escolares/static/src/xml/reporte_linea_tiempo_movimientos.xml",
+        
+            "gestion_utiles_escolares/static/src/css/recepcion_almacen_dashboard.css",
+            "gestion_utiles_escolares/static/src/js/recepcion_almacen_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/recepcion_almacen_dashboard.xml",
         ],
     },
     "installable": True,

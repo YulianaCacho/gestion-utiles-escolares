@@ -528,7 +528,151 @@ class RecepcionUtilesEscolar(models.Model):
                 "fecha_envio_almacen": fields.Datetime.now(),
                 "usuario_envio_almacen_id": self.env.user.id,
             })
+    
+        def _fmt_qty_dashboard(self, value):
+            value = float(value or 0)
+            if value.is_integer():
+               return str(int(value))
+            return f"{value:.2f}".rstrip("0").rstrip(".")
 
+        def _grado_label_dashboard(self, grado):
+            info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
+            selection = dict(info.get("selection", []))
+            return selection.get(grado, grado or "")
+
+        def _iniciales_dashboard(self, nombre):
+            partes = (nombre or "").split()
+            if not partes:
+               return ""
+            return "".join([p[0].upper() for p in partes[:2]])
+
+    @api.model
+    def get_recepciones_almacen_dashboard(self, search=False, estado=False):
+        domain = []
+
+        if estado and estado != "todos":
+            domain.append(("estado_visual", "=", estado))
+
+        recepciones = self.search(domain, order="fecha desc, id desc")
+
+        if search:
+            texto = search.lower().strip()
+            recepciones = recepciones.filtered(
+                lambda r:
+                    texto in (r.estudiante_id.name or "").lower()
+                    or texto in (r.recibido_por_id.name or "").lower()
+                    or texto in (r._grado_label_dashboard(r.grado_escolar) or "").lower()
+                    or texto in (r.name or "").lower()
+            )
+
+        rows = []
+
+        for rec in recepciones:
+            estado_label = "Pendiente"
+            estado_class = "pendiente"
+
+            if rec.estado_visual == "listo":
+                estado_label = "Listo"
+                estado_class = "listo"
+            elif rec.estado_visual == "incompleto":
+                estado_label = "Incompleto"
+                estado_class = "incompleto"
+
+            rows.append({
+                "id": rec.id,
+                "alumno": rec.estudiante_id.name or "",
+                "iniciales": rec._iniciales_dashboard(rec.estudiante_id.name),
+                "grado": rec._grado_label_dashboard(rec.grado_escolar),
+                "fecha": rec.fecha.strftime("%d/%m/%Y") if rec.fecha else "",
+                "recibido_por": rec.recibido_por_id.name or "",
+                "items": rec.items_resumen or "0/0",
+                "estado": estado_label,
+                "estado_class": estado_class,
+            })
+
+        return {
+            "total": len(rows),
+            "rows": rows,
+        }
+
+    @api.model
+    def get_recepcion_almacen_detalle(self, recepcion_id):
+        rec = self.browse(int(recepcion_id)).exists()
+
+        if not rec:
+            return {}
+
+        lineas = []
+
+        for linea in rec.linea_ids:
+            estado_label = "Pendiente"
+            estado_class = "pendiente"
+
+            if linea.estado_linea == "completo":
+                estado_label = "Ok"
+                estado_class = "ok"
+            elif linea.estado_linea == "faltante":
+                estado_label = "Falta"
+                estado_class = "falta"
+
+            lineas.append({
+                "id": linea.id,
+                "producto": linea.product_id.display_name or "",
+                "cantidad_requerida": rec._fmt_qty_dashboard(linea.cantidad_esperada),
+                "cantidad_recibida": rec._fmt_qty_dashboard(linea.cantidad_entregada),
+                "estado": estado_label,
+                "estado_class": estado_class,
+                "completo": linea.estado_linea == "completo",
+            })
+
+        return {
+            "id": rec.id,
+            "name": rec.name,
+            "alumno": rec.estudiante_id.name or "",
+            "grado": rec._grado_label_dashboard(rec.grado_escolar),
+            "fecha_label": rec.fecha.strftime("%d/%m/%Y") if rec.fecha else "",
+            "recibido_por": rec.recibido_por_id.name or "",
+            "estado": rec.estado,
+            "etapa": rec.etapa_recepcion,
+            "lineas": lineas,
+            "totales": {
+                "items": rec.total_productos,
+                "recibidos": rec.total_completos,
+                "faltantes": rec.total_faltantes,
+                "porcentaje": f"{rec._fmt_qty_dashboard(rec.porcentaje_avance)}%",
+            }
+        }
+
+    @api.model
+    def guardar_recepcion_almacen_dashboard(self, recepcion_id, lineas):
+        rec = self.browse(int(recepcion_id)).exists()
+
+        if not rec:
+            return False
+
+        Linea = self.env["recepcion.utiles.linea"]
+
+        for item in lineas:
+            linea = Linea.browse(int(item.get("id"))).exists()
+            if linea and linea.recepcion_id.id == rec.id:
+                cantidad = item.get("cantidad_recibida") or 0
+                linea.write({
+                    "cantidad_entregada": float(str(cantidad).replace(",", "."))
+                })
+
+        rec.action_calcular_faltantes()
+
+        return True
+
+    @api.model
+    def validar_recepcion_almacen_dashboard(self, recepcion_id, lineas):
+        self.guardar_recepcion_almacen_dashboard(recepcion_id, lineas)
+
+        rec = self.browse(int(recepcion_id)).exists()
+        if rec:
+            rec.action_validar()
+
+        return True
 
 class RecepcionUtilesLinea(models.Model):
     _name = "recepcion.utiles.linea"
