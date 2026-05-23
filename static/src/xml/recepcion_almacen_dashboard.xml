@@ -7,20 +7,10 @@
             <t t-if="state.modo === 'lista'">
 
                 <div class="o_rad_toolbar">
-                   <div class="o_rad_actions_left">
-                        <button type="button" class="o_rad_btn" t-on-click="nuevaRecepcion">
-                          <i class="fa fa-plus"/>
-                           Nueva recepción
-                        </button>
-
-                        <button t-if="state.selectedIds.length"
-                                type="button"
-                                class="o_rad_btn o_rad_btn_danger"
-                                t-on-click="borrarSeleccionados">
-                           <i class="fa fa-trash"/>
-                            Borrar seleccionados
-                        </button>
-                    </div>
+                    <button type="button" class="o_rad_btn" t-on-click="nuevaRecepcion">
+                        <i class="fa fa-plus"/>
+                        Nueva recepción
+                    </button>
 
                     <div class="o_rad_search">
                         <i class="fa fa-search"/>
@@ -70,11 +60,6 @@
                 <table class="o_rad_table">
                     <thead>
                         <tr>
-                            <th class="o_rad_select_col">
-                                <input type="checkbox"
-                                       t-att-checked="isAllSelected()"
-                                       t-on-change="toggleSelectAll"/>
-                            <tr>
                             <th>Alumno</th>
                             <th>Grado / sección</th>
                             <th>Fecha</th>
@@ -87,13 +72,7 @@
                     <tbody>
                         <t t-if="state.rows.length">
                             <tr t-foreach="state.rows" t-as="row" t-key="row.id">
-                                <td class="o_rad_select_col">
-                                    <input type="checkbox"
-                                           t-att-checked="isSelected(row.id)"
-                                           t-on-change="() => toggleSelect(row.id)"/>
-                                </td>
-
-                                 <td>
+                                <td>
                                     <button type="button"
                                             class="o_rad_student"
                                             t-on-click="() => this.openDetalle(row.id)">
@@ -116,7 +95,7 @@
                         </t>
 
                         <tr t-else="">
-                            <td colspan="7" class="o_rad_empty">
+                            <td colspan="6" class="o_rad_empty">
                                 Todavía no hay recepciones registradas.
                             </td>
                         </tr>

@@ -10,36 +10,10 @@
 
 .o_rad_toolbar {
     display: grid;
-    grid-template-columns: auto 1fr 130px;
+    grid-template-columns: 220px 1fr 130px;
     gap: 10px;
     align-items: center;
     margin-bottom: 18px;
-}
-.o_rad_actions_left {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.o_rad_btn_danger {
-    border-color: #dc3545;
-    color: #9f1d2b;
-    background: #fff5f5;
-}
-
-.o_rad_btn_danger:hover {
-    background: #ffe3e3;
-}
-
-.o_rad_select_col {
-    width: 42px;
-    text-align: center !important;
-}
-
-.o_rad_select_col input {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
 }
 
 .o_rad_detail_toolbar {
