@@ -545,23 +545,6 @@ class RecepcionUtilesEscolar(models.Model):
                 "fecha_envio_almacen": fields.Datetime.now(),
                 "usuario_envio_almacen_id": self.env.user.id,
             })
-    
-        def _fmt_qty_dashboard(self, value):
-            value = float(value or 0)
-            if value.is_integer():
-               return str(int(value))
-            return f"{value:.2f}".rstrip("0").rstrip(".")
-
-        def _grado_label_dashboard(self, grado):
-            info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
-            selection = dict(info.get("selection", []))
-            return selection.get(grado, grado or "")
-
-        def _iniciales_dashboard(self, nombre):
-            partes = (nombre or "").split()
-            if not partes:
-               return ""
-            return "".join([p[0].upper() for p in partes[:2]])
 
     @api.model
     def get_recepciones_almacen_dashboard(self, search=False, estado=False):
@@ -690,6 +673,30 @@ class RecepcionUtilesEscolar(models.Model):
             rec.action_validar()
 
         return True
+
+    @api.model
+    def borrar_recepciones_dashboard(self, recepcion_ids):
+        recepcion_ids = [int(item) for item in recepcion_ids or []]
+        recepciones = self.browse(recepcion_ids).exists()
+
+        if not recepciones:
+            return {"deleted": 0}
+
+        bloqueadas = recepciones.filtered(
+            lambda rec: rec.estado == "validado" or rec.movimiento_almacen_ids
+        )
+
+        if bloqueadas:
+            nombres = ", ".join(bloqueadas.mapped("name"))
+            raise UserError(
+                "No se pueden borrar recepciones validadas o con movimientos de almacén: %s" % nombres
+            )
+
+        total = len(recepciones)
+        recepciones.unlink()
+
+        return {"deleted": total}
+
 
 class RecepcionUtilesLinea(models.Model):
     _name = "recepcion.utiles.linea"
