@@ -20,23 +20,25 @@
         </field>
     </record>
 
-    <record id="action_almacen_utiles_movimiento" model="ir.actions.act_window">
-        <field name="name">Almacén / movimientos</field>
-        <field name="res_model">almacen.utiles.movimiento</field>
+    <record id="action_recepcion_utiles_almacen" model="ir.actions.act_window">
+        <field name="name">Recepción</field>
+        <field name="res_model">recepcion.utiles.escolar</field>
         <field name="view_mode">list,form</field>
     </record>
 
-
-
     <menuitem id="menu_almacen_utiles_root"
-          name="📦 Almacén de útiles"
-          parent="stock.menu_stock_root"
-          sequence="95"/>
+              name="📦 Almacén de útiles"
+              parent="stock.menu_stock_root"
+              sequence="95"/>
 
-    <menuitem id="menu_almacen_utiles_movimiento"
-          name="▣ Historial de movimientos"
-          parent="menu_almacen_utiles_root"
-          action="action_almacen_utiles_movimiento"
-          sequence="30"/>
+    <menuitem id="menu_recepcion_almacen_utiles"
+              name="↧ Recepción"
+              parent="menu_almacen_utiles_root"
+              action="action_recepcion_utiles_almacen"
+              sequence="10"/>
+
+    <record id="menu_almacen_utiles_movimiento" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
 
 </odoo>
