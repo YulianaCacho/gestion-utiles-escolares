@@ -34,6 +34,8 @@
     "views/dashboard_utiles_views.xml",
     "views/reportes_menu_views.xml",
     "views/reporte_recepcion_dashboard_views.xml",
+    "views/reporte_almacen_movimientos_views.xml",
+
 ],
    'assets': {
         'web.assets_backend': [
@@ -45,6 +47,10 @@
             "gestion_utiles_escolares/static/src/css/reporte_recepcion_dashboard.css",
             "gestion_utiles_escolares/static/src/js/reporte_recepcion_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/reporte_recepcion_dashboard.xml",
+       
+            "gestion_utiles_escolares/static/src/css/reporte_almacen_movimientos.css",
+            "gestion_utiles_escolares/static/src/js/reporte_almacen_movimientos.js",
+            "gestion_utiles_escolares/static/src/xml/reporte_almacen_movimientos.xml",
         ],
     },
     "installable": True,
