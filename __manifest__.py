@@ -59,6 +59,7 @@
             "gestion_utiles_escolares/static/src/css/recepcion_almacen_dashboard.css",
             "gestion_utiles_escolares/static/src/js/recepcion_almacen_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/recepcion_almacen_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/recepcion_utiles_form_clean.css",
         ],
     },
     "installable": True,
