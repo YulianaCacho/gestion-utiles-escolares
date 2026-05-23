@@ -1,326 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <data noupdate="1">
-        <record id="seq_recepcion_utiles_escolar" model="ir.sequence">
-            <field name="name">Secuencia recepción de útiles</field>
-            <field name="code">recepcion.utiles.escolar</field>
-            <field name="prefix">REC-</field>
-            <field name="padding">5</field>
-            <field name="number_next">1</field>
-            <field name="number_increment">1</field>
-        </record>
-    </data>
-        <record id="view_recepcion_utiles_escolar_kanban" model="ir.ui.view">
-            <field name="name">recepcion.utiles.escolar.kanban</field>
-            <field name="model">recepcion.utiles.escolar</field>
-            <field name="arch" type="xml">
-                <kanban default_group_by="estado_visual" class="o_kanban_small_column">
-                    <field name="estudiante_id"/>
-                    <field name="grado_escolar"/>
-                    <field name="fecha"/>
-                    <field name="recibido_por_id"/>
-                    <field name="items_resumen"/>
-                    <field name="estado_visual"/>
-                    <field name="porcentaje_avance"/>
+    <!-- ========================= -->
+    <!-- MENÚ PRINCIPAL REPORTES -->
+    <!-- ========================= -->
 
-                    <templates>
-                        <t t-name="card">
-                           <div class="oe_kanban_card oe_kanban_global_click">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <strong>
-                                        <field name="estudiante_id"/>
-                                    </strong>
-
-                                    <span t-if="record.estado_visual.raw_value == 'listo'"
-                                          style="background:#d8f5e8; color:#146c43; padding:4px 8px; border-radius:12px; font-size:12px;">
-                                        Listo
-                                    </span>
-
-                                    <span t-if="record.estado_visual.raw_value == 'incompleto'"
-                                          style="background:#fff3cd; color:#856404; padding:4px 8px; border-radius:12px; font-size:12px;">
-                                        Incompleto
-                                    </span>
-
-                                    <span t-if="record.estado_visual.raw_value == 'pendiente'"
-                                          style="background:#eeeeee; color:#555; padding:4px 8px; border-radius:12px; font-size:12px;">
-                                        Pendiente
-                                    </span>
-                                </div>
-
-                                <div style="margin-top:10px;">
-                                    <div>
-                                       <strong>Grado / sección:</strong>
-                                       <field name="grado_escolar"/>
-                                    </div>
-
-                                     <div>
-                                       <strong>Fecha:</strong>
-                                       <field name="fecha"/>
-                                    </div>
-
-                                    <div>
-                                       <strong>Recibido por:</strong>
-                                       <field name="recibido_por_id"/>
-                                    </div>
-
-                                    <div>
-                                       <strong>Ítems:</strong>
-                                       <field name="items_resumen"/>
-                                    </div>
-
-                                    <div>
-                                       <strong>% completado:</strong>
-                                      <field name="porcentaje_avance"/>
-                                     </div>
-                                </div>
-                            </div>
-                        </t>
-                    </templates>
-                </kanban>
-            </field>
-        </record>
-    <record id="view_recepcion_utiles_escolar_list" model="ir.ui.view">
-        <field name="name">recepcion.utiles.escolar.list</field>
-        <field name="model">recepcion.utiles.escolar</field>
-        <field name="arch" type="xml">
-            <list string="Recepciones"
-                  decoration-success="estado_visual == 'listo'"
-                  decoration-warning="estado_visual == 'incompleto'"
-                  decoration-muted="estado_visual == 'pendiente'">
-
-                <field name="name" string="Código" optional="hide"/>
-                <field name="estudiante_id" string="Alumno"/>
-                <field name="grado_escolar" string="Grado / sección"/>
-                <field name="fecha" string="Fecha"/>
-                <field name="recibido_por_id" string="Recibido por"/>
-                <field name="items_resumen" string="Ítems"/>
-                <field name="estado_visual" string="Estado"/>
-
-            </list>
-        </field>
+    <record id="stock.menu_warehouse_report" model="ir.ui.menu">
+        <field name="name">Reportes</field>
+        <field name="active" eval="True"/>
     </record>
 
-    <record id="view_recepcion_utiles_escolar_form" model="ir.ui.view">
-        <field name="name">recepcion.utiles.escolar.form</field>
-        <field name="model">recepcion.utiles.escolar</field>
-        <field name="arch" type="xml">
-            <form string="Recepción de útiles escolares">
-                <header>
 
-                    <button name="action_cargar_lista"
-                            type="object"
-                            string="Cargar lista de útiles"
-                            class="btn-primary"
-                            invisible="estado != 'borrador'"/>
+    <!-- ========================= -->
+    <!-- OCULTAR REPORTES NATIVOS -->
+    <!-- ========================= -->
 
-                    <button name="action_calcular_faltantes"
-                            type="object"
-                            string="Calcular faltantes"
-                            class="btn-secondary"
-                            invisible="estado == 'validado'"/>
+    <function model="ir.ui.menu" name="write">
+        <function model="ir.ui.menu" name="search">
+            <value eval="[
+                ('parent_id', '=', ref('stock.menu_warehouse_report')),
+                ('name', 'in', [
+                    'Existencias',
+                    'Ubicaciones',
+                    'Historial de movimientos',
+                    'Análisis de movimientos',
+                    'Stock',
+                    'Locations',
+                    'Moves History',
+                    'Moves Analysis',
+                    'Move Analysis'
+                ])
+            ]"/>
+        </function>
+        <value eval="{'active': False}"/>
+    </function>
 
-                    <button name="action_validar"
-                            type="object"
-                            string="Validar recepción"
-                            class="btn-primary"
-                            invisible="estado == 'validado'"/>
 
-                    <field name="etapa_recepcion"
-                           widget="statusbar"
-                           statusbar_visible="borrador,en_cotejo,listo_almacen,ingresado"/>
+    <!-- ========================= -->
+    <!-- ACCIONES PERSONALIZADAS -->
+    <!-- ========================= -->
 
-                    <button name="action_recalcular_destinos"
-                            type="object"
-                            string="Recalcular destinos"
-                            class="btn-secondary"
-                            invisible="estado == 'validado' and estado_almacen == 'enviado'"/>                   
-                   
-                    <button name="action_enviar_productos_almacen"
-                            type="object"
-                            string="Enviar productos de almacén"
-                            class="btn-secondary"
-                            invisible="estado != 'validado' or estado_almacen != 'pendiente'"/>
-                
-                </header>
-
-                <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="name"/>
-                        </h1>
-                    </div>
-
-                    <group string="Datos de la recepción">
-                        <group>
-                            <field name="matricula_id" required="1"/>
-                            <field name="estudiante_id" string="Alumno"/>
-                            <field name="grado_escolar" string="Grado / sección"/>
-                            <field name="lista_id" string="Lista de útiles"/>
-                        </group>
-
-                        <group>
-                            <field name="fecha" string="Fecha de recepción"/>
-                            <field name="recibido_por_id" string="Recibido por"/>
-                            <field name="estado_visual" string="Estado"/>
-                            <field name="estado_almacen" string="Estado de almacén"/>
-                        </group>
-                    </group>
-
-                    <notebook>
-                        <page string="Cotejo de útiles">
-                           <field name="linea_ids">
-                               <list editable="bottom"
-                                     decoration-danger="estado_linea == 'faltante'"
-                                     decoration-success="estado_linea == 'completo'"
-                                     decoration-muted="estado_linea == 'pendiente'">
-
-                                  <field name="product_id" string="Útil"/>
-                                  <field name="cantidad_esperada" string="Cant. requerida"/>
-                                  <field name="cantidad_entregada" string="Cant. recibida"/>
-                                  <field name="cantidad_faltante" string="Faltante"/>
-                                  <field name="destino_recepcion" string="Destino"/>
-                                  <field name="cantidad_enviada_almacen" string="Enviado almacén"/>
-                                  <field name="cantidad_pendiente_almacen" string="Pendiente almacén"/>
-                                  <field name="estado_linea" string="Estado"/>
-                                  <field name="observacion" string="Observación"/>
-
-                                </list>
-                            </field>
-
-                            <group string="Resumen de recepción">
-                                <group>
-                                    <field name="total_productos" string="Ítems en lista"/>
-                                    <field name="total_completos" string="Recibidos completos"/>
-                                </group>
-                                <group>
-                                    <field name="total_faltantes" string="Faltantes"/>
-                                    <field name="porcentaje_avance" string="% completado"/>
-                                </group>
-                            </group>
-                        </page>
-
-                        <page string="Observaciones">
-                            <field name="observacion"/>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
-        </field>
+    <record id="action_reporte_linea_tiempo_utiles" model="ir.actions.act_window">
+        <field name="name">⇅Línea de tiempo</field>
+        <field name="res_model">stock.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'done')]</field>
+        <field name="context">{}</field>
     </record>
 
-    <record id="view_recepcion_utiles_escolar_search" model="ir.ui.view">
-    <field name="name">recepcion.utiles.escolar.search</field>
-    <field name="model">recepcion.utiles.escolar</field>
-    <field name="arch" type="xml">
-        <search string="Buscar recepción de útiles">
-
-            <filter name="filtro_listo"
-                    string="Listo"
-                    domain="[('estado_visual','=','listo')]"/>
-
-           <filter name="filtro_incompleto"
-                   string="Incompleto"
-                   domain="[('estado_visual','=','incompleto')]"/>
-
-            <filter name="filtro_pendiente"
-                    string="Pendiente"
-                    domain="[('estado_visual','=','pendiente')]"/>
-
-            <filter name="filtro_listo_almacen"
-                    string="Listo para almacén"
-                    domain="[('etapa_recepcion','=','listo_almacen')]"/>
-
-           <filter name="filtro_ingresado"
-                   string="Ingresado"
-                   domain="[('etapa_recepcion','=','ingresado')]"/>
-            
-            <filter name="filtro_validadas_pendientes_almacen"
-                    string="Validadas pendientes de almacén"
-                    domain="[('estado','=','validado'), ('estado_almacen','=','pendiente')]"/>
-
-            <filter name="filtro_enviadas_almacen"
-                    string="Enviadas a almacén"
-                    domain="[('estado_almacen','=','enviado')]"/>
-
-            <field name="name"/>
-            <field name="matricula_id"/>
-            <field name="estudiante_id"/>
-            <field name="grado_escolar"/>
-            <field name="lista_id"/>
-            <field name="estado_entrega"/>
-            <field name="estado"/>
-
-            <filter name="filtro_entrega_completa"
-                    string="Entrega completa"
-                    domain="[('estado_entrega','=','completo')]"/>
-
-            <filter name="filtro_entrega_incompleta"
-                    string="Entrega incompleta"
-                    domain="[('estado_entrega','=','incompleto')]"/>
-
-            <filter name="filtro_sin_cargar"
-                    string="Sin cargar"
-                    domain="[('estado_entrega','=','sin_cargar')]"/>
-
-            <separator/>
-
-            <filter name="filtro_borrador"
-                    string="Proceso en borrador"
-                    domain="[('estado','=','borrador')]"/>
-
-            <filter name="filtro_proceso_validado"
-                    string="Proceso validado"
-                    domain="[('estado','=','validado')]"/>
-
-            <separator/>
-
-            <filter name="grupo_grado"
-                    string="Agrupar por grado"
-                    context="{'group_by':'grado_escolar'}"/>
-
-            <filter name="grupo_lista"
-                    string="Agrupar por lista"
-                    context="{'group_by':'lista_id'}"/>
-
-            <filter name="grupo_estado_entrega"
-                    string="Agrupar por estado de entrega"
-                    context="{'group_by':'estado_entrega'}"/>
-
-            <filter name="grupo_estado"
-                    string="Agrupar por estado del proceso"
-                    context="{'group_by':'estado'}"/>
-
-        </search>
-    </field>
-</record>
-
-    <record id="action_recepcion_utiles_escolar" model="ir.actions.act_window">
-        <field name="name">Recepciones</field>
-        <field name="res_model">recepcion.utiles.escolar</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="view_id" ref="view_recepcion_utiles_escolar_kanban"/>
-        <field name="search_view_id" ref="view_recepcion_utiles_escolar_search"/>
+    <record id="action_reporte_historial_movimientos_utiles" model="ir.actions.act_window">
+        <field name="name">⧗Historial de movimientos</field>
+        <field name="res_model">stock.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'done')]</field>
+        <field name="context">{}</field>
     </record>
 
-    <menuitem id="menu_utiles_escolares_root"
-          name="👥 Matrículas"
-          parent="stock.menu_stock_root"
-          sequence="90"/>
+    <record id="action_reporte_recepcion_utiles_menu" model="ir.actions.act_window">
+        <field name="name">▦Reporte de recepción</field>
+        <field name="res_model">recepcion.utiles</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
 
-    <menuitem id="menu_recepcion_utiles_escolar"
-          name="↧ Recepciones"
-          parent="menu_almacen_utiles_root"
-          action="action_recepcion_utiles_escolar"
-          sequence="10"/>
 
-    <record id="action_enviar_recepciones_seleccionadas_almacen" model="ir.actions.server">
-        <field name="name">Enviar seleccionadas a almacén</field>
-        <field name="model_id" ref="model_recepcion_utiles_escolar"/>
-        <field name="binding_model_id" ref="model_recepcion_utiles_escolar"/>
-        <field name="binding_view_types">list,form</field>
-        <field name="state">code</field>
-        <field name="code">action = records.action_enviar_productos_almacen()</field>
+    <!-- ========================= -->
+    <!-- MENÚS PERSONALIZADOS -->
+    <!-- ========================= -->
+
+    <record id="menu_reporte_linea_tiempo_utiles" model="ir.ui.menu">
+        <field name="name">⇅Línea de tiempo</field>
+        <field name="parent_id" ref="stock.menu_warehouse_report"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_reporte_linea_tiempo_utiles')"/>
+        <field name="sequence">10</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="menu_reporte_historial_movimientos_utiles" model="ir.ui.menu">
+        <field name="name">⧗Historial de movimientos</field>
+        <field name="parent_id" ref="stock.menu_warehouse_report"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_reporte_historial_movimientos_utiles')"/>
+        <field name="sequence">20</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="menu_reporte_recepcion_utiles" model="ir.ui.menu">
+        <field name="name">▦Reporte de recepción</field>
+        <field name="parent_id" ref="stock.menu_warehouse_report"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_reporte_recepcion_utiles_menu')"/>
+        <field name="sequence">30</field>
+        <field name="active" eval="True"/>
     </record>
 
 </odoo>

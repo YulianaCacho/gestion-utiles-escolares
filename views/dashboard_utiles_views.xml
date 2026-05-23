@@ -25,7 +25,7 @@
 
     <!-- Nueva Información general personalizada -->
     <record id="menu_informacion_general_utiles" model="ir.ui.menu">
-        <field name="name">Información general</field>
+        <field name="name">📊Información general</field>
         <field name="parent_id" ref="stock.menu_stock_root"/>
         <field name="action" eval="'ir.actions.client,%d' % ref('action_dashboard_utiles_escolares')"/>
         <field name="sequence">5</field>
