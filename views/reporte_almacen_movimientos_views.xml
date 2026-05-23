@@ -26,7 +26,7 @@
     </record>
 
     <record id="menu_reporte_linea_tiempo_tabla_utiles" model="ir.ui.menu">
-        <field name="name">↕ Línea de tiempo</field>
+        <field name="name">⇅ Línea de tiempo</field>
         <field name="parent_id" ref="stock.menu_warehouse_report"/>
         <field name="action" eval="'ir.actions.client,%d' % ref('action_reporte_linea_tiempo_movimientos_dashboard')"/>
         <field name="sequence">5</field>
