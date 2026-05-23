@@ -4,6 +4,19 @@ import { Component, onWillStart, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
+const EXCLUDED_CATEGORIES = [
+    "cuadernos",
+    "material personal",
+];
+
+function normalizeText(value) {
+    return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+}
+
 class DashboardUtilesEscolares extends Component {
     static template = "gestion_utiles_escolares.DashboardUtilesEscolares";
 
@@ -33,28 +46,37 @@ class DashboardUtilesEscolares extends Component {
             "product.template",
             [],
             ["name", "default_code", "categ_id", "qty_available", "outgoing_qty"],
-            { limit: 500, order: "name asc" }
+            { limit: 1000, order: "name asc" }
         );
 
-        const normalized = products.map((product) => {
-            const qty = Number(product.qty_available || 0);
-            const reserved = Number(product.outgoing_qty || 0);
-            const available = Math.max(qty - reserved, 0);
-            const category = product.categ_id
-                ? product.categ_id[1].split("/").pop().trim()
-                : "Varios";
+        const normalized = products
+            .map((product) => {
+                const qty = Number(product.qty_available || 0);
+                const reserved = Number(product.outgoing_qty || 0);
+                const available = Math.max(qty - reserved, 0);
 
-            return {
-                id: product.id,
-                name: product.name || "Sin nombre",
-                code: product.default_code || "",
-                category: category || "Varios",
-                qty,
-                reserved,
-                available,
-                status: available <= 0 ? "Sin stock" : available <= 5 ? "Stock bajo" : "Normal",
-            };
-        });
+                const category = product.categ_id
+                    ? product.categ_id[1].split("/").pop().trim()
+                    : "Varios";
+
+                return {
+                    id: product.id,
+                    name: product.name || "Sin nombre",
+                    code: product.default_code || "",
+                    category: category || "Varios",
+                    qty,
+                    reserved,
+                    available,
+                    status: available <= 0 ? "Sin stock" : available <= 5 ? "Stock bajo" : "Normal",
+                };
+            })
+            .filter((product) => {
+                const categoryNormalized = normalizeText(product.category);
+
+                return !EXCLUDED_CATEGORIES.some((excluded) =>
+                    categoryNormalized.includes(excluded)
+                );
+            });
 
         const categories = Array.from(new Set(normalized.map((p) => p.category))).sort();
         const now = new Date();
@@ -72,7 +94,7 @@ class DashboardUtilesEscolares extends Component {
     }
 
     get filteredProducts() {
-        const text = (this.state.search || "").toLowerCase().trim();
+        const text = normalizeText(this.state.search);
 
         return this.state.products.filter((product) => {
             const matchesCategory =
@@ -81,9 +103,9 @@ class DashboardUtilesEscolares extends Component {
 
             const matchesText =
                 !text ||
-                product.name.toLowerCase().includes(text) ||
-                product.category.toLowerCase().includes(text) ||
-                product.code.toLowerCase().includes(text);
+                normalizeText(product.name).includes(text) ||
+                normalizeText(product.category).includes(text) ||
+                normalizeText(product.code).includes(text);
 
             return matchesCategory && matchesText;
         });

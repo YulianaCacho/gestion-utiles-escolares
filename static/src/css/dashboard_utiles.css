@@ -1,12 +1,15 @@
 /* =========================================================
    DASHBOARD PERSONALIZADO - INFORMACIÓN GENERAL
+   Fondo blanco + scroll
    ========================================================= */
 
 .o_utiles_dashboard {
-    min-height: calc(100vh - 46px);
-    padding: 22px;
-    background: #2e302d;
-    color: #f5f5f0;
+    height: calc(100vh - 46px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 22px 26px 90px 26px;
+    background: #f5f7fb;
+    color: #1f2933;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -24,14 +27,14 @@
     gap: 12px;
     min-height: 52px;
     padding: 0 18px;
-    border: 1px solid #50534d;
-    border-radius: 10px;
-    background: #272926;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    border: 1px solid #d7dde6;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .o_utiles_search_box i {
-    color: #a8aaa2;
+    color: #6b7280;
     font-size: 18px;
 }
 
@@ -40,60 +43,64 @@
     border: 0;
     outline: 0;
     background: transparent;
-    color: #f5f5f0;
-    font-size: 18px;
+    color: #1f2933;
+    font-size: 17px;
 }
 
 .o_utiles_search_box input::placeholder {
-    color: #8f918b;
+    color: #9ca3af;
 }
 
 .o_utiles_button {
     height: 52px;
     padding: 0 24px;
-    border: 1px solid #555850;
-    border-radius: 10px;
-    background: #272926;
-    color: #f5f5f0;
+    border: 1px solid #d7dde6;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #1f2933;
     font-weight: 700;
     font-size: 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
 }
 
 .o_utiles_button:hover {
-    background: #333631;
+    background: #edf6e9;
+    border-color: #8cc63f;
 }
 
 .o_utiles_summary_grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(150px, 1fr));
     gap: 14px;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
 }
 
 .o_utiles_summary_card {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 78px;
-    padding: 16px 18px;
-    border-radius: 10px;
-    background: #232522;
+    min-height: 82px;
+    padding: 16px 20px;
+    border: 1px solid #e1e7ef;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
 }
 
 .o_utiles_summary_number {
-    color: #ffffff;
-    font-size: 30px;
+    color: #111827;
+    font-size: 31px;
     line-height: 1;
     font-weight: 800;
 }
 
 .o_utiles_danger {
-    color: #e14747;
+    color: #dc2626;
 }
 
 .o_utiles_summary_label {
     margin-top: 8px;
-    color: #bebfb8;
+    color: #4b5563;
     font-size: 14px;
     font-weight: 700;
 }
@@ -111,13 +118,13 @@
 
 .o_utiles_panel_header h2 {
     margin: 0;
-    color: #ffffff;
-    font-size: 20px;
+    color: #111827;
+    font-size: 22px;
     font-weight: 800;
 }
 
 .o_utiles_panel_header span {
-    color: #bfc0ba;
+    color: #4b5563;
     font-size: 14px;
     font-weight: 700;
 }
@@ -130,44 +137,57 @@
 }
 
 .o_utiles_chip {
-    padding: 7px 15px;
-    border: 1px solid #4c5049;
+    padding: 8px 16px;
+    border: 1px solid #d7dde6;
     border-radius: 999px;
-    background: #30332f;
-    color: #c7c9c1;
+    background: #ffffff;
+    color: #374151;
     font-weight: 700;
 }
 
 .o_utiles_chip.active {
-    border-color: #aef5de;
-    background: #dafbee;
-    color: #277b62;
+    border-color: #8cc63f;
+    background: #dff8d4;
+    color: #2d6a22;
 }
 
 .o_utiles_table_wrap {
+    width: 100%;
     overflow-x: auto;
+    padding-bottom: 40px;
 }
 
 .o_utiles_table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
-    color: #eeeeea;
+    color: #1f2933;
+    background: #ffffff;
+    border: 1px solid #e1e7ef;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
 }
 
 .o_utiles_table th {
-    padding: 12px 14px;
-    border-bottom: 1px solid #4d5049;
-    color: #c3c4be;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e1e7ef;
+    color: #4b5563;
+    background: #f9fafb;
     font-size: 14px;
     text-align: left;
     font-weight: 800;
 }
 
 .o_utiles_table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #454842;
-    font-size: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #edf1f5;
+    font-size: 15px;
     font-weight: 700;
+}
+
+.o_utiles_table tr:last-child td {
+    border-bottom: 0;
 }
 
 .o_utiles_product_name {
@@ -178,26 +198,26 @@
 
 .o_utiles_product_name strong {
     display: block;
-    color: #f4f4ef;
+    color: #111827;
 }
 
 .o_utiles_product_name small {
     display: block;
     margin-top: 3px;
-    color: #a4a69f;
+    color: #6b7280;
     font-size: 12px;
     font-weight: 600;
 }
 
 .o_utiles_product_icon {
-    color: #b9bbb3;
+    color: #6b7280;
 }
 
 .o_utiles_category_badge {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 5px 11px;
     border-radius: 999px;
-    background: #ede8ff;
+    background: #ede9fe;
     color: #5b4eaa;
     font-size: 14px;
     font-weight: 800;
@@ -215,14 +235,14 @@
     height: 8px;
     overflow: hidden;
     border-radius: 999px;
-    background: #252824;
+    background: #e5e7eb;
 }
 
 .o_utiles_bar span {
     display: block;
     height: 100%;
     border-radius: 999px;
-    background: #78bd2f;
+    background: #8cc63f;
 }
 
 .o_utiles_status {
@@ -236,24 +256,24 @@
 }
 
 .o_utiles_status_ok {
-    background: #d8f7ed;
-    color: #28745f;
+    background: #dcfce7;
+    color: #166534;
 }
 
 .o_utiles_status_low {
-    background: #fff0d8;
-    color: #8b5a13;
+    background: #fef3c7;
+    color: #92400e;
 }
 
 .o_utiles_status_no_stock {
-    background: #ffe1e1;
-    color: #b23838;
+    background: #fee2e2;
+    color: #b91c1c;
 }
 
 .o_utiles_empty {
     padding: 28px !important;
     text-align: center;
-    color: #c5c6bf;
+    color: #6b7280;
 }
 
 @media (max-width: 900px) {
