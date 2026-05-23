@@ -276,10 +276,18 @@ class ReporteRecepcionDashboard extends Component {
     }
 
     generatePdf() {
-        this.notification.add(
-            "La vista visual ya está lista. Luego conectamos este botón a la generación real del PDF.",
-            { type: "info" }
-        );
+        const ids = [...this.state.selectedIds];
+
+        if (!ids.length) {
+           this.notification.add(
+               "Selecciona al menos una recepción para generar el PDF.",
+               { type: "warning" }
+           );
+           return;
+       }
+
+       const url = `/report/pdf/gestion_utiles_escolares.report_recepciones_pdf_template/${ids.join(",")}`;
+       window.open(url, "_blank");
     }
 }
 
