@@ -58,7 +58,7 @@
 
     <record id="action_reporte_recepcion_utiles_menu" model="ir.actions.act_window">
         <field name="name">▦Reporte de recepción</field>
-        <field name="res_model">recepcion.utiles</field>
+        <field name="res_model">recepcion.utiles.escolar</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[]</field>
         <field name="context">{}</field>
