@@ -280,6 +280,30 @@ class AlmacenUtilesMovimiento(models.Model):
                         "id": user.id,
                         "name": user.name,
                  })
+                            # Opciones para filtro por grado
+        grados = []
+        grado_field = self._fields.get("grado_escolar")
+
+        if grado_field and grado_field.selection:
+            for value, label in grado_field.selection:
+                grados.append({
+                    "value": value,
+                    "label": label,
+                })
+
+        # Opciones para filtro por responsable
+        responsables = []
+        responsables_domain = [
+            ("fecha", ">=", fields.Datetime.to_string(start)),
+            ("fecha", "<", fields.Datetime.to_string(end)),
+        ]
+
+        for user in self.search(responsables_domain).mapped("responsable_id"):
+            if user:
+                responsables.append({
+                    "id": user.id,
+                    "name": user.name,
+                })
 
         return {
             "month_label": f"{meses[month]} {year}",
