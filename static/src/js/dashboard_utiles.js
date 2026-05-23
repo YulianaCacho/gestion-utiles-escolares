@@ -43,41 +43,71 @@ class DashboardUtilesEscolares extends Component {
 
     async loadDashboardData() {
         const products = await this.orm.searchRead(
-            "product.template",
+            "product.product",
             [],
-            ["name", "default_code", "categ_id", "qty_available", "outgoing_qty"],
-            { limit: 1000, order: "name asc" }
+            ["display_name", "default_code", "categ_id"],
+            { limit: 2000, order: "display_name asc" }
         );
+
+        const movimientos = await this.orm.searchRead(
+            "almacen.utiles.movimiento",
+            [],
+            ["product_id", "cantidad", "tipo_movimiento", "categoria_id"],
+            { limit: 10000, order: "id asc" }
+        );
+
+        const stockByProduct = {};
+
+        for (const mov of movimientos) {
+            if (!mov.product_id || !mov.product_id[0]) {
+               continue;
+            }
+
+            const productId = mov.product_id[0];
+            const cantidad = Number(mov.cantidad || 0);
+
+            if (!stockByProduct[productId]) {
+                 stockByProduct[productId] = 0;
+           }
+
+           if (mov.tipo_movimiento === "entrada") {
+               stockByProduct[productId] += cantidad;
+           } else if (mov.tipo_movimiento === "salida") {
+               stockByProduct[productId] -= cantidad;
+           } else if (mov.tipo_movimiento === "ajuste") {
+               stockByProduct[productId] += cantidad;
+           }
+       }
 
         const normalized = products
             .map((product) => {
-                const qty = Number(product.qty_available || 0);
-                const reserved = Number(product.outgoing_qty || 0);
-                const available = Math.max(qty - reserved, 0);
+               const qty = Number(stockByProduct[product.id] || 0);
+               const reserved = 0;
+               const available = Math.max(qty - reserved, 0);
 
-                const category = product.categ_id
-                    ? product.categ_id[1].split("/").pop().trim()
-                    : "Varios";
+               const category = product.categ_id
+                   ? product.categ_id[1].split("/").pop().trim()
+                   : "Varios";
 
-                return {
-                    id: product.id,
-                    name: product.name || "Sin nombre",
-                    code: product.default_code || "",
-                    category: category || "Varios",
-                    qty,
-                    reserved,
-                    available,
-                    status: available <= 0 ? "Sin stock" : available <= 5 ? "Stock bajo" : "Normal",
-                };
+               return {
+                   id: product.id,
+                   name: product.display_name || "Sin nombre",
+                   code: product.default_code || "",
+                   category: category || "Varios",
+                   qty,
+                   reserved,
+                   available,
+                   status: available <= 0 ? "Sin stock" : available <= 5 ? "Stock bajo" : "Normal",
+             };
             })
-            .filter((product) => {
-                const categoryNormalized = normalizeText(product.category);
+           .filter((product) => {
+              const categoryNormalized = normalizeText(product.category);
 
-                return !EXCLUDED_CATEGORIES.some((excluded) =>
-                    categoryNormalized.includes(excluded)
-                );
-            });
-
+              return !EXCLUDED_CATEGORIES.some((excluded) =>
+                  categoryNormalized.includes(excluded)
+              );
+           });
+ 
         const categories = Array.from(new Set(normalized.map((p) => p.category))).sort();
         const now = new Date();
 
