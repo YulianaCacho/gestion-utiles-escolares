@@ -32,6 +32,7 @@
     'views/favicon_views.xml',
 
     "views/dashboard_utiles_views.xml",
+    "views/reportes_menu_views.xml",
 ],
    'assets': {
         'web.assets_backend': [
