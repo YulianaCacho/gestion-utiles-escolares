@@ -57,33 +57,39 @@ class DashboardUtilesEscolares extends Component {
         );
 
         const stockByProduct = {};
+        const retiradoByProduct = {};
 
         for (const mov of movimientos) {
             if (!mov.product_id || !mov.product_id[0]) {
                continue;
-            }
+        }
 
-            const productId = mov.product_id[0];
-            const cantidad = Number(mov.cantidad || 0);
+        const productId = mov.product_id[0];
+        const cantidad = Number(mov.cantidad || 0);
 
-            if (!stockByProduct[productId]) {
-                 stockByProduct[productId] = 0;
-           }
+        if (!stockByProduct[productId]) {
+            stockByProduct[productId] = 0;
+        }
 
-           if (mov.tipo_movimiento === "entrada") {
-               stockByProduct[productId] += cantidad;
-           } else if (mov.tipo_movimiento === "salida") {
-               stockByProduct[productId] -= cantidad;
-           } else if (mov.tipo_movimiento === "ajuste") {
-               stockByProduct[productId] += cantidad;
-           }
-       }
+        if (!retiradoByProduct[productId]) {
+            retiradoByProduct[productId] = 0;
+        }
+
+        if (mov.tipo_movimiento === "entrada") {
+            stockByProduct[productId] += cantidad;
+        } else if (mov.tipo_movimiento === "salida") {
+            stockByProduct[productId] -= cantidad;
+           retiradoByProduct[productId] += cantidad;
+        } else if (mov.tipo_movimiento === "ajuste") {
+            stockByProduct[productId] += cantidad;
+        }
+   }
 
         const normalized = products
             .map((product) => {
                const qty = Number(stockByProduct[product.id] || 0);
-               const reserved = 0;
-               const available = Math.max(qty - reserved, 0);
+               const reserved = Number(retiradoByProduct[product.id] || 0);
+               const available = Math.max(qty, 0);
 
                const category = product.categ_id
                    ? product.categ_id[1].split("/").pop().trim()
