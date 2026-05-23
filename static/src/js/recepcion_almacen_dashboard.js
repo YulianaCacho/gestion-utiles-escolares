@@ -98,34 +98,32 @@ class RecepcionAlmacenDashboard extends Component {
         await this.loadList();
     }
 
-isSelected(id) {
-    return this.state.selectedIds.includes(id);
-}
+    isSelected(id) {
+        return this.state.selectedIds.includes(id);
+    }
 
-isAllSelected() {
-    return this.state.rows.length > 0 &&
-        this.state.rows.every((row) => this.state.selectedIds.includes(row.id));
-}
+    isAllSelected() {
+         return this.state.rows.length > 0 &&
+                this.state.rows.every((row) => this.state.selectedIds.includes(row.id));
+    }
 
-toggleSelect(id, ev) {
+    toggleSelect(id) {
     id = Number(id);
 
-    if (ev.target.checked) {
-        if (!this.state.selectedIds.includes(id)) {
-            this.state.selectedIds = [...this.state.selectedIds, id];
+        if (this.state.selectedIds.includes(id)) {
+           this.state.selectedIds = this.state.selectedIds.filter((item) => item !== id);
+        } else {
+           this.state.selectedIds = [...this.state.selectedIds, id];
         }
-    } else {
-        this.state.selectedIds = this.state.selectedIds.filter((item) => item !== id);
     }
-}
 
-toggleSelectAll(ev) {
-    if (ev.target.checked) {
-        this.state.selectedIds = this.state.rows.map((row) => row.id);
-    } else {
-        this.state.selectedIds = [];
+    toggleSelectAll(ev) {
+        if (ev.target.checked) {
+           this.state.selectedIds = this.state.rows.map((row) => row.id);
+        } else {
+           this.state.selectedIds = [];
+        }
     }
-}
 
 async borrarSeleccionados() {
     const ids = [...this.state.selectedIds];

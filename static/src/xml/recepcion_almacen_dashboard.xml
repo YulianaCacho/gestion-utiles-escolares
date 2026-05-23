@@ -90,7 +90,7 @@
                                 <td class="o_rad_select_col">
                                     <input type="checkbox"
                                            t-att-checked="isSelected(row.id)"
-                                           t-on-change="(ev) => this.toggleSelect(row.id, ev)"/>
+                                           t-on-change="() => toggleSelect(row.id)"/>
                                 </td>
 
                                  <td>
