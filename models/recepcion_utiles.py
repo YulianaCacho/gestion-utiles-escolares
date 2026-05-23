@@ -8,6 +8,23 @@ class RecepcionUtilesEscolar(models.Model):
     _rec_name = "name"
     _order = "fecha desc, id desc"
 
+    def _fmt_qty_dashboard(self, value):
+        value = float(value or 0)
+        if value.is_integer():
+            return str(int(value))
+        return f"{value:.2f}".rstrip("0").rstrip(".")
+
+    def _grado_label_dashboard(self, grado):
+        info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
+        selection = dict(info.get("selection", []))
+        return selection.get(grado, grado or "")
+
+    def _iniciales_dashboard(self, nombre):
+        partes = (nombre or "").split()
+        if not partes:
+            return ""
+        return "".join([p[0].upper() for p in partes[:2]])
+
     name = fields.Char(
         string="Código de recepción",
         default="Nueva",
