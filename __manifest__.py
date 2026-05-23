@@ -7,18 +7,62 @@
     "category": "Inventory",
     "depends": ["base", "contacts", "stock", "product"],
     "data": [
-        "views/res_partner_views.xml",
-        "views/product_template_views.xml",
-        "views/stock_picking_views.xml",
-        "views/lista_utiles_views.xml",
-        "security/ir.model.access.csv",
-        'views/recepcion_utiles_views.xml',
-        'reports/reporte_recepcion_utiles.xml',
-        'views/favicon_views.xml',
-    ],
+    'security/security.xml',
+    'security/ir.model.access.csv',
+    'data/sequence.xml',
+
+    "views/res_partner_views.xml",
+    "views/product_template_views.xml",
+    "views/stock_picking_views.xml",
+
+    # Primero se carga almacén porque Recepciones y Entregas dependen de ese menú
+    'views/almacen_utiles_views.xml',
+    'views/recepcion_utiles_views.xml',
+
+    # Luego Matrículas
+    'views/matricula_escolar_views.xml',
+
+    # Luego Lista de útiles porque ahora irá dentro de Matrículas
+    "views/lista_utiles_views.xml",
+
+    # Luego Entregas
+    'views/salida_almacen_utiles_views.xml',
+
+    'reports/reporte_recepcion_utiles.xml',
+    'views/favicon_views.xml',
+
+    "views/dashboard_utiles_views.xml",
+    "views/reportes_menu_views.xml",
+    "views/reporte_recepcion_dashboard_views.xml",
+    "views/reporte_almacen_movimientos_views.xml",
+    "report/reporte_recepciones_pdf.xml",
+
+],
    'assets': {
         'web.assets_backend': [
             'gestion_utiles_escolares/static/src/css/backend_theme.css',
+            "gestion_utiles_escolares/static/src/css/dashboard_utiles.css",
+            "gestion_utiles_escolares/static/src/js/dashboard_utiles.js",
+            "gestion_utiles_escolares/static/src/xml/dashboard_utiles.xml",
+           
+            "gestion_utiles_escolares/static/src/css/reporte_recepcion_dashboard.css",
+            "gestion_utiles_escolares/static/src/js/reporte_recepcion_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/reporte_recepcion_dashboard.xml",
+       
+            "gestion_utiles_escolares/static/src/css/reporte_almacen_movimientos.css",
+            "gestion_utiles_escolares/static/src/js/reporte_almacen_movimientos.js",
+            "gestion_utiles_escolares/static/src/xml/reporte_almacen_movimientos.xml",
+        
+            "gestion_utiles_escolares/static/src/css/reporte_linea_tiempo_movimientos.css",
+            "gestion_utiles_escolares/static/src/js/reporte_linea_tiempo_movimientos.js",
+            "gestion_utiles_escolares/static/src/xml/reporte_linea_tiempo_movimientos.xml",
+        
+            "gestion_utiles_escolares/static/src/css/recepcion_almacen_dashboard.css",
+            "gestion_utiles_escolares/static/src/js/recepcion_almacen_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/recepcion_almacen_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/recepcion_utiles_form_clean.css",
+       
+            "gestion_utiles_escolares/static/src/css/entregas_list_clean.css",
         ],
     },
     "installable": True,

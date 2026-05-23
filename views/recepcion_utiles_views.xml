@@ -1,196 +1,215 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <data noupdate="1">
-        <record id="seq_recepcion_utiles_escolar" model="ir.sequence">
-            <field name="name">Secuencia recepción de útiles</field>
-            <field name="code">recepcion.utiles.escolar</field>
-            <field name="prefix">REC-</field>
-            <field name="padding">5</field>
-            <field name="number_next">1</field>
-            <field name="number_increment">1</field>
-        </record>
-    </data>
+    <!-- ===================================================== -->
+    <!-- VISTA LISTA DE RECEPCIONES -->
+    <!-- ===================================================== -->
 
     <record id="view_recepcion_utiles_escolar_list" model="ir.ui.view">
         <field name="name">recepcion.utiles.escolar.list</field>
         <field name="model">recepcion.utiles.escolar</field>
         <field name="arch" type="xml">
-            <list string="Recepción de útiles"
-                  decoration-danger="estado == 'incompleto'"
-                  decoration-success="estado == 'completo'"
-                  decoration-muted="estado == 'borrador'">
-                <field name="name"/>
-                <field name="fecha"/>
-                <field name="estudiante_id"/>
-                <field name="grado_escolar"/>
-                <field name="lista_id"/>
-                <field name="total_productos"/>
-                <field name="total_completos"/>
-                <field name="total_faltantes"/>
-                <field name="porcentaje_avance"/>
-                <field name="estado"/>
+            <list string="Recepciones de útiles">
+                <field name="name" string="Código de recepción"/>
+                <field name="fecha" string="Fecha de recepción"/>
+                <field name="matricula_id" string="Matrícula"/>
+                <field name="estudiante_id" string="Estudiante"/>
+                <field name="grado_escolar" string="Grado escolar"/>
+                <field name="recibido_por_id" string="Recibido por"/>
+                <field name="items_resumen" string="Ítems"/>
+                <field name="estado_entrega" string="Estado de entrega"/>
+                <field name="estado_visual" string="Estado"/>
             </list>
         </field>
     </record>
 
-    <record id="view_recepcion_utiles_escolar_form" model="ir.ui.view">
-        <field name="name">recepcion.utiles.escolar.form</field>
+
+    <!-- ===================================================== -->
+    <!-- FORMULARIO LIMPIO DE RECEPCIÓN DE ÚTILES -->
+    <!-- ===================================================== -->
+
+    <record id="view_recepcion_utiles_escolar_form_limpio_almacen" model="ir.ui.view">
+        <field name="name">recepcion.utiles.escolar.form.limpio.almacen</field>
         <field name="model">recepcion.utiles.escolar</field>
+        <field name="priority">5</field>
         <field name="arch" type="xml">
-            <form string="Recepción de útiles escolares">
-                <header>
-                    <button name="action_cargar_lista"
-                            type="object"
-                            string="Cargar lista de útiles"
-                            class="btn-primary"
-                            invisible="estado != 'borrador'"/>
+           <form string="Recepción de útiles" class="o_recepcion_clean_form">
 
-                    <button name="action_calcular_faltantes"
-                            type="object"
-                            string="Calcular faltantes"
-                            class="btn-secondary"
-                            invisible="estado == 'validado'"/>
+            <header>
+                <button name="action_cargar_lista"
+                        string="Cargar lista de útiles"
+                        type="object"
+                        icon="fa-upload"/>
 
-                    <button name="action_validar"
-                            type="object"
-                            string="Validar recepción"
-                            class="btn-primary"
-                            invisible="estado == 'validado'"/>
+                <button name="action_calcular_faltantes"
+                        string="Calcular faltantes"
+                        type="object"
+                        icon="fa-calculator"/>
 
-                    <field name="estado"
-                           widget="statusbar"
-                           statusbar_visible="borrador,incompleto,completo,validado"/>
-                </header>
+                <button name="action_validar"
+                        string="Validar recepción"
+                        type="object"
+                        icon="fa-check"/>
 
-                <sheet>
-                    <div class="oe_title">
+                <field name="estado"
+                       widget="statusbar"
+                       statusbar_visible="borrador,incompleto,completo,validado"/>
+            </header>
+
+            <sheet>
+
+                <div class="o_recepcion_title_row">
+                    <div class="o_recepcion_title_left">
                         <h1>
-                            <field name="name"/>
+                            <field name="name" readonly="1" nolabel="1"/>
                         </h1>
                     </div>
+                    <div class="o_recepcion_title_badge">
+                        <field name="estado" readonly="1" nolabel="1" widget="badge"/>
+                    </div>
+                </div>
 
-                    <group string="Datos de la recepción">
-                        <group>
-                            <field name="fecha"/>
-                            <field name="anio"/>
-                            <field name="estudiante_id"/>
-                            <field name="grado_escolar"/>
-                            <field name="lista_id"/>
-                        </group>
+                <div class="o_recepcion_section_title">DATOS DE LA RECEPCIÓN</div>
 
-                        <group>
-                            <field name="total_productos"/>
-                            <field name="total_completos"/>
-                            <field name="total_faltantes"/>
-                            <field name="porcentaje_avance"/>
-                            <field name="estado_entrega"/>
-                            <field name="estado"/>
-                        </group>
-                    </group>
+                <div class="o_recepcion_main_grid">
 
-                    <notebook>
-                        <page string="Productos recibidos">
-                            <field name="linea_ids">
-                                <list editable="bottom"
-                                      decoration-danger="estado_linea == 'faltante'"
-                                      decoration-success="estado_linea == 'completo'"
-                                      decoration-muted="estado_linea == 'pendiente'">
-                                    <field name="product_id"/>
-                                    <field name="categoria_id"/>
-                                    <field name="cantidad_esperada"/>
-                                    <field name="cantidad_entregada"/>
-                                    <field name="cantidad_faltante"/>
-                                    <field name="unidad_id"/>
-                                    <field name="tipo_uso_escolar"/>
-                                    <field name="estado_linea"/>
-                                    <field name="observacion"/>
-                                </list>
-                            </field>
-                        </page>
+                    <div class="o_recepcion_left_panel">
 
-                        <page string="Observaciones">
-                            <field name="observacion"/>
-                        </page>
-                    </notebook>
-                </sheet>
-            </form>
-        </field>
-    </record>
+                        <div class="o_recepcion_field_row">
+                            <label for="fecha" string="Fecha de recepción"/>
+                            <field name="fecha" nolabel="1"/>
+                        </div>
 
-    <record id="view_recepcion_utiles_escolar_search" model="ir.ui.view">
-    <field name="name">recepcion.utiles.escolar.search</field>
-    <field name="model">recepcion.utiles.escolar</field>
-    <field name="arch" type="xml">
-        <search string="Buscar recepción de útiles">
+                        <div class="o_recepcion_field_row">
+                            <label for="anio" string="Año escolar"/>
+                            <field name="anio" readonly="1" nolabel="1"/>
+                        </div>
 
-            <field name="name"/>
-            <field name="estudiante_id"/>
-            <field name="grado_escolar"/>
-            <field name="lista_id"/>
-            <field name="estado_entrega"/>
-            <field name="estado"/>
+                        <div class="o_recepcion_field_row">
+                            <label for="matricula_id" string="Matrícula"/>
+                            <field name="matricula_id"
+                                   nolabel="1"
+                                   options="{'no_create': True, 'no_open': False}"/>
+                        </div>
 
-            <filter name="filtro_entrega_completa"
-                    string="Entrega completa"
-                    domain="[('estado_entrega','=','completo')]"/>
+                        <div class="o_recepcion_field_row">
+                            <label for="estudiante_id" string="Estudiante"/>
+                            <field name="estudiante_id" readonly="1" nolabel="1"/>
+                        </div>
 
-            <filter name="filtro_entrega_incompleta"
-                    string="Entrega incompleta"
-                    domain="[('estado_entrega','=','incompleto')]"/>
+                        <div class="o_recepcion_field_row">
+                            <label for="grado_escolar" string="Grado escolar"/>
+                            <field name="grado_escolar" readonly="1" nolabel="1"/>
+                        </div>
 
-            <filter name="filtro_sin_cargar"
-                    string="Sin cargar"
-                    domain="[('estado_entrega','=','sin_cargar')]"/>
+                        <div class="o_recepcion_field_row">
+                            <label for="lista_id" string="Lista de útiles"/>
+                            <field name="lista_id" readonly="1" nolabel="1"/>
+                        </div>
 
-            <separator/>
+                        <div class="o_recepcion_field_row">
+                            <label for="recibido_por_id" string="Recibido por"/>
+                            <field name="recibido_por_id" readonly="1" nolabel="1"/>
+                        </div>
 
-            <filter name="filtro_borrador"
-                    string="Proceso en borrador"
-                    domain="[('estado','=','borrador')]"/>
+                    </div>
 
-            <filter name="filtro_proceso_validado"
-                    string="Proceso validado"
-                    domain="[('estado','=','validado')]"/>
+                    <div class="o_recepcion_cards_grid">
 
-            <separator/>
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">TOTAL DE PRODUCTOS</span>
+                            <field name="total_productos" readonly="1" nolabel="1"/>
+                        </div>
 
-            <filter name="grupo_grado"
-                    string="Agrupar por grado"
-                    context="{'group_by':'grado_escolar'}"/>
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">PRODUCTOS COMPLETOS</span>
+                            <field name="total_completos" readonly="1" nolabel="1"/>
+                        </div>
 
-            <filter name="grupo_lista"
-                    string="Agrupar por lista"
-                    context="{'group_by':'lista_id'}"/>
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">PRODUCTOS FALTANTES</span>
+                            <field name="total_faltantes" readonly="1" nolabel="1"/>
+                        </div>
 
-            <filter name="grupo_estado_entrega"
-                    string="Agrupar por estado de entrega"
-                    context="{'group_by':'estado_entrega'}"/>
+                        <div class="o_recepcion_card o_recepcion_card_progress">
+                            <span class="o_form_label">PORCENTAJE DE AVANCE</span>
+                            <div class="o_recepcion_percent">
+                                <field name="porcentaje_avance" readonly="1" nolabel="1"/>
+                                <span>%</span>
+                            </div>
+                            <div class="o_recepcion_progress_track">
+                                <div class="o_recepcion_progress_bar"></div>
+                            </div>
+                        </div>
 
-            <filter name="grupo_estado"
-                    string="Agrupar por estado del proceso"
-                    context="{'group_by':'estado'}"/>
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">ESTADO DE ENTREGA</span>
+                            <field name="estado_entrega" readonly="1" nolabel="1" widget="badge"/>
+                        </div>
 
-        </search>
+                        <div class="o_recepcion_card">
+                            <span class="o_form_label">ESTADO</span>
+                            <field name="estado_visual" readonly="1" nolabel="1" widget="badge"/>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <notebook>
+                    <page string="Productos recibidos">
+                        <field name="linea_ids" nolabel="1">
+                            <list editable="bottom"
+                                  create="0"
+                                  delete="0"
+                                  string="Productos recibidos">
+
+                                <field name="product_id" string="Producto" readonly="1"/>
+                                <field name="categoria_id" string="Categoría" readonly="1"/>
+                                <field name="cantidad_esperada" string="Cantidad esperada" readonly="1"/>
+                                <field name="cantidad_entregada" string="Cantidad entregada"/>
+                                <field name="cantidad_faltante" string="Cantidad faltante" readonly="1"/>
+                                <field name="unidad_id" string="Unidad" readonly="1"/>
+                                <field name="tipo_uso_escolar" string="Tipo de uso escolar" readonly="1"/>
+                                <field name="estado_linea"
+                                       string="Estado"
+                                       readonly="1"
+                                       widget="badge"
+                                       decoration-success="estado_linea == 'completo'"
+                                       decoration-danger="estado_linea == 'faltante'"
+                                       decoration-muted="estado_linea == 'pendiente'"/>
+                                <field name="observacion" string="Observación"/>
+
+                            </list>
+                        </field>
+                    </page>
+
+                    <page string="Observaciones">
+                        <field name="observacion"
+                               nolabel="1"
+                               placeholder="Escribe una observación general de la recepción..."/>
+                    </page>
+                </notebook>
+
+            </sheet>
+        </form>
     </field>
 </record>
 
-    <record id="action_recepcion_utiles_escolar" model="ir.actions.act_window">
-    <field name="name">Recepción de útiles</field>
-    <field name="res_model">recepcion.utiles.escolar</field>
-    <field name="view_mode">list,form</field>
-    <field name="search_view_id" ref="view_recepcion_utiles_escolar_search"/>
+
+    <!-- ===================================================== -->
+    <!-- ACCIÓN NORMAL DE RECEPCIONES -->
+    <!-- ===================================================== -->
+
+    <record id="action_recepcion_utiles_almacen" model="ir.actions.act_window">
+        <field name="name">Recepción de útiles</field>
+        <field name="res_model">recepcion.utiles.escolar</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[
+            (5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_recepcion_utiles_escolar_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_recepcion_utiles_escolar_form_limpio_almacen')})
+        ]"/>
     </record>
-
-    <menuitem id="menu_utiles_escolares_root"
-          name="Útiles escolares"
-          parent="stock.menu_stock_root"
-          sequence="90"/>
-
-    <menuitem id="menu_recepcion_utiles_escolar"
-          name="Recepción por estudiante"
-          parent="menu_utiles_escolares_root"
-          action="action_recepcion_utiles_escolar"
-          sequence="20"/>
 
 </odoo>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.ReporteRecepcionDashboard">
+        <div class="o_rr_wrap">
+
+            <!-- Toolbar -->
+            <div class="o_rr_toolbar">
+                <button type="button" class="o_rr_btn_pdf" t-on-click="generatePdf">
+                    <i class="fa fa-file-pdf-o"/> Generar PDF
+                </button>
+
+                <div class="o_rr_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           placeholder="Buscar alumno, grado..."
+                           t-model="state.search"/>
+                </div>
+
+                <button type="button" class="o_rr_btn_small">
+                    <i class="fa fa-calendar-o"/> <t t-esc="state.yearLabel"/>
+                </button>
+
+                <button type="button" class="o_rr_btn_small" t-on-click="openFilters">
+                    <i class="fa fa-filter"/> Filtros
+                </button>
+            </div>
+
+            <!-- Título -->
+            <div class="o_rr_header_row">
+                <h2>Recepciones registradas</h2>
+                <span><t t-esc="selectedCount"/> seleccionadas · <t t-esc="filteredRows.length"/> en total</span>
+            </div>
+
+            <!-- Info -->
+            <div class="o_rr_info_box">
+                <i class="fa fa-info-circle"/>
+                <span>
+                    Marca los alumnos que quieres incluir en el reporte y luego pulsa
+                    <strong>Generar PDF</strong>. Puedes seleccionar uno, varios o todos.
+                </span>
+            </div>
+
+            <!-- Filtros rápidos -->
+            <div class="o_rr_quick_filters">
+                <button type="button"
+                        t-att-class="state.filterMode === 'Todos' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.setFilter('Todos')">Todos</button>
+
+                <button type="button"
+                        t-att-class="state.filterMode === 'Completos' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.setFilter('Completos')">Completos</button>
+
+                <button type="button"
+                        t-att-class="state.filterMode === 'Incompletos' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.setFilter('Incompletos')">Incompletos</button>
+
+                <button type="button"
+                        t-att-class="state.filterMode === 'Inicial' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.setFilter('Inicial')">Inicial</button>
+
+                <button type="button"
+                        t-att-class="state.filterMode === 'Primaria' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.setFilter('Primaria')">Primaria</button>
+            </div>
+
+            <!-- Tabla -->
+            <div class="o_rr_table_wrap">
+                <table class="o_rr_table">
+                    <thead>
+                        <tr>
+                            <th class="o_rr_checkbox_col">
+                                <input type="checkbox" t-on-change="toggleAll"/>
+                            </th>
+                            <th>Estudiante</th>
+                            <th>Grado</th>
+                            <th>Lista</th>
+                            <th>Total</th>
+                            <th>Complet.</th>
+                            <th>Avance</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="filteredRows.length">
+                            <tr t-foreach="filteredRows" t-as="row" t-key="row.id">
+                                <td class="o_rr_checkbox_col">
+                                    <input type="checkbox"
+                                           t-att-checked="isSelected(row.id) ? true : undefined"
+                                           t-on-change="() => this.toggleOne(row.id)"/>
+                                </td>
+                                <td t-esc="row.estudiante"/>
+                                <td t-esc="row.grado"/>
+                                <td t-esc="row.lista"/>
+                                <td t-esc="row.total"/>
+                                <td t-esc="row.completado"/>
+                                <td>
+                                    <div class="o_rr_avance_wrap">
+                                        <span class="o_rr_bar">
+                                            <span t-att-style="progressStyle(row)"/>
+                                        </span>
+                                        <span class="o_rr_pct"><t t-esc="row.avance"/>%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span t-att-class="statusClass(row.estado)" t-esc="row.estado"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <tr t-else="">
+                            <td colspan="8" class="o_rr_empty">
+                                No hay registros para mostrar.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

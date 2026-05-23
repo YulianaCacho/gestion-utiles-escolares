@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Vista de lista de matrículas -->
+    <record id="view_matricula_escolar_list" model="ir.ui.view">
+        <field name="name">matricula.escolar.list</field>
+        <field name="model">matricula.escolar</field>
+        <field name="arch" type="xml">
+            <list string="Lista de matrícula">
+                <field name="estudiante_id"/>
+                <field name="anio_escolar_visual"/>
+                <field name="grado_escolar"/>
+                <field name="apoderado_principal_id"/>
+            </list>
+        </field>
+        
+    </record>
+
+    <!-- Vista de formulario de matrícula -->
+    <record id="view_matricula_escolar_form" model="ir.ui.view">
+        <field name="name">matricula.escolar.form</field>
+        <field name="model">matricula.escolar</field>
+        <field name="arch" type="xml">
+            <form string="Matrícula escolar">
+                <sheet>
+                    <group string="Datos de matrícula">
+                        <field name="estudiante_id"/>
+                        <field name="anio_escolar" invisible="1"/>
+                        <field name="anio_escolar_visual"/>
+                        <field name="grado_escolar"/>
+                        <field name="lista_utiles_id"/>
+                        <field name="estado"/>
+                    </group>
+
+                    <group string="Relación familiar">
+                        <field name="apoderado_principal_id"/>
+                        <field name="apoderado_secundario_id"/>
+                    </group>
+
+                    <group string="Observación">
+                        <field name="observacion"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción: Registrar matrícula -->
+    <record id="action_registrar_matricula" model="ir.actions.act_window">
+        <field name="name">Registrar matrícula</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">form,list</field>
+        <field name="view_id" ref="view_matricula_escolar_form"/>
+        <field name="context">{'default_estado': 'activo', 'default_anio_escolar': 2026}</field>
+    </record>
+
+    <!-- Acción: Lista de matrícula -->
+    <record id="action_lista_matricula" model="ir.actions.act_window">
+        <field name="name">Lista de matrícula</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Acción: Estado por alumno -->
+    <record id="action_estado_por_alumno" model="ir.actions.act_window">
+        <field name="name">Estado por alumno</field>
+        <field name="res_model">matricula.escolar</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Reordenar menú principal Matrículas -->
+    <record id="menu_utiles_escolares_root" model="ir.ui.menu">
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Menú: Registrar matrícula -->
+    <menuitem id="menu_registrar_matricula"
+              name="✚ Registrar matrícula"
+              parent="menu_utiles_escolares_root"
+              action="action_registrar_matricula"
+              sequence="10"/>
+
+    <!-- Menú: Lista de matrícula -->
+    <menuitem id="menu_lista_matricula"
+              name="▤ Lista de matrícula"
+              parent="menu_utiles_escolares_root"
+              action="action_lista_matricula"
+              sequence="20"/>
+
+    <!-- Menú: Estado por alumno -->
+    <menuitem id="menu_estado_por_alumno"
+              name="⊙ Estado por alumno"
+              parent="menu_utiles_escolares_root"
+              action="action_estado_por_alumno"
+              sequence="40"/>
+
+</odoo>

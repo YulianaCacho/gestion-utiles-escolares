@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Acción cliente: Reporte de recepción visual -->
+    <record id="action_reporte_recepcion_dashboard" model="ir.actions.client">
+        <field name="name">▦ Reporte de recepción</field>
+        <field name="tag">gestion_utiles_escolares.reporte_recepcion_dashboard</field>
+    </record>
+
+    <!-- Reusar el menú existente para que abra el dashboard -->
+    <record id="menu_reporte_recepcion_utiles" model="ir.ui.menu">
+        <field name="name">▦ Reporte de recepción</field>
+        <field name="action" eval="'ir.actions.client,%d' % ref('action_reporte_recepcion_dashboard')"/>
+        <field name="sequence">30</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>

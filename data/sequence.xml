@@ -6,4 +6,11 @@
         <field name="prefix">SAL-</field>
         <field name="padding">5</field>
     </record>
+
+    <record id="seq_salida_almacen_utiles" model="ir.sequence">
+        <field name="name">Secuencia de entregas de almacén</field>
+        <field name="code">salida.almacen.utiles</field>
+        <field name="prefix">ENT-</field>
+        <field name="padding">5</field>
+    </record>
 </odoo>

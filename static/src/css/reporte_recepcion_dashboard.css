@@ -1,0 +1,235 @@
+.o_rr_wrap {
+    padding: 18px 18px 30px 18px;
+    background: #f7f7f4;
+    min-height: calc(100vh - 46px);
+    color: #2d2d2d;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.o_rr_toolbar {
+    display: grid;
+    grid-template-columns: 170px 1fr 110px 120px;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.o_rr_btn_pdf,
+.o_rr_btn_small {
+    height: 46px;
+    border: 1px solid #cfcfc8;
+    border-radius: 12px;
+    background: #f6f5ef;
+    color: #2b2b2b;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.o_rr_btn_pdf:hover,
+.o_rr_btn_small:hover {
+    background: #efeee8;
+}
+
+.o_rr_search_box {
+    height: 46px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border: 1px solid #d4d4cd;
+    border-radius: 12px;
+    background: #f6f5ef;
+}
+
+.o_rr_search_box i {
+    color: #6b6b6b;
+}
+
+.o_rr_search_box input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 15px;
+    color: #2d2d2d;
+}
+
+.o_rr_header_row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.o_rr_header_row h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #2f2f2f;
+}
+
+.o_rr_header_row span {
+    color: #4b4b4b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.o_rr_info_box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border: 1px solid #9dc0eb;
+    border-radius: 12px;
+    background: #dcecff;
+    color: #16497e;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.o_rr_quick_filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.o_rr_chip {
+    padding: 8px 14px;
+    border: 1px solid #d0d0c9;
+    border-radius: 999px;
+    background: #fbfaf6;
+    color: #4c4c4c;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.o_rr_chip.active {
+    border-color: #68c2a6;
+    background: #e2f7ef;
+    color: #167a60;
+}
+
+.o_rr_table_wrap {
+    overflow-x: auto;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.o_rr_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.o_rr_table th {
+    padding: 13px 12px;
+    background: #ecebe4;
+    color: #4a4a42;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 800;
+    border-bottom: 1px solid #dddcd3;
+}
+
+.o_rr_table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #e5e4dc;
+    font-size: 15px;
+    font-weight: 600;
+    color: #2d2d2d;
+}
+
+.o_rr_checkbox_col {
+    width: 34px;
+    text-align: center;
+}
+
+.o_rr_avance_wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.o_rr_bar {
+    width: 82px;
+    height: 6px;
+    border-radius: 999px;
+    background: #e6e4dc;
+    overflow: hidden;
+    display: inline-block;
+}
+
+.o_rr_bar span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: #7aac2a;
+}
+
+.o_rr_pct {
+    font-size: 14px;
+    font-weight: 800;
+    color: #67675f;
+}
+
+.o_rr_estado {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.o_rr_estado_ok {
+    background: #d8f1e6;
+    color: #206a54;
+}
+
+.o_rr_estado_warn {
+    background: #f6e3bf;
+    color: #8a5a13;
+}
+
+.o_rr_empty {
+    text-align: center;
+    color: #666;
+    padding: 24px !important;
+}
+
+@media (max-width: 1000px) {
+    .o_rr_toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .o_rr_header_row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+}
+/* ================================ */
+/* SCROLL FORZADO PARA DASHBOARDS */
+/* ================================ */
+
+.o_action_manager {
+    overflow: hidden !important;
+}
+
+.o_content {
+    height: calc(100vh - 48px) !important;
+    max-height: calc(100vh - 48px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+.o_reporte_recepcion_dashboard,
+.o_reporte_almacen_movimientos,
+.o_reporte_linea_tiempo_movimientos,
+.o_dashboard_utiles_page,
+.o_rad_page {
+    min-height: 100%;
+    padding-bottom: 100px;
+    box-sizing: border-box;
+}

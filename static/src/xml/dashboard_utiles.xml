@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.DashboardUtilesEscolares">
+        <div class="o_utiles_dashboard">
+
+            <div class="o_utiles_toolbar">
+                <div class="o_utiles_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           placeholder="Buscar producto, categoría..."
+                           t-model="state.search"/>
+                </div>
+
+                <button type="button" class="o_utiles_button" t-on-click="exportCsv">
+                    <i class="fa fa-download"/> Exportar
+                </button>
+            </div>
+
+            <div class="o_utiles_summary_grid">
+                <div class="o_utiles_summary_card">
+                    <span class="o_utiles_summary_number" t-esc="state.totalItems"/>
+                    <span class="o_utiles_summary_label">Ítems totales</span>
+                </div>
+
+                <div class="o_utiles_summary_card">
+                    <span class="o_utiles_summary_number" t-esc="state.totalProducts"/>
+                    <span class="o_utiles_summary_label">Productos distintos</span>
+                </div>
+
+                <div class="o_utiles_summary_card">
+                    <span class="o_utiles_summary_number" t-esc="state.lowStock"/>
+                    <span class="o_utiles_summary_label">Stock bajo</span>
+                </div>
+
+                <div class="o_utiles_summary_card">
+                    <span class="o_utiles_summary_number o_utiles_danger" t-esc="state.noStock"/>
+                    <span class="o_utiles_summary_label">Sin stock</span>
+                </div>
+            </div>
+
+            <div class="o_utiles_stock_panel">
+
+                <div class="o_utiles_panel_header">
+                    <h2>Stock en almacén general</h2>
+                    <span>Actualizado: <t t-esc="state.updatedAt"/></span>
+                </div>
+
+                <div class="o_utiles_categories">
+                    <t t-foreach="state.categories" t-as="category" t-key="category">
+                        <button type="button"
+                                t-att-class="category === state.selectedCategory ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                t-on-click="() => this.selectCategory(category)">
+                            <t t-esc="category"/>
+                        </button>
+                    </t>
+                </div>
+
+                <div class="o_utiles_table_wrap">
+                    <table class="o_utiles_table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>En almacén</th>
+                                <th>Retirado</th>
+                                <th>Disponibilidad</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-if="filteredProducts.length">
+                                <tr t-foreach="filteredProducts" t-as="product" t-key="product.id">
+                                    <td class="o_utiles_product_name">
+                                        <span class="o_utiles_product_icon">✎</span>
+                                        <div>
+                                            <strong t-esc="product.name"/>
+                                            <small t-if="product.code" t-esc="product.code"/>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="o_utiles_category_badge" t-esc="product.category"/>
+                                    </td>
+
+                                    <td t-esc="product.qty"/>
+                                    <td t-esc="product.reserved"/>
+
+                                    <td>
+                                        <div class="o_utiles_availability">
+                                            <span class="o_utiles_bar">
+                                                <span t-att-style="progressWidth(product)"/>
+                                            </span>
+                                            <span t-esc="product.available"/>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span t-att-class="'o_utiles_status ' + statusClass(product.status)"
+                                              t-esc="product.status"/>
+                                    </td>
+                                </tr>
+                            </t>
+
+                            <tr t-else="">
+                                <td colspan="6" class="o_utiles_empty">
+                                    No hay productos para mostrar.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>

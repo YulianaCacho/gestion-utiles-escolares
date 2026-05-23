@@ -1,0 +1,351 @@
+.o_rad_page {
+    width: 100%;
+    min-height: calc(100vh - 46px);
+    background: #f7f7f4;
+    padding: 16px 18px 32px 18px;
+    box-sizing: border-box;
+    color: #222;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.o_rad_toolbar {
+    display: grid;
+    grid-template-columns: auto 1fr 130px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.o_rad_actions_left {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.o_rad_btn_manage {
+    border-color: #7fbf3f;
+    background: #f5fff0;
+    color: #315f12;
+}
+
+.o_rad_detail_toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.o_rad_btn,
+.o_rad_search {
+    height: 50px;
+    border: 1px solid #cfcfc8;
+    border-radius: 10px;
+    background: #fbfaf6;
+    color: #252525;
+    font-size: 16px;
+    font-weight: 750;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.o_rad_btn {
+    justify-content: center;
+    padding: 0 16px;
+    cursor: pointer;
+}
+
+.o_rad_btn:hover {
+    background: #efeee8;
+}
+
+.o_rad_search {
+    padding: 0 14px;
+}
+
+.o_rad_search input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 16px;
+    font-weight: 650;
+}
+
+.o_rad_list_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.o_rad_list_header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 850;
+}
+
+.o_rad_chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.o_rad_chips button {
+    border: 1px solid #d6d6ce;
+    background: #fff;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.o_rad_chips button.active {
+    background: #e9fff5;
+    border-color: #56c494;
+    color: #076b48;
+}
+
+.o_rad_table,
+.o_rad_detail_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 15px;
+}
+
+.o_rad_table thead th,
+.o_rad_detail_table thead th {
+    color: #444;
+    text-align: left;
+    padding: 11px 12px;
+    font-weight: 850;
+    border-bottom: 1px solid #d6d4ca;
+}
+
+.o_rad_table tbody td,
+.o_rad_detail_table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.o_rad_student {
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    cursor: pointer;
+    color: #222;
+    font-size: 15px;
+}
+
+.o_rad_student:hover strong {
+    text-decoration: underline;
+}
+
+.o_rad_avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #ece9ff;
+    color: #5542a5;
+    font-size: 13px;
+    font-weight: 850;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_rad_status,
+.o_rad_line_status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 850;
+}
+
+.o_rad_status.listo,
+.o_rad_line_status.ok {
+    background: #d7efe8;
+    color: #16725d;
+}
+
+.o_rad_status.incompleto,
+.o_rad_line_status.falta {
+    background: #f9ead1;
+    color: #8b5510;
+}
+
+.o_rad_status.pendiente,
+.o_rad_line_status.pendiente {
+    background: #ece9e2;
+    color: #555;
+}
+
+.o_rad_empty {
+    text-align: center;
+    color: #666;
+    font-weight: 700;
+    padding: 28px !important;
+}
+
+.o_rad_steps {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 14px 10px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: #555;
+}
+
+.o_rad_steps span.active {
+    color: #4d8b24;
+    font-weight: 850;
+    border-bottom: 2px solid #4d8b24;
+    padding-bottom: 4px;
+}
+
+.o_rad_section {
+    margin-bottom: 18px;
+}
+
+.o_rad_section h3 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    font-weight: 850;
+    color: #555;
+}
+
+.o_rad_form_grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+}
+
+.o_rad_form_grid label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #444;
+}
+
+.o_rad_input {
+    min-height: 36px;
+    border: 1px solid #d1d1c9;
+    background: #f1f0ea;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 650;
+    box-sizing: border-box;
+}
+
+.o_rad_input.active {
+    background: #d9f5ea;
+    border-color: #58c29a;
+}
+
+.o_rad_detail_table td.center {
+    text-align: center;
+}
+
+.o_rad_check {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_rad_check.active {
+    background: #5ca443;
+    border-color: #5ca443;
+    color: #fff;
+}
+
+.o_rad_qty {
+    width: 70px;
+    height: 38px;
+    border: 1px solid #d1d1c9;
+    border-radius: 7px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.o_rad_summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    border-top: 1px solid #ddd;
+    padding-top: 14px;
+}
+
+.o_rad_summary div {
+    background: #fff;
+    border: 1px solid #d8d8d0;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+}
+
+.o_rad_summary strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1.1;
+}
+
+.o_rad_summary span {
+    font-size: 12px;
+    color: #444;
+}
+
+@media (max-width: 900px) {
+    .o_rad_toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .o_rad_form_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .o_rad_summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+.o_rad_page {
+    height: calc(100vh - 46px);
+    max-height: calc(100vh - 46px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 90px;
+}
+
+.o_rad_detail_table {
+    margin-bottom: 20px;
+}
+
+.o_rad_summary {
+    margin-bottom: 80px;
+}
+.o_rad_btn_send {
+    border-color: #5ca443;
+    background: #e9fff0;
+    color: #245c18;
+}
+
+.o_rad_btn_send:hover {
+    background: #d8f8df;
+}
