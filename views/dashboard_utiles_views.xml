@@ -3,7 +3,7 @@
 
     <!-- Acción del panel visual de Información general -->
     <record id="action_dashboard_utiles_escolares" model="ir.actions.client">
-        <field name="name">Información general</field>
+        <field name="name">📊 Información general</field>
         <field name="tag">gestion_utiles_escolares.dashboard</field>
     </record>
 
