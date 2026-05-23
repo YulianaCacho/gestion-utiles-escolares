@@ -280,16 +280,18 @@ class AlmacenUtilesMovimiento(models.Model):
                         "id": user.id,
                         "name": user.name,
                  })
-                            # Opciones para filtro por grado
+                           
+        # Opciones para filtro por grado
         grados = []
-        grado_field = self._fields.get("grado_escolar")
 
-        if grado_field and grado_field.selection:
-            for value, label in grado_field.selection:
-                grados.append({
-                    "value": value,
-                    "label": label,
-                })
+        grado_info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
+        grado_selection = grado_info.get("selection", [])
+
+        for value, label in grado_selection:
+            grados.append({
+                "value": value,
+                "label": label,
+            })
 
         # Opciones para filtro por responsable
         responsables = []
