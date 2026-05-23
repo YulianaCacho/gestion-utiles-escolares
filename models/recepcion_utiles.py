@@ -633,7 +633,9 @@ class RecepcionUtilesEscolar(models.Model):
             "fecha_label": rec.fecha.strftime("%d/%m/%Y") if rec.fecha else "",
             "recibido_por": rec.recibido_por_id.name or "",
             "estado": rec.estado,
+            "estado_almacen": rec.estado_almacen,
             "etapa": rec.etapa_recepcion,
+            "puede_enviar_almacen": rec.estado == "validado" and rec.estado_almacen in ["pendiente", "parcial"],
             "lineas": lineas,
             "totales": {
                 "items": rec.total_productos,
@@ -696,7 +698,62 @@ class RecepcionUtilesEscolar(models.Model):
         recepciones.unlink()
 
         return {"deleted": total}
+    
+        @api.model
+    def enviar_recepcion_almacen_dashboard(self, recepcion_id):
+        rec = self.browse(int(recepcion_id)).exists()
 
+        if not rec:
+            raise UserError("No se encontró la recepción.")
+
+        if rec.estado != "validado":
+            raise UserError("Primero debes validar la recepción antes de enviarla al almacén.")
+
+        productos_almacen = rec.linea_ids.filtered(
+            lambda l: l.destino_recepcion == "almacen"
+            and l.cantidad_pendiente_almacen > 0
+        )
+
+        if not productos_almacen:
+            return {
+                "success": False,
+                "message": "No hay productos pendientes para almacén. Los útiles personales no se envían al almacén.",
+            }
+
+        rec.action_enviar_productos_almacen()
+
+        return {
+            "success": True,
+            "message": "Productos enviados al almacén correctamente.",
+        }
+
+    @api.model
+    def enviar_recepcion_almacen_dashboard(self, recepcion_id):
+        rec = self.browse(int(recepcion_id)).exists()
+
+        if not rec:
+            raise UserError("No se encontró la recepción.")
+
+        if rec.estado != "validado":
+            raise UserError("Primero debes validar la recepción antes de enviarla al almacén.")
+
+        productos_almacen = rec.linea_ids.filtered(
+            lambda l: l.destino_recepcion == "almacen"
+            and l.cantidad_pendiente_almacen > 0
+        )
+
+        if not productos_almacen:
+            return {
+                "success": False,
+                "message": "No hay productos pendientes para almacén. Los útiles personales no se envían al almacén.",
+            }
+
+        rec.action_enviar_productos_almacen()
+
+        return {
+            "success": True,
+            "message": "Productos enviados al almacén correctamente.",
+        }
 
 class RecepcionUtilesLinea(models.Model):
     _name = "recepcion.utiles.linea"

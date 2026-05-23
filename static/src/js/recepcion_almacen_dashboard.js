@@ -167,6 +167,36 @@ class RecepcionAlmacenDashboard extends Component {
 
         await this.openDetalle(this.state.detalle.id);
     }
+    
+    async enviarAlmacen() {
+        if (!this.state.detalle || !this.state.detalle.id) {
+           return;
+       }
+
+       try {
+            const result = await this.orm.call(
+                "recepcion.utiles.escolar",
+                "enviar_recepcion_almacen_dashboard",
+                [],
+               {
+                   recepcion_id: this.state.detalle.id,
+               }
+         );
+
+        this.notification.add(result.message || "Proceso realizado.", {
+            type: result.success ? "success" : "warning",
+        });
+
+        await this.openDetalle(this.state.detalle.id);
+
+    } catch (error) {
+        this.notification.add(
+            "No se pudo enviar al almacén. Revisa si la recepción ya fue validada o si tiene productos para almacén.",
+            { type: "danger" }
+        );
+      }
+    }
+
 }
 
 registry

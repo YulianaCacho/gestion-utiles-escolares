@@ -119,6 +119,14 @@
                         Validar recepción
                     </button>
 
+                    <button t-if="state.detalle.puede_enviar_almacen"
+                            type="button"
+                            class="o_rad_btn o_rad_btn_send"
+                            t-on-click="enviarAlmacen">
+                        <i class="fa fa-truck"/>
+                        Enviar a almacén
+                    </button>
+
                     <button type="button" class="o_rad_btn" t-on-click="guardar">
                         <i class="fa fa-save"/>
                         Guardar

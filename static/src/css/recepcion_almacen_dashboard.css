@@ -325,3 +325,27 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+.o_rad_page {
+    height: calc(100vh - 46px);
+    max-height: calc(100vh - 46px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 90px;
+}
+
+.o_rad_detail_table {
+    margin-bottom: 20px;
+}
+
+.o_rad_summary {
+    margin-bottom: 80px;
+}
+.o_rad_btn_send {
+    border-color: #5ca443;
+    background: #e9fff0;
+    color: #245c18;
+}
+
+.o_rad_btn_send:hover {
+    background: #d8f8df;
+}
