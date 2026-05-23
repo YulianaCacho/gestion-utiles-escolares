@@ -168,7 +168,7 @@
     <record id="menu_productos_escolares_root" model="ir.ui.menu">
         <field name="name">📚 Productos</field>
         <field name="parent_id" ref="stock.menu_stock_root"/>
-        <field name="sequence">35</field>
+        <field name="sequence">40</field>
         <field name="active" eval="True"/>
     </record>
 
