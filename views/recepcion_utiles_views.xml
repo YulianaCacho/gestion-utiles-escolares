@@ -93,4 +93,117 @@
         <field name="active" eval="True"/>
     </record>
 
+   <!-- ===================================================== -->
+   <!-- FORMULARIO LIMPIO DE RECEPCIÓN DE ÚTILES -->
+   <!-- ===================================================== -->
+
+    <record id="view_recepcion_utiles_escolar_form_limpio_almacen" model="ir.ui.view">
+        <field name="name">recepcion.utiles.escolar.form.limpio.almacen</field>
+        <field name="model">recepcion.utiles.escolar</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <form string="Recepción de útiles">
+
+                <header>
+                    <button name="action_cargar_lista"
+                            string="Cargar lista de útiles"
+                            type="object"
+                            class="btn-primary"/>
+
+                    <button name="action_calcular_faltantes"
+                            string="Calcular faltantes"
+                            type="object"/>
+
+                    <button name="action_validar"
+                            string="Validar recepción"
+                            type="object"
+                            class="btn-primary"/>
+
+                    <field name="estado"
+                           widget="statusbar"
+                          statusbar_visible="borrador,incompleto,completo,validado"/>
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                           <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group string="DATOS DE LA RECEPCIÓN">
+                        <group>
+                            <field name="fecha"/>
+                            <field name="anio" readonly="1"/>
+                            <field name="matricula_id"
+                                   options="{'no_create': True, 'no_open': False}"/>
+                            <field name="estudiante_id" readonly="1"/>
+                            <field name="grado_escolar" readonly="1"/>
+                            <field name="lista_id" readonly="1"/>
+                        </group>
+
+                        <group>
+                            <field name="recibido_por_id" readonly="1"/>
+                            <field name="total_productos" readonly="1"/>
+                            <field name="total_completos" readonly="1"/>
+                            <field name="total_faltantes" readonly="1"/>
+                            <field name="porcentaje_avance" readonly="1"/>
+                            <field name="estado_entrega" readonly="1"/>
+                            <field name="estado_visual" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                       <page string="Productos recibidos">
+                            <field name="linea_ids">
+                                <list editable="bottom" string="Productos recibidos">
+                                    <field name="product_id"
+                                           string="Producto"
+                                           readonly="1"/>
+
+                                    <field name="categoria_id"
+                                           string="Categoría"
+                                           readonly="1"/>
+
+                                    <field name="cantidad_esperada"
+                                           string="Cantidad esperada"
+                                           readonly="1"/>
+
+                                    <field name="cantidad_entregada"
+                                           string="Cantidad entregada"/>
+
+                                    <field name="cantidad_faltante"
+                                           string="Cantidad faltante"
+                                           readonly="1"/>
+
+                                    <field name="unidad_id"
+                                           string="Unidad"
+                                           readonly="1"/>
+
+                                    <field name="tipo_uso_escolar"
+                                          string="Tipo de uso escolar"
+                                          readonly="1"/>
+
+                                    <field name="estado_linea"
+                                           string="Estado"
+                                           readonly="1"/>
+
+                                    <field name="observacion"
+                                           string="Observación"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Observaciones">
+                            <field name="observacion"
+                                   placeholder="Escribe una observación general de la recepción..."/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record> 
+
 </odoo>
