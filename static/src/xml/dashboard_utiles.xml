@@ -12,10 +12,6 @@
                            t-model="state.search"/>
                 </div>
 
-                <button type="button" class="o_utiles_button" t-on-click="openProducts">
-                    <i class="fa fa-filter"/> Filtros
-                </button>
-
                 <button type="button" class="o_utiles_button" t-on-click="exportCsv">
                     <i class="fa fa-download"/> Exportar
                 </button>
