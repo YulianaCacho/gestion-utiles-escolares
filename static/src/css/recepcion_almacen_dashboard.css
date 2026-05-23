@@ -10,10 +10,22 @@
 
 .o_rad_toolbar {
     display: grid;
-    grid-template-columns: 220px 1fr 130px;
+    grid-template-columns: auto 1fr 130px;
     gap: 10px;
     align-items: center;
     margin-bottom: 18px;
+}
+
+.o_rad_actions_left {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.o_rad_btn_manage {
+    border-color: #7fbf3f;
+    background: #f5fff0;
+    color: #315f12;
 }
 
 .o_rad_detail_toolbar {

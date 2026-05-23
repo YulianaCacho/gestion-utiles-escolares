@@ -72,9 +72,23 @@ class RecepcionAlmacenDashboard extends Component {
             target: "current",
             context: {
                 form_view_ref: "gestion_utiles_escolares.view_recepcion_utiles_escolar_form_limpio_almacen",
+         },
+     });
+   }
+
+   async gestionarRegistros() {
+    await this.action.doAction({
+        type: "ir.actions.act_window",
+        name: "Gestionar recepciones",
+        res_model: "recepcion.utiles.escolar",
+        views: [[false, "list"], [false, "form"]],
+        target: "current",
+        context: {
+            form_view_ref: "gestion_utiles_escolares.view_recepcion_utiles_escolar_form_limpio_almacen",
         },
-    });
-}
+       });
+    }
+
 
     onInputSearch(ev) {
         this.state.search = ev.target.value;

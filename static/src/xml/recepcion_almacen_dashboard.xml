@@ -7,10 +7,17 @@
             <t t-if="state.modo === 'lista'">
 
                 <div class="o_rad_toolbar">
-                    <button type="button" class="o_rad_btn" t-on-click="nuevaRecepcion">
-                        <i class="fa fa-plus"/>
-                        Nueva recepción
-                    </button>
+                   <div class="o_rad_actions_left">
+                        <button type="button" class="o_rad_btn" t-on-click="nuevaRecepcion">
+                            <i class="fa fa-plus"/>
+                             Nueva recepción
+                        </button>
+
+                        <button type="button" class="o_rad_btn o_rad_btn_manage" t-on-click="gestionarRegistros">
+                            <i class="fa fa-list"/>
+                             Gestionar registros
+                        </button>
+                    </div>
 
                     <div class="o_rad_search">
                         <i class="fa fa-search"/>
