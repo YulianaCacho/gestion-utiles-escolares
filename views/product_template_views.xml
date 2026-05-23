@@ -172,11 +172,75 @@
         <field name="active" eval="True"/>
     </record>
 
+    <!-- Vista kanban de productos escolares -->
+    <record id="view_product_template_kanban_utiles_escolares" model="ir.ui.view">
+        <field name="name">product.template.kanban.utiles.escolares</field>
+        <field name="model">product.template</field>
+        <field name="priority">1</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="default_code"/>
+                <field name="qty_available"/>
+                <field name="uom_id"/>
+                <field name="tipo_uso_escolar"/>
+                <field name="image_128"/>
+
+                <templates>
+                   <t t-name="kanban-box">
+                       <div class="oe_kanban_card oe_kanban_global_click" style="border-radius: 14px; padding: 14px; min-height: 150px;">
+                          <div style="display: flex; gap: 12px; align-items: center;">
+                              <div>
+                                  <img t-att-src="kanban_image('product.template', 'image_128', record.id.raw_value)"
+                                     style="width: 54px; height: 54px; object-fit: cover; border-radius: 10px; border: 1px solid #ddd;"/>
+                               </div>
+
+                               <div style="flex: 1;">
+                                    <strong style="font-size: 16px;">
+                                          <field name="name"/>
+                                    </strong>
+
+                                    <div style="font-size: 13px; color: #666; margin-top: 4px;">
+                                        Ref:
+                                        <t t-if="record.default_code.raw_value">
+                                            <field name="default_code"/>
+                                        </t>
+                                        <t t-else="">Sin referencia</t>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 14px; display: flex; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 12px; color: #777;">A la mano</div>
+                                    <strong>
+                                         <field name="qty_available"/>
+                                    </strong>
+                                    <span>
+                                       <field name="uom_id"/>
+                                    </span>
+                               </div>
+
+                               <div style="text-align: right;">
+                                  <div style="font-size: 12px; color: #777;">Tipo de uso</div>
+                                  <span style="background: #e8f5dd; color: #3f7f18; padding: 4px 8px; border-radius: 999px; font-size: 12px;">
+                                      <field name="tipo_uso_escolar"/>
+                                  </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <!-- Acción: Útiles escolares -->
     <record id="action_productos_utiles_escolares" model="ir.actions.act_window">
         <field name="name">Útiles escolares</field>
         <field name="res_model">product.template</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_id" ref="view_product_template_kanban_utiles_escolares"/>
         <field name="domain">[]</field>
         <field name="context">{}</field>
     </record>
