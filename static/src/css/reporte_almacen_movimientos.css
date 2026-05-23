@@ -284,3 +284,33 @@
         background: #ffffff;
     }
 }
+.o_ram_select_box {
+    height: 60px;
+    border: 1px solid #cfcfc8;
+    border-radius: 12px;
+    background: #fbfaf6;
+    color: #252525;
+    font-size: 16px;
+    font-weight: 750;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 18px;
+    box-sizing: border-box;
+}
+
+.o_ram_select_box select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #252525;
+    font-size: 16px;
+    font-weight: 750;
+    outline: none;
+    cursor: pointer;
+}
+
+.o_ram_select_box:hover {
+    background: #efeee8;
+}

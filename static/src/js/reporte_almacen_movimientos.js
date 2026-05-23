@@ -21,6 +21,10 @@ class ReporteAlmacenMovimientos extends Component {
                 balance: "0",
             },
             events: [],
+            grados: [],
+            responsables: [],
+            gradoSeleccionado: "",
+            responsableSeleccionado: "",
         });
 
         onWillStart(async () => {
@@ -35,14 +39,29 @@ class ReporteAlmacenMovimientos extends Component {
             "almacen.utiles.movimiento",
             "get_reporte_almacen_movimientos",
             [],
-            {}
+            {
+                grado: this.state.gradoSeleccionado || false,
+                responsable_id: this.state.responsableSeleccionado || false,
+            }
         );
 
         this.state.monthLabel = data.month_label;
         this.state.monthShort = data.month_short;
         this.state.kpis = data.kpis;
         this.state.events = data.events;
+        this.state.grados = data.grados || [];
+        this.state.responsables = data.responsables || [];
         this.state.loading = false;
+    }
+
+    async onChangeGrado(ev) {
+        this.state.gradoSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeResponsable(ev) {
+        this.state.responsableSeleccionado = ev.target.value;
+        await this.loadData();
     }
 
     exportPdf() {

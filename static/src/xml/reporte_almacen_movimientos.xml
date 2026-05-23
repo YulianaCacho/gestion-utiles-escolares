@@ -9,26 +9,31 @@
                     <i class="fa fa-clipboard"/>
                     Reportes
                 </strong>
-                <span>/ Almacén y movimientos</span>
+                <span>/ ⧗ Historial de movimientos</span>
             </div>
 
             <div class="o_ram_body">
 
                 <div class="o_ram_toolbar">
-                    <button type="button" class="o_ram_btn">
-                        <i class="fa fa-calendar-o"/>
-                        <t t-esc="state.monthLabel"/>
-                    </button>
+                    <div class="o_ram_select_box">
+                       <i class="fa fa-filter"/>
+                       <select t-on-change="onChangeGrado">
+                            <option value="">Por grado</option>
+                            <t t-foreach="state.grados" t-as="grado" t-key="grado.value">
+                               <option t-att-value="grado.value" t-esc="grado.label"/>
+                            </t>
+                        </select>
+                    </div>
 
-                    <button type="button" class="o_ram_btn">
-                        <i class="fa fa-filter"/>
-                        Por grado
-                    </button>
-
-                    <button type="button" class="o_ram_btn">
+                    <div class="o_ram_select_box">
                         <i class="fa fa-user-o"/>
-                        Por responsable
-                    </button>
+                        <select t-on-change="onChangeResponsable">
+                              <option value="">Por responsable</option>
+                              <t t-foreach="state.responsables" t-as="responsable" t-key="responsable.id">
+                                 <option t-att-value="responsable.id" t-esc="responsable.name"/>
+                              </t>
+                        </select>
+                </div>
 
                     <div></div>
 

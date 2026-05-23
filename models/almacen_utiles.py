@@ -131,7 +131,7 @@ class AlmacenUtilesMovimiento(models.Model):
         return ", ".join(partes)
 
     @api.model
-    def get_reporte_almacen_movimientos(self, month=None, year=None):
+    def get_reporte_almacen_movimientos(self, month=None, year=None, grado=False, responsable_id=False):
         today = fields.Date.context_today(self)
 
         month = int(month or today.month)
@@ -148,6 +148,11 @@ class AlmacenUtilesMovimiento(models.Model):
             ("fecha", ">=", fields.Datetime.to_string(start)),
             ("fecha", "<", fields.Datetime.to_string(end)),
         ]
+        if grado:
+            domain.append(("grado_escolar", "=", grado))
+
+        if responsable_id:
+            domain.append(("responsable_id", "=", int(responsable_id)))
 
         movimientos = self.search(domain, order="fecha desc, id desc")
 
@@ -259,6 +264,23 @@ class AlmacenUtilesMovimiento(models.Model):
                     "detalle": detalle,
                 })
 
+                grado_field = self._fields.get("grado_escolar")
+                grados = []
+
+                if grado_field:
+                    for value, label in grado_field.selection:
+                        grados.append({
+                            "value": value,
+                            "label": label,
+                      })
+
+                responsables = []
+                for user in self.search(domain).mapped("responsable_id"):
+                    responsables.append({
+                        "id": user.id,
+                        "name": user.name,
+                 })
+
         return {
             "month_label": f"{meses[month]} {year}",
             "month_short": f"{meses[month].upper()} {year}",
@@ -269,4 +291,6 @@ class AlmacenUtilesMovimiento(models.Model):
                 "balance": self._fmt_qty(balance),
             },
             "events": eventos[:50],
+            "grados": grados,
+            "responsables": responsables,
         }
