@@ -699,7 +699,7 @@ class RecepcionUtilesEscolar(models.Model):
 
         return {"deleted": total}
     
-        @api.model
+    @api.model
     def enviar_recepcion_almacen_dashboard(self, recepcion_id):
         rec = self.browse(int(recepcion_id)).exists()
 
