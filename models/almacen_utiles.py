@@ -94,6 +94,8 @@ class AlmacenUtilesMovimiento(models.Model):
 
     observacion = fields.Char(string="Observación")
 
+    
+
     @api.depends("tipo_movimiento", "product_id", "cantidad")
     def _compute_name(self):
         for rec in self:
@@ -319,4 +321,129 @@ class AlmacenUtilesMovimiento(models.Model):
             "events": eventos[:50],
             "grados": grados,
             "responsables": responsables,
+        }
+       
+    @api.model
+    def get_linea_tiempo_movimientos(self, month=None, year=None, tipo=False, search=False):
+        today = fields.Date.context_today(self)
+
+        month = int(month or today.month)
+        year = int(year or today.year)
+
+        start = datetime(year, month, 1)
+
+        if month == 12:
+            end = datetime(year + 1, 1, 1)
+        else:
+            end = datetime(year, month + 1, 1)
+
+        domain = [
+            ("fecha", ">=", fields.Datetime.to_string(start)),
+            ("fecha", "<", fields.Datetime.to_string(end)),
+        ]
+
+        if tipo:
+            domain.append(("tipo_movimiento", "=", tipo))
+
+        movimientos = self.search(domain, order="fecha desc, id desc")
+
+        if search:
+            texto = search.lower().strip()
+            movimientos = movimientos.filtered(
+                lambda m:
+                    texto in (m.product_id.display_name or "").lower()
+                    or texto in (m.responsable_id.name or "").lower()
+                    or texto in (m.observacion or "").lower()
+                    or texto in (m.destino or "").lower()
+                    or texto in (m.estudiante_id.name or "").lower()
+            )
+
+        meses = [
+            "",
+            "Enero",
+            "Febrero",
+            "Marzo",
+            "Abril",
+            "Mayo",
+            "Junio",
+            "Julio",
+            "Agosto",
+            "Septiembre",
+            "Octubre",
+            "Noviembre",
+            "Diciembre",
+        ]
+
+        def iniciales(nombre):
+            partes = (nombre or "").split()
+            if not partes:
+                return ""
+            return "".join([p[0].upper() for p in partes[:2]])
+
+        def fecha_local(fecha):
+            if not fecha:
+                return "", ""
+
+            local = fields.Datetime.context_timestamp(self, fecha)
+            return local.strftime("%d/%m/%Y"), local.strftime("%H:%M")
+
+        rows = []
+
+        for mov in movimientos:
+            fecha_txt, hora_txt = fecha_local(mov.fecha)
+
+            cantidad = float(mov.cantidad or 0)
+
+            if mov.tipo_movimiento == "salida":
+                cantidad_signed = -abs(cantidad)
+                cantidad_class = "neg"
+                tipo_label = "Salida"
+                tipo_class = "salida"
+            elif mov.tipo_movimiento == "ajuste":
+                cantidad_signed = cantidad
+                cantidad_class = "neg" if cantidad < 0 else "pos"
+                tipo_label = "Ajuste"
+                tipo_class = "ajuste"
+            else:
+                cantidad_signed = abs(cantidad)
+                cantidad_class = "pos"
+                tipo_label = "Entrada"
+                tipo_class = "entrada"
+
+            if cantidad_signed > 0:
+                cantidad_text = f"+{self._fmt_qty(cantidad_signed)}"
+            elif cantidad_signed < 0:
+                cantidad_text = f"−{self._fmt_qty(abs(cantidad_signed))}"
+            else:
+                cantidad_text = "0"
+
+            motivo = mov.observacion or ""
+
+            if mov.tipo_movimiento == "entrada" and mov.recepcion_id:
+                estudiante = mov.estudiante_id.name or "Estudiante"
+                motivo = f"Recep. matrícula — {estudiante}"
+            elif mov.tipo_movimiento == "salida":
+                motivo = mov.destino or mov.observacion or "Entrega docente"
+            elif mov.tipo_movimiento == "ajuste":
+                motivo = mov.observacion or "Ajuste inventario físico"
+
+            rows.append({
+                "id": mov.id,
+                "fecha": fecha_txt,
+                "hora": hora_txt,
+                "tipo": tipo_label,
+                "tipo_class": tipo_class,
+                "producto": mov.product_id.display_name or "",
+                "cantidad": cantidad_text,
+                "cantidad_class": cantidad_class,
+                "responsable": mov.responsable_id.name or "",
+                "responsable_iniciales": iniciales(mov.responsable_id.name),
+                "motivo": motivo,
+            })
+
+        return {
+            "month_label": f"{meses[month]} {year}",
+            "month_short": f"{meses[month]} {year}",
+            "total": len(rows),
+            "rows": rows,
         }

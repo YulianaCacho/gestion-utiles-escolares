@@ -1,0 +1,244 @@
+.o_ltm_page {
+    width: 100%;
+    min-height: calc(100vh - 46px);
+    background: #f7f7f4;
+    padding: 14px 18px 32px 18px;
+    box-sizing: border-box;
+    color: #222;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.o_ltm_toolbar {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) 170px 120px 140px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.o_ltm_search,
+.o_ltm_month,
+.o_ltm_type,
+.o_ltm_export {
+    height: 50px;
+    border: 1px solid #d0d0c8;
+    background: #fbfaf6;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 14px;
+    box-sizing: border-box;
+    font-size: 15px;
+    font-weight: 750;
+}
+
+.o_ltm_search input,
+.o_ltm_month input,
+.o_ltm_type select {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 15px;
+    font-weight: 700;
+    color: #222;
+}
+
+.o_ltm_search input::placeholder {
+    color: #777;
+}
+
+.o_ltm_month input {
+    text-transform: capitalize;
+    cursor: pointer;
+}
+
+.o_ltm_month input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.o_ltm_type select {
+    cursor: pointer;
+}
+
+.o_ltm_export {
+    justify-content: center;
+    cursor: pointer;
+}
+
+.o_ltm_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.o_ltm_header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.o_ltm_header span {
+    font-size: 14px;
+    color: #333;
+}
+
+.o_ltm_chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.o_ltm_chips button {
+    border: 1px solid #d6d6ce;
+    background: #fff;
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 14px;
+    font-weight: 650;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+}
+
+.o_ltm_chips button.active {
+    background: #e9fff5;
+    border-color: #56c494;
+    color: #076b48;
+}
+
+.dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+.dot.entrada,
+.o_ltm_badge.entrada .dot {
+    background: #4d9934;
+}
+
+.dot.salida,
+.o_ltm_badge.salida .dot {
+    background: #e04c55;
+}
+
+.dot.ajuste,
+.o_ltm_badge.ajuste .dot {
+    background: #c77b13;
+}
+
+.o_ltm_table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 15px;
+}
+
+.o_ltm_table thead th {
+    background: #e9e7df;
+    color: #444;
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 800;
+    border-bottom: 1px solid #d6d4ca;
+}
+
+.o_ltm_table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+}
+
+.o_ltm_badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.o_ltm_badge.entrada {
+    background: #d7efe8;
+    color: #16725d;
+}
+
+.o_ltm_badge.salida {
+    background: #f7dddd;
+    color: #b83038;
+}
+
+.o_ltm_badge.ajuste {
+    background: #f4e2c8;
+    color: #965e12;
+}
+
+.o_ltm_qty.pos {
+    color: #2d8b2d;
+}
+
+.o_ltm_qty.neg {
+    color: #b83038;
+}
+
+.o_ltm_user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.o_ltm_user .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: #ece9ff;
+    color: #5542a5;
+    font-size: 12px;
+    font-weight: 850;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_ltm_empty {
+    text-align: center;
+    color: #666;
+    font-weight: 700;
+    padding: 28px !important;
+}
+
+@media (max-width: 900px) {
+    .o_ltm_toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .o_ltm_header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+@media print {
+    .o_main_navbar,
+    .o_control_panel,
+    .o_ltm_toolbar,
+    .o_ltm_chips {
+        display: none !important;
+    }
+
+    .o_ltm_page {
+        background: #ffffff;
+    }
+}
