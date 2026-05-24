@@ -259,11 +259,8 @@ class AnioEscolar(models.Model):
         self.unlink()
 
         return {
-            "type": "ir.actions.act_window",
-            "name": "Años escolares",
-            "res_model": "anio.escolar",
-            "view_mode": "list,form",
-            "target": "current",
+            "type": "ir.actions.client",
+            "tag": "reload",
         }
 
     def unlink(self):

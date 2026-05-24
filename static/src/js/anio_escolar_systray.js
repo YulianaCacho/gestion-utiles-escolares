@@ -34,6 +34,10 @@ export class AnioEscolarSystray extends Component {
     }
 
     toggleDropdown() {
+        if (!this.state.open) {
+            await this.loadData();
+        }
+
         this.state.open = !this.state.open;
     }
 
