@@ -30,6 +30,13 @@ class AlmacenUtilesMovimiento(models.Model):
         required=True
     )
 
+    anio_escolar_id = fields.Many2one(
+        "anio.escolar",
+        string="Año escolar",
+        default=lambda self: self.env.user.anio_escolar_actual_id,
+        index=True
+    )
+
     recepcion_id = fields.Many2one(
         "recepcion.utiles.escolar",
         string="Recepción relacionada",
@@ -94,8 +101,6 @@ class AlmacenUtilesMovimiento(models.Model):
 
     observacion = fields.Char(string="Observación")
 
-    
-
     @api.depends("tipo_movimiento", "product_id", "cantidad")
     def _compute_name(self):
         for rec in self:
@@ -132,8 +137,28 @@ class AlmacenUtilesMovimiento(models.Model):
 
         return ", ".join(partes)
 
+    def _build_domain_periodo(self, start, end, anio_escolar_id=False):
+        domain = [
+            ("fecha", ">=", fields.Datetime.to_string(start)),
+            ("fecha", "<", fields.Datetime.to_string(end)),
+        ]
+
+        if anio_escolar_id:
+            domain.append(("anio_escolar_id", "=", int(anio_escolar_id)))
+        else:
+            domain.append(("id", "=", 0))
+
+        return domain
+
     @api.model
-    def get_reporte_almacen_movimientos(self, month=None, year=None, grado=False, responsable_id=False):
+    def get_reporte_almacen_movimientos(
+        self,
+        month=None,
+        year=None,
+        grado=False,
+        responsable_id=False,
+        anio_escolar_id=False
+    ):
         today = fields.Date.context_today(self)
 
         month = int(month or today.month)
@@ -146,10 +171,8 @@ class AlmacenUtilesMovimiento(models.Model):
         else:
             end = datetime(year, month + 1, 1)
 
-        domain = [
-            ("fecha", ">=", fields.Datetime.to_string(start)),
-            ("fecha", "<", fields.Datetime.to_string(end)),
-        ]
+        domain = self._build_domain_periodo(start, end, anio_escolar_id)
+
         if grado:
             domain.append(("grado_escolar", "=", grado))
 
@@ -158,8 +181,18 @@ class AlmacenUtilesMovimiento(models.Model):
 
         movimientos = self.search(domain, order="fecha desc, id desc")
 
-        entradas = sum(movimientos.filtered(lambda m: m.tipo_movimiento == "entrada").mapped("cantidad"))
-        salidas = sum(movimientos.filtered(lambda m: m.tipo_movimiento == "salida").mapped("cantidad"))
+        entradas = sum(
+            movimientos.filtered(
+                lambda m: m.tipo_movimiento == "entrada"
+            ).mapped("cantidad")
+        )
+
+        salidas = sum(
+            movimientos.filtered(
+                lambda m: m.tipo_movimiento == "salida"
+            ).mapped("cantidad")
+        )
+
         ajustes = movimientos.filtered(lambda m: m.tipo_movimiento == "ajuste")
         ajuste_neto = sum(ajustes.mapped("cantidad"))
         balance = entradas - salidas + ajuste_neto
@@ -207,10 +240,17 @@ class AlmacenUtilesMovimiento(models.Model):
 
             if primero.tipo_movimiento == "entrada":
                 recepcion = primero.recepcion_id
-                estudiante = recepcion.estudiante_id.name if recepcion and recepcion.estudiante_id else "Estudiante"
-                grado = self._grado_label(recepcion.grado_escolar if recepcion else primero.grado_escolar)
+                estudiante = (
+                    recepcion.estudiante_id.name
+                    if recepcion and recepcion.estudiante_id
+                    else "Estudiante"
+                )
+                grado_label = self._grado_label(
+                    recepcion.grado_escolar if recepcion else primero.grado_escolar
+                )
 
                 avance = recepcion.porcentaje_avance if recepcion else 0
+
                 if avance >= 100:
                     estado = "Lista completa al 100%."
                 elif avance > 0:
@@ -218,7 +258,7 @@ class AlmacenUtilesMovimiento(models.Model):
                 else:
                     estado = "Recepción registrada."
 
-                detalle = f"{estudiante} ({grado}) entregó: {items}. {estado}"
+                detalle = f"{estudiante} ({grado_label}) entregó: {items}. {estado}"
 
                 eventos.append({
                     "id": key,
@@ -234,11 +274,21 @@ class AlmacenUtilesMovimiento(models.Model):
             elif primero.tipo_movimiento == "salida":
                 salida = getattr(primero, "salida_almacen_id", False)
 
-                docente = salida.miss_id.name if salida and salida.miss_id else primero.destino or "Docente"
-                grado = self._grado_label(salida.grado_escolar if salida else primero.grado_escolar)
-                autorizado = salida.responsable_id.name if salida and salida.responsable_id else responsable
+                docente = (
+                    salida.miss_id.name
+                    if salida and salida.miss_id
+                    else primero.destino or "Docente"
+                )
+                grado_label = self._grado_label(
+                    salida.grado_escolar if salida else primero.grado_escolar
+                )
+                autorizado = (
+                    salida.responsable_id.name
+                    if salida and salida.responsable_id
+                    else responsable
+                )
 
-                detalle = f"{docente} retiró: {items} para {grado}. Autorizado por {autorizado}."
+                detalle = f"{docente} retiró: {items} para {grado_label}. Autorizado por {autorizado}."
 
                 eventos.append({
                     "id": key,
@@ -266,26 +316,7 @@ class AlmacenUtilesMovimiento(models.Model):
                     "detalle": detalle,
                 })
 
-                grado_field = self._fields.get("grado_escolar")
-                grados = []
-
-                if grado_field:
-                    for value, label in grado_field.selection:
-                        grados.append({
-                            "value": value,
-                            "label": label,
-                      })
-
-                responsables = []
-                for user in self.search(domain).mapped("responsable_id"):
-                    responsables.append({
-                        "id": user.id,
-                        "name": user.name,
-                 })
-                           
-        # Opciones para filtro por grado
         grados = []
-
         grado_info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
         grado_selection = grado_info.get("selection", [])
 
@@ -295,12 +326,13 @@ class AlmacenUtilesMovimiento(models.Model):
                 "label": label,
             })
 
-        # Opciones para filtro por responsable
         responsables = []
-        responsables_domain = [
-            ("fecha", ">=", fields.Datetime.to_string(start)),
-            ("fecha", "<", fields.Datetime.to_string(end)),
-        ]
+
+        responsables_domain = self._build_domain_periodo(
+            start,
+            end,
+            anio_escolar_id
+        )
 
         for user in self.search(responsables_domain).mapped("responsable_id"):
             if user:
@@ -322,9 +354,16 @@ class AlmacenUtilesMovimiento(models.Model):
             "grados": grados,
             "responsables": responsables,
         }
-       
+
     @api.model
-    def get_linea_tiempo_movimientos(self, month=None, year=None, tipo=False, search=False):
+    def get_linea_tiempo_movimientos(
+        self,
+        month=False,
+        year=False,
+        tipo=False,
+        search=False,
+        anio_escolar_id=False
+    ):
         today = fields.Date.context_today(self)
 
         month = int(month or today.month)
@@ -337,10 +376,7 @@ class AlmacenUtilesMovimiento(models.Model):
         else:
             end = datetime(year, month + 1, 1)
 
-        domain = [
-            ("fecha", ">=", fields.Datetime.to_string(start)),
-            ("fecha", "<", fields.Datetime.to_string(end)),
-        ]
+        domain = self._build_domain_periodo(start, end, anio_escolar_id)
 
         if tipo:
             domain.append(("tipo_movimiento", "=", tipo))
