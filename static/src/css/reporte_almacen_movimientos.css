@@ -332,27 +332,35 @@
     display: none;
 }
 
-/* ================================ */
-/* SCROLL FORZADO PARA DASHBOARDS */
-/* ================================ */
+/* =========================================================
+   CORRECCIÓN DE SCROLL EN REPORTES PERSONALIZADOS
+   Permite bajar dentro de las pantallas de reportes OWL
+   ========================================================= */
 
 .o_action_manager {
-    overflow: hidden !important;
+    height: calc(100vh - 46px);
+    overflow: hidden;
 }
 
-.o_content {
-    height: calc(100vh - 48px) !important;
-    max-height: calc(100vh - 48px) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+.o_action_manager .o_component {
+    height: 100%;
+    min-height: 0;
 }
 
-.o_reporte_recepcion_dashboard,
-.o_reporte_almacen_movimientos,
-.o_reporte_linea_tiempo_movimientos,
-.o_dashboard_utiles_page,
-.o_rad_page {
-    min-height: 100%;
-    padding-bottom: 100px;
-    box-sizing: border-box;
+.o_action_manager .o_component > div {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 90px;
+}
+
+/* Evita que tablas grandes corten el contenido */
+.o_action_manager table {
+    width: 100%;
+}
+
+/* Da espacio inferior para que no se corte el último registro */
+.o_action_manager .table,
+.o_action_manager .o_list_table {
+    margin-bottom: 80px;
 }
