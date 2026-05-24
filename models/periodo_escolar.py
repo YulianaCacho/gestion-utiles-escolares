@@ -34,6 +34,17 @@ class AnioEscolar(models.Model):
         compute="_compute_resumen_anio"
     )
 
+    anio_visual = fields.Char(
+        string="Año",
+        compute="_compute_anio_visual",
+        store=True
+   )
+
+    @api.depends("anio")
+    def _compute_anio_visual(self):
+        for rec in self:
+            rec.anio_visual = str(rec.anio) if rec.anio else ""
+
     @api.depends("matricula_ids", "lista_utiles_ids")
     def _compute_resumen_anio(self):
         Movimiento = self.env["almacen.utiles.movimiento"]

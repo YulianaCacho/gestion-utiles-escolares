@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <list string="Años escolares">
                 <field name="name"/>
-                <field name="anio" options="{'format': false}"/>
+                <field name="anio_visual" string="Año"/>
                 <field name="anio_anterior_id"/>
                 <field name="fecha_inicio"/>
                 <field name="fecha_fin"/>
@@ -64,7 +64,8 @@
                 <sheet>
                     <group string="Datos del año escolar">
                         <group>
-                            <field name="anio" options="{'format': false}"/>
+                            <field name="anio" invisible="id"/>
+                            <field name="anio_visual" string="Año" readonly="1" invisible="not id"/>
                             <field name="anio_anterior_id"/>
                             <field name="fecha_inicio"/>
                             <field name="fecha_fin"/>
