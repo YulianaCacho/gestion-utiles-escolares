@@ -147,47 +147,46 @@ class AnioEscolarSobrantes(models.Model):
         Movimiento = self.env["almacen.utiles.movimiento"]
         Sobrante = self.env["sobrante.utiles.anio"]
         Producto = self.env["product.product"]
+        Quant = self.env["stock.quant"].sudo()
 
         total_creados = 0
         total_actualizados = 0
 
         for rec in self:
             if not rec.anio_anterior_id:
-               raise UserError("Primero debes seleccionar el año anterior.")
+                raise UserError("Primero debes seleccionar el año anterior.")
 
-        # ==========================================================
-        # 1. Intentar calcular sobrantes desde movimientos del año anterior
-        # ==========================================================
-
-            movimientos_anio_anterior = Movimiento.search([
-               ("anio_escolar_id", "=", rec.anio_anterior_id.id),
-               ("product_id", "!=", False),
-            ])
-
-            productos = movimientos_anio_anterior.mapped("product_id")
             sobrantes_calculados = {}
 
-            for producto in productos:
+            # 1. Intentar calcular desde movimientos escolares del año anterior
+            movimientos_anio_anterior = Movimiento.search([
+                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
+                ("product_id", "!=", False),
+            ])
+
+            productos_mov = movimientos_anio_anterior.mapped("product_id")
+
+            for producto in productos_mov:
                 movimientos_producto = movimientos_anio_anterior.filtered(
-                   lambda m: m.product_id.id == producto.id
+                    lambda m: m.product_id.id == producto.id
                 )
 
                 entradas = sum(
                     movimientos_producto.filtered(
-                       lambda m: m.tipo_movimiento == "entrada"
+                        lambda m: m.tipo_movimiento == "entrada"
                     ).mapped("cantidad")
                 )
 
                 salidas = sum(
-                   movimientos_producto.filtered(
-                       lambda m: m.tipo_movimiento == "salida"
-                   ).mapped("cantidad")
+                    movimientos_producto.filtered(
+                        lambda m: m.tipo_movimiento == "salida"
+                    ).mapped("cantidad")
                 )
 
                 ajustes = sum(
-                   movimientos_producto.filtered(
-                      lambda m: m.tipo_movimiento == "ajuste"
-                   ).mapped("cantidad")
+                    movimientos_producto.filtered(
+                        lambda m: m.tipo_movimiento == "ajuste"
+                    ).mapped("cantidad")
                 )
 
                 cantidad_sobrante = entradas - salidas + ajustes
@@ -195,62 +194,62 @@ class AnioEscolarSobrantes(models.Model):
                 if cantidad_sobrante > 0:
                     sobrantes_calculados[producto.id] = cantidad_sobrante
 
-        # ==========================================================
-        # 2. Si no hay movimientos, usar stock actual de productos
-        #    Esto sirve para tu caso porque el dashboard muestra stock,
-        #    pero aún no hay movimientos por año escolar.
-        # ==========================================================
+                # 2. Si no hay movimientos positivos, usar stock interno real de Odoo
+                if not sobrantes_calculados:
+                    grupos = Quant.read_group(
+                        domain=[
+                            ("location_id.usage", "=", "internal"),
+                            ("product_id", "!=", False),
+                            ("quantity", ">", 0),
+                        ],
+                        fields=["product_id", "quantity:sum"],
+                        groupby=["product_id"],
+                    )
 
-            if not sobrantes_calculados:
-               productos_con_stock = Producto.search([
-                   ("active", "=", True),
-               ])
+                    for grupo in grupos:
+                        product_data = grupo.get("product_id")
+                        cantidad = grupo.get("quantity", 0)
 
-               for producto in productos_con_stock:
-                   cantidad_stock = producto.qty_available
+                    if product_data and cantidad > 0:
+                        producto_id = product_data[0]
+                        sobrantes_calculados[producto_id] = cantidad
 
-                   if cantidad_stock > 0:
-                      sobrantes_calculados[producto.id] = cantidad_stock
+                # 3. Crear o actualizar sobrantes
+                for producto_id, cantidad_sobrante in sobrantes_calculados.items():
+                    producto = Producto.browse(producto_id)
 
-        # ==========================================================
-        # 3. Crear o actualizar registros de sobrantes
-        # ==========================================================
+                    sobrante_existente = Sobrante.search([
+                        ("anio_origen_id", "=", rec.anio_anterior_id.id),
+                        ("anio_destino_id", "=", rec.id),
+                        ("product_id", "=", producto.id),
+                    ], limit=1)
 
-            for producto_id, cantidad_sobrante in sobrantes_calculados.items():
-                producto = Producto.browse(producto_id)
+                    if sobrante_existente:
+                        sobrante_existente.write({
+                            "cantidad_inicial": cantidad_sobrante,
+                        })
+                        total_actualizados += 1
+                    else:
+                        Sobrante.create({
+                            "anio_origen_id": rec.anio_anterior_id.id,
+                            "anio_destino_id": rec.id,
+                            "product_id": producto.id,
+                            "cantidad_inicial": cantidad_sobrante,
+                            "cantidad_usada": 0,
+                            "observacion": "Sobrante generado desde stock interno disponible del año anterior.",
+                        })
+                        total_creados += 1
 
-                sobrante_existente = Sobrante.search([
-                   ("anio_origen_id", "=", rec.anio_anterior_id.id),
-                   ("anio_destino_id", "=", rec.id),
-                   ("product_id", "=", producto.id),
-                ], limit=1)
- 
-                if sobrante_existente:
-                    sobrante_existente.write({
-                       "cantidad_inicial": cantidad_sobrante,
-                   })
-                    total_actualizados += 1
-                else:
-                    Sobrante.create({
-                        "anio_origen_id": rec.anio_anterior_id.id,
-                        "anio_destino_id": rec.id,
-                        "product_id": producto.id,
-                        "cantidad_inicial": cantidad_sobrante,
-                        "cantidad_usada": 0,
-                        "observacion": "Sobrante generado desde stock disponible del año anterior.",
-                    })
-                    total_creados += 1
-
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-               "title": "Sobrantes generados",
-               "message": (
-                   f"Sobrantes creados: {total_creados}. "
-                   f"Sobrantes actualizados: {total_actualizados}."
-                ),
-               "type": "success",
-               "sticky": False,
+            return {
+                "type": "ir.actions.client",
+                "tag": "display_notification",
+                "params": {
+                    "title": "Sobrantes generados",
+                    "message": (
+                        f"Sobrantes creados: {total_creados}. "
+                        f"Sobrantes actualizados: {total_actualizados}."
+                    ),
+                    "type": "success",
+                    "sticky": False,
             }
-       }
+        }  
