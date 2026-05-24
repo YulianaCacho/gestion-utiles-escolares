@@ -33,21 +33,6 @@ class AnioEscolar(models.Model):
         compute="_compute_resumen_anio"
     )
 
-    def _siguiente_grado(self, grado):
-        mapa = {
-             "inicial_3": "inicial_4",
-             "inicial_4": "inicial_5",
-             "inicial_5": "1er_grado",
-             "1er_grado": "2do_grado",
-             "2do_grado": "3er_grado",
-             "3er_grado": "4to_grado",
-             "4to_grado": "5to_grado",
-             "5to_grado": "6to_grado",
-             "6to_grado": "6to_grado",
-        }
-        return mapa.get(grado, grado)
-
-
     def _buscar_lista_utiles_del_anio(self, grado):
         self.ensure_one()
 
@@ -94,6 +79,19 @@ class AnioEscolar(models.Model):
            }
       }
 
+    def _siguiente_grado(self, grado):
+        mapa = {
+             "inicial_3": "inicial_4",
+             "inicial_4": "inicial_5",
+             "inicial_5": "1er_grado",
+             "1er_grado": "2do_grado",
+             "2do_grado": "3er_grado",
+             "3er_grado": "4to_grado",
+             "4to_grado": "5to_grado",
+             "5to_grado": "6to_grado",
+             "6to_grado": "6to_grado",
+        }
+        return mapa.get(grado, grado)
 
     def action_generar_matriculas_desde_anio_anterior(self):
         Matricula = self.env["matricula.escolar"]
@@ -295,25 +293,38 @@ class MatriculaEscolar(models.Model):
             if rec.anio_escolar_id:
                 rec.anio_escolar = rec.anio_escolar_id.anio
 
-    @api.onchange("anio_escolar_id", "grado_escolar")
+    @api.onchange("grado_escolar")
     def _onchange_lista_por_anio_grado(self):
         for rec in self:
             if not rec.grado_escolar:
-                rec.lista_utiles_id = False
-                continue
+               rec.lista_utiles_id = False
+               continue
+
+            anio = rec.anio_escolar_id
+
+            if not anio and self.env.user.anio_escolar_actual_id:
+               anio = self.env.user.anio_escolar_actual_id
+               rec.anio_escolar_id = anio.id
+               rec.anio_escolar = anio.anio
 
             dominio = [
-                ("grado_escolar", "=", rec.grado_escolar),
-            ]
+               ("grado_escolar", "=", rec.grado_escolar),
+           ]
 
-            if rec.anio_escolar_id:
-                dominio.append(("anio_escolar_id", "=", rec.anio_escolar_id.id))
+            if anio:
+                dominio.append(("anio_escolar_id", "=", anio.id))
             elif rec.anio_escolar:
                 dominio.append(("anio", "=", str(rec.anio_escolar)))
 
             lista = self.env["lista.utiles.grado"].search(dominio, limit=1)
-            rec.lista_utiles_id = lista.id if lista else False
 
+            if not lista and anio:
+                lista = self.env["lista.utiles.grado"].search([
+                  ("grado_escolar", "=", rec.grado_escolar),
+                  ("anio", "=", str(anio.anio)),
+                ], limit=1)
+
+            rec.lista_utiles_id = lista.id if lista else False
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
