@@ -277,10 +277,10 @@ class AnioEscolar(models.Model):
             ])
 
             if recepciones or salidas or movimientos:
-               raise UserError(
-                   "No puedes pasar este año a borrador porque ya tiene recepciones, "
-                   "entregas o movimientos de almacén registrados. "
-                   "Esto evita borrar evidencia importante del sistema."
+                raise UserError(
+                    "No puedes pasar este año a borrador porque ya tiene recepciones, "
+                    "entregas o movimientos de almacén registrados. "
+                    "Esto evita borrar evidencia importante del sistema."
                 )
 
             rec.estado = "borrador"
@@ -313,6 +313,7 @@ class AnioEscolar(models.Model):
         Recepcion = self.env["recepcion.utiles.escolar"]
         Salida = self.env["salida.almacen.utiles"]
         Movimiento = self.env["almacen.utiles.movimiento"]
+        Sobrante = self.env["sobrante.utiles.anio"]
 
         for rec in self:
             if rec.estado != "borrador":
@@ -371,9 +372,19 @@ class AnioEscolar(models.Model):
 
             listas.unlink()
 
+            sobrantes = Sobrante.search([
+                "|",
+                ("anio_destino_id", "=", rec.id),
+                ("anio_origen_id", "=", rec.id),
+            ])
+
+            if sobrantes:
+                sobrantes.unlink()
+
             usuarios = self.env["res.users"].sudo().search([
                 ("anio_escolar_actual_id", "=", rec.id)
             ])
+            
 
             nuevo_anio = rec.anio_anterior_id or self.search([
                 ("id", "!=", rec.id)
