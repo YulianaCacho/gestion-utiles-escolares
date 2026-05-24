@@ -376,6 +376,34 @@ class MatriculaEscolar(models.Model):
         readonly=True
     )
 
+    es_anio_actual = fields.Boolean(
+       string="Es año actual",
+       compute="_compute_es_anio_actual",
+       search="_search_es_anio_actual"
+    )
+
+    def _compute_es_anio_actual(self):
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        for rec in self:
+            rec.es_anio_actual = bool(
+               anio_actual and rec.anio_escolar_id.id == anio_actual.id
+            )
+
+    def _search_es_anio_actual(self, operator, value):
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        if not anio_actual:
+           return [("id", "=", 0)]
+
+        if operator in ("=", "==") and value:
+           return [("anio_escolar_id", "=", anio_actual.id)]
+ 
+        if operator in ("!=", "<>") and value:
+           return [("anio_escolar_id", "!=", anio_actual.id)]
+
+        return [("anio_escolar_id", "=", anio_actual.id)]
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
