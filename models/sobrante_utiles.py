@@ -145,7 +145,7 @@ class AnioEscolarSobrantes(models.Model):
 
     def action_generar_sobrantes_desde_anio_anterior(self):
         Movimiento = self.env["almacen.utiles.movimiento"]
-        Sobrante = self.env["sobrante.utiles.anio"]
+        Sobrante = self.env["sobrante.utiles.anio"].with_context(default_estado=False)
         Producto = self.env["product.product"]
         Quant = self.env["stock.quant"].sudo()
 
@@ -230,7 +230,7 @@ class AnioEscolarSobrantes(models.Model):
                         })
                         total_actualizados += 1
                     else:
-                        Sobrante.create({
+                        Sobrante.with_context(default_estado=False).create({
                             "anio_origen_id": rec.anio_anterior_id.id,
                             "anio_destino_id": rec.id,
                             "product_id": producto.id,
