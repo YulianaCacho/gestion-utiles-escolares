@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <list string="Años escolares">
                 <field name="name"/>
-                <field name="anio"/>
+                <field name="anio" options="{'format': false}"/>
                 <field name="anio_anterior_id"/>
                 <field name="fecha_inicio"/>
                 <field name="fecha_fin"/>
@@ -26,29 +26,34 @@
             <form string="Año escolar">
                 <header>
                     <button name="action_activar"
-                            type="object"
-                            string="Activar año"
-                            class="btn-primary"
-                            invisible="estado == 'activo'"/>
+                           type="object"
+                           string="Activar año"
+                           class="btn-primary"
+                           invisible="not id or estado == 'activo'"/>
 
                      <button name="action_vincular_datos_existentes"
                              type="object"
                              string="Vincular datos existentes"
-                             class="btn-secondary"/>
+                             class="btn-secondary"
+                             invisible="not id"/>
+
                     <button name="action_copiar_listas_desde_anio_anterior"
                             type="object"
                             string="Copiar listas del año anterior"
-                            class="btn-secondary"/>
+                            class="btn-secondary"
+                            invisible="not id"/>
 
                     <button name="action_generar_matriculas_desde_anio_anterior"
                             type="object"
                             string="Generar matrículas desde año anterior"
-                            class="btn-secondary"/>
+                            class="btn-secondary"
+                            invisible="not id"/>
+
                     <button name="action_eliminar_anio_prueba"
                             type="object"
                             string="Eliminar año de prueba"
                             class="btn-danger"
-                            invisible="estado != 'borrador'"
+                            invisible="not id or estado != 'borrador'"
                             confirm="Esta acción eliminará el año escolar de prueba junto con sus matrículas y listas vinculadas. ¿Deseas continuar?"/>
                     
                     <field name="estado"
@@ -59,7 +64,7 @@
                 <sheet>
                     <group string="Datos del año escolar">
                         <group>
-                            <field name="anio"/>
+                            <field name="anio" options="{'format': false}"/>
                             <field name="anio_anterior_id"/>
                             <field name="fecha_inicio"/>
                             <field name="fecha_fin"/>
