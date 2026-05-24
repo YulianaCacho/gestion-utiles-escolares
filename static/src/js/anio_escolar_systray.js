@@ -33,7 +33,7 @@ export class AnioEscolarSystray extends Component {
         this.state.current_name = data.current_name || "Año escolar";
     }
 
-    toggleDropdown() {
+   async toggleDropdown() {
         if (!this.state.open) {
             await this.loadData();
         }
