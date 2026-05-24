@@ -22,14 +22,23 @@ class ReporteLineaTiempoMovimientos extends Component {
             tipoSeleccionado: "",
             total: 0,
             rows: [],
+            anioEscolarId: false,
         });
 
         onWillStart(async () => {
+            await this.loadCurrentYear();
             await this.loadData();
         });
     }
 
+    async loadCurrentYear() {
+        const anioData = await this.orm.call("anio.escolar", "get_selector_data", []);
+        this.state.anioEscolarId = anioData.current_id || false;
+    }
+
     async loadData() {
+        await this.loadCurrentYear();
+
         let year = null;
         let month = null;
 
@@ -48,11 +57,12 @@ class ReporteLineaTiempoMovimientos extends Component {
                 year: year,
                 tipo: this.state.tipoSeleccionado || false,
                 search: this.state.search || false,
+                anio_escolar_id: this.state.anioEscolarId || false,
             }
         );
 
-        this.state.monthLabel = data.month_label;
-        this.state.total = data.total;
+        this.state.monthLabel = data.month_label || "";
+        this.state.total = data.total || 0;
         this.state.rows = data.rows || [];
     }
 

@@ -2,22 +2,22 @@
 <templates xml:space="preserve">
 
     <t t-name="gestion_utiles_escolares.ReporteLineaTiempoMovimientos">
-        <div class="o_ltm_page">
+        <div class="o_ltm_page o_reporte_utiles_scroll">
 
             <div class="o_ltm_toolbar">
                 <div class="o_ltm_search">
                     <i class="fa fa-search"/>
                     <input type="text"
-                           placeholder="Buscar producto, responsable..."
-                           t-att-value="state.search"
-                           t-on-input="onInputSearch"/>
+                            placeholder="Buscar producto, responsable..."
+                            t-att-value="state.search"
+                            t-on-input="onInputSearch"/>
                 </div>
 
                 <div class="o_ltm_month">
                     <i class="fa fa-calendar"/>
                     <input type="month"
-                           t-att-value="state.selectedMonth"
-                           t-on-change="onChangeMonth"/>
+                            t-att-value="state.selectedMonth"
+                            t-on-change="onChangeMonth"/>
                 </div>
 
                 <div class="o_ltm_type">

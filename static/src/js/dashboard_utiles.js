@@ -30,6 +30,11 @@ class DashboardUtilesEscolares extends Component {
             updatedAt: "",
             products: [],
             categories: ["Todos"],
+
+            currentYearId: false,
+            currentYearLabel: "Año actual",
+            previousYearLabel: "Sobrante anterior",
+
             totalItems: 0,
             totalProducts: 0,
             lowStock: 0,
@@ -41,7 +46,45 @@ class DashboardUtilesEscolares extends Component {
         });
     }
 
+    async loadCurrentYear() {
+        const anioData = await this.orm.call("anio.escolar", "get_selector_data", []);
+        const currentId = anioData.current_id || false;
+
+        this.state.currentYearId = currentId;
+
+        if (!currentId) {
+            this.state.currentYearLabel = "Año actual";
+            this.state.previousYearLabel = "Sobrante anterior";
+            return;
+        }
+
+        const anios = await this.orm.searchRead(
+            "anio.escolar",
+            [["id", "=", currentId]],
+            ["anio", "name", "anio_anterior_id"],
+            { limit: 1 }
+        );
+
+        if (!anios.length) {
+            this.state.currentYearLabel = "Año actual";
+            this.state.previousYearLabel = "Sobrante anterior";
+            return;
+        }
+
+        const anio = anios[0];
+
+        this.state.currentYearLabel = String(anio.anio || anio.name || "Año actual");
+
+        if (anio.anio_anterior_id && anio.anio_anterior_id[1]) {
+            this.state.previousYearLabel = String(anio.anio_anterior_id[1]).replace("Año escolar ", "");
+        } else {
+            this.state.previousYearLabel = "Anterior";
+        }
+    }
+
     async loadDashboardData() {
+        await this.loadCurrentYear();
+
         const products = await this.orm.searchRead(
             "product.product",
             [],
@@ -49,80 +92,153 @@ class DashboardUtilesEscolares extends Component {
             { limit: 2000, order: "id asc" }
         );
 
+        const movimientosDomain = this.state.currentYearId
+            ? [["anio_escolar_id", "=", this.state.currentYearId]]
+            : [["id", "=", 0]];
+
         const movimientos = await this.orm.searchRead(
             "almacen.utiles.movimiento",
-            [],
+            movimientosDomain,
             ["product_id", "cantidad", "tipo_movimiento", "categoria_id"],
             { limit: 10000, order: "id asc" }
         );
 
-        const stockByProduct = {};
+        const sobranteFieldsInfo = await this.orm.call(
+            "sobrante.utiles.anio",
+            "fields_get",
+            [],
+            { attributes: ["string", "type"] }
+        );
+
+        const possibleSobranteFields = [
+            "product_id",
+            "cantidad_inicial",
+            "cantidad_usada",
+            "cantidad_disponible",
+            "anio_origen_id",
+            "anio_destino_id",
+            "estado",
+        ];
+
+        const sobranteFields = possibleSobranteFields.filter((field) => sobranteFieldsInfo[field]);
+
+        const sobrantesDomain = this.state.currentYearId
+            ? [["anio_destino_id", "=", this.state.currentYearId]]
+            : [["id", "=", 0]];
+
+        const sobrantes = await this.orm.searchRead(
+            "sobrante.utiles.anio",
+            sobrantesDomain,
+            sobranteFields,
+            { limit: 10000, order: "id asc" }
+        );
+
+        const stockActualByProduct = {};
         const retiradoByProduct = {};
+        const sobranteByProduct = {};
 
         for (const mov of movimientos) {
             if (!mov.product_id || !mov.product_id[0]) {
-               continue;
+                continue;
+            }
+
+            const productId = mov.product_id[0];
+            const cantidad = Number(mov.cantidad || 0);
+
+            if (!stockActualByProduct[productId]) {
+                stockActualByProduct[productId] = 0;
+            }
+
+            if (!retiradoByProduct[productId]) {
+                retiradoByProduct[productId] = 0;
+            }
+
+            if (mov.tipo_movimiento === "entrada") {
+                stockActualByProduct[productId] += cantidad;
+            } else if (mov.tipo_movimiento === "salida") {
+                stockActualByProduct[productId] -= cantidad;
+                retiradoByProduct[productId] += cantidad;
+            } else if (mov.tipo_movimiento === "ajuste") {
+                stockActualByProduct[productId] += cantidad;
+            }
         }
 
-        const productId = mov.product_id[0];
-        const cantidad = Number(mov.cantidad || 0);
+        for (const sobrante of sobrantes) {
+            if (!sobrante.product_id || !sobrante.product_id[0]) {
+                continue;
+            }
 
-        if (!stockByProduct[productId]) {
-            stockByProduct[productId] = 0;
-        }
+            const productId = sobrante.product_id[0];
 
-        if (!retiradoByProduct[productId]) {
-            retiradoByProduct[productId] = 0;
-        }
+            let disponible = 0;
 
-        if (mov.tipo_movimiento === "entrada") {
-            stockByProduct[productId] += cantidad;
-        } else if (mov.tipo_movimiento === "salida") {
-            stockByProduct[productId] -= cantidad;
-           retiradoByProduct[productId] += cantidad;
-        } else if (mov.tipo_movimiento === "ajuste") {
-            stockByProduct[productId] += cantidad;
+            if ("cantidad_disponible" in sobrante) {
+                disponible = Number(sobrante.cantidad_disponible || 0);
+            } else {
+                const inicial = Number(sobrante.cantidad_inicial || 0);
+                const usada = Number(sobrante.cantidad_usada || 0);
+                disponible = inicial - usada;
+            }
+
+            if (!sobranteByProduct[productId]) {
+                sobranteByProduct[productId] = 0;
+            }
+
+            sobranteByProduct[productId] += disponible;
         }
-   }
 
         const normalized = products
             .map((product) => {
-               const qty = Number(stockByProduct[product.id] || 0);
-               const reserved = Number(retiradoByProduct[product.id] || 0);
-               const available = Math.max(qty, 0);
+                const stockActual = Number(stockActualByProduct[product.id] || 0);
+                const retirado = Number(retiradoByProduct[product.id] || 0);
+                const sobranteAnterior = Number(sobranteByProduct[product.id] || 0);
 
-               const category = product.categ_id
-                   ? product.categ_id[1].split("/").pop().trim()
-                   : "Varios";
+                const actualDisponible = Math.max(stockActual, 0);
+                const sobranteDisponible = Math.max(sobranteAnterior, 0);
+                const totalDisponible = actualDisponible + sobranteDisponible;
 
-               return {
-                   id: product.id,
-                   name: product.display_name || "Sin nombre",
-                   code: product.default_code || "",
-                   category: category || "Varios",
-                   qty,
-                   reserved,
-                   available,
-                   status: available <= 0 ? "Sin stock" : available <= 5 ? "Stock bajo" : "Normal",
-             };
+                const category = product.categ_id
+                    ? product.categ_id[1].split("/").pop().trim()
+                    : "Varios";
+
+                return {
+                    id: product.id,
+                    name: product.display_name || "Sin nombre",
+                    code: product.default_code || "",
+                    category: category || "Varios",
+
+                    currentQty: actualDisponible,
+                    previousQty: sobranteDisponible,
+                    totalQty: totalDisponible,
+                    reserved: retirado,
+
+                    available: totalDisponible,
+                    status: totalDisponible <= 0
+                        ? "Sin stock"
+                        : totalDisponible <= 5
+                            ? "Stock bajo"
+                            : "Normal",
+                };
             })
-           .filter((product) => {
-              const categoryNormalized = normalizeText(product.category);
+            .filter((product) => {
+                const categoryNormalized = normalizeText(product.category);
 
-              return !EXCLUDED_CATEGORIES.some((excluded) =>
-                  categoryNormalized.includes(excluded)
-              );
-           });
- 
+                return !EXCLUDED_CATEGORIES.some((excluded) =>
+                    categoryNormalized.includes(excluded)
+                );
+            });
+
         const categories = Array.from(new Set(normalized.map((p) => p.category))).sort();
         const now = new Date();
 
         this.state.products = normalized;
         this.state.categories = ["Todos", ...categories];
-        this.state.totalItems = normalized.reduce((sum, item) => sum + item.qty, 0);
+
+        this.state.totalItems = normalized.reduce((sum, item) => sum + item.totalQty, 0);
         this.state.totalProducts = normalized.length;
         this.state.lowStock = normalized.filter((item) => item.available > 0 && item.available <= 5).length;
         this.state.noStock = normalized.filter((item) => item.available <= 0).length;
+
         this.state.updatedAt =
             now.toLocaleDateString("es-PE") +
             " " +
@@ -152,7 +268,7 @@ class DashboardUtilesEscolares extends Component {
     }
 
     progressWidth(product) {
-        const base = Math.max(product.qty, product.reserved, product.available, 1);
+        const base = Math.max(product.totalQty, product.reserved, 1);
         const percent = Math.min(Math.round((product.available / base) * 100), 100);
         return `width: ${percent}%;`;
     }
@@ -175,16 +291,25 @@ class DashboardUtilesEscolares extends Component {
 
     exportCsv() {
         const rows = [
-            ["Producto", "Categoría", "En almacén", "Reservado", "Disponible", "Estado"],
+            [
+                "Producto",
+                "Categoría",
+                `Año actual ${this.state.currentYearLabel}`,
+                `Sobrante ${this.state.previousYearLabel}`,
+                "Total disponible",
+                "Retirado",
+                "Estado",
+            ],
         ];
 
         for (const product of this.filteredProducts) {
             rows.push([
                 product.name,
                 product.category,
-                product.qty,
+                product.currentQty,
+                product.previousQty,
+                product.totalQty,
                 product.reserved,
-                product.available,
                 product.status,
             ]);
         }

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_sobrante_utiles_anio_list" model="ir.ui.view">
+        <field name="name">sobrante.utiles.anio.list</field>
+        <field name="model">sobrante.utiles.anio</field>
+        <field name="arch" type="xml">
+            <list string="Sobrantes del año anterior">
+                <field name="anio_origen_id"/>
+                <field name="anio_destino_id"/>
+                <field name="product_id"/>
+                <field name="cantidad_inicial"/>
+                <field name="cantidad_usada"/>
+                <field name="cantidad_disponible"/>
+                <field name="uom_id"/>
+                <field name="estado"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sobrante_utiles_anio_form" model="ir.ui.view">
+        <field name="name">sobrante.utiles.anio.form</field>
+        <field name="model">sobrante.utiles.anio</field>
+        <field name="arch" type="xml">
+            <form string="Sobrante del año anterior">
+                <sheet>
+                    <group string="Datos del sobrante">
+                        <group>
+                            <field name="anio_origen_id"/>
+                            <field name="anio_destino_id"/>
+                            <field name="product_id"/>
+                            <field name="uom_id"/>
+                        </group>
+
+                        <group>
+                            <field name="cantidad_inicial"/>
+                            <field name="cantidad_usada"/>
+                            <field name="cantidad_disponible"/>
+                            <field name="estado"/>
+                        </group>
+                    </group>
+
+                    <group string="Observación">
+                        <field name="observacion"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sobrante_utiles_anio" model="ir.actions.act_window">
+        <field name="name">Sobrantes del año anterior</field>
+        <field name="res_model">sobrante.utiles.anio</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('es_anio_actual', '=', True)]</field>
+    </record>
+
+    <menuitem id="menu_sobrante_utiles_anio"
+              name="☑ Útiles sobrantes"
+              parent="menu_almacen_utiles_root"
+              action="action_sobrante_utiles_anio"
+              sequence="40"/>
+
+</odoo>

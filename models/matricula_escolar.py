@@ -32,6 +32,12 @@ class MatriculaEscolar(models.Model):
         store=True
     )
 
+    es_anio_actual = fields.Boolean(
+        string='Es año actual',
+        compute='_compute_es_anio_actual',
+        search='_search_es_anio_actual'
+    )
+
     grado_escolar = fields.Selection([
         ('inicial_3', 'Inicial 3 años'),
         ('inicial_4', 'Inicial 4 años'),
@@ -47,7 +53,7 @@ class MatriculaEscolar(models.Model):
     lista_utiles_id = fields.Many2one(
         'lista.utiles.grado',
         string='Lista de útiles',
-        domain="[('anio', '=', anio_escolar), ('grado_escolar', '=', grado_escolar)]"
+        domain="[('grado_escolar', '=', grado_escolar)]"
     )
 
     apoderado_principal_id = fields.Many2one(
@@ -85,15 +91,56 @@ class MatriculaEscolar(models.Model):
         for rec in self:
             rec.anio_escolar_visual = str(rec.anio_escolar or '')
 
+    @api.depends('anio_escolar')
+    def _compute_es_anio_actual(self):
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        for rec in self:
+            rec.es_anio_actual = bool(
+                anio_actual and rec.anio_escolar == anio_actual.anio
+            )
+
+    def _search_es_anio_actual(self, operator, value):
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        if not anio_actual:
+            return [('id', '=', 0)]
+
+        if operator in ('=', '==') and value:
+            return [('anio_escolar', '=', anio_actual.anio)]
+
+        if operator in ('!=', '<>') and value:
+            return [('anio_escolar', '!=', anio_actual.anio)]
+
+        return [('anio_escolar', '=', anio_actual.anio)]
+
     @api.onchange('grado_escolar', 'anio_escolar')
     def _onchange_grado_anio(self):
         for rec in self:
-            if rec.grado_escolar and rec.anio_escolar:
-                lista = self.env['lista.utiles.grado'].search([
-                    ('grado_escolar', '=', rec.grado_escolar),
-                    ('anio', '=', rec.anio_escolar)
-                ], limit=1)
-                rec.lista_utiles_id = lista.id if lista else False
+            if not rec.grado_escolar or not rec.anio_escolar:
+                rec.lista_utiles_id = False
+                continue
+
+            dominio = [
+                ('grado_escolar', '=', rec.grado_escolar),
+            ]
+
+            # Si existe el campo anio_escolar_id, buscar primero por el año escolar real.
+            if hasattr(rec, 'anio_escolar_id') and rec.anio_escolar_id:
+                dominio.append(('anio_escolar_id', '=', rec.anio_escolar_id.id))
+                lista = self.env['lista.utiles.grado'].search(dominio, limit=1)
+
+                if lista:
+                    rec.lista_utiles_id = lista.id
+                    continue
+
+            # Si no encuentra por anio_escolar_id, busca por el campo antiguo anio.
+            lista = self.env['lista.utiles.grado'].search([
+                ('grado_escolar', '=', rec.grado_escolar),
+                ('anio', '=', str(rec.anio_escolar)),
+            ], limit=1)
+
+            rec.lista_utiles_id = lista.id if lista else False
 
     @api.constrains('estudiante_id', 'anio_escolar')
     def _check_matricula_unica_por_anio(self):
@@ -103,5 +150,8 @@ class MatriculaEscolar(models.Model):
                 ('anio_escolar', '=', rec.anio_escolar),
                 ('id', '!=', rec.id)
             ])
+
             if existe:
-                raise ValidationError('Este estudiante ya tiene una matrícula registrada para ese año escolar.')
+                raise ValidationError(
+                    'Este estudiante ya tiene una matrícula registrada para ese año escolar.'
+                )
