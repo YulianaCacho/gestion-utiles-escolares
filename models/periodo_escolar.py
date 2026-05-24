@@ -255,6 +255,47 @@ class AnioEscolar(models.Model):
             }
         }
 
+    def action_pasar_a_borrador_prueba(self):
+        Recepcion = self.env["recepcion.utiles.escolar"]
+        Salida = self.env["salida.almacen.utiles"]
+        Movimiento = self.env["almacen.utiles.movimiento"]
+
+        for rec in self:
+            if rec.estado == "borrador":
+               continue
+
+            recepciones = Recepcion.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            salidas = Salida.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            movimientos = Movimiento.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            if recepciones or salidas or movimientos:
+               raise UserError(
+                   "No puedes pasar este año a borrador porque ya tiene recepciones, "
+                   "entregas o movimientos de almacén registrados. "
+                   "Esto evita borrar evidencia importante del sistema."
+                )
+
+            rec.estado = "borrador"
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Año escolar actualizado",
+                "message": "El año escolar fue pasado a borrador. Ahora puedes eliminarlo si era una prueba.",
+                "type": "success",
+                "sticky": False,
+            }
+        }
+
     def action_eliminar_anio_prueba(self):
         self.unlink()
 

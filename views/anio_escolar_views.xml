@@ -49,6 +49,13 @@
                             class="btn-secondary"
                             invisible="not id"/>
 
+                    <button name="action_pasar_a_borrador_prueba"
+                            type="object"
+                            string="Pasar a borrador para prueba"
+                            class="btn-secondary"
+                            invisible="not id or estado == 'borrador'"
+                            confirm="Esta acción pasará el año escolar a estado Borrador para poder eliminarlo si era una prueba. ¿Deseas continuar?"/>
+
                     <button name="action_eliminar_anio_prueba"
                             type="object"
                             string="Eliminar año de prueba"
