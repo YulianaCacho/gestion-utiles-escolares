@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="gestion_utiles_escolares.ReporteRecepcionDashboard">
-        <div class="o_rr_wrap">
+        <div class="o_rr_wrap o_reporte_utiles_scroll">
 
             <!-- Toolbar -->
             <div class="o_rr_toolbar">
@@ -13,8 +13,8 @@
                 <div class="o_rr_search_box">
                     <i class="fa fa-search"/>
                     <input type="text"
-                           placeholder="Buscar alumno, grado..."
-                           t-model="state.search"/>
+                            placeholder="Buscar alumno, grado..."
+                            t-model="state.search"/>
                 </div>
 
                 <button type="button" class="o_rr_btn_small">

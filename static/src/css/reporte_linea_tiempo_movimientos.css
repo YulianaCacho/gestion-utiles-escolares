@@ -243,35 +243,3 @@
     }
 }
 
-/* =========================================================
-   CORRECCIÓN DE SCROLL EN REPORTES PERSONALIZADOS
-   Permite bajar dentro de las pantallas de reportes OWL
-   ========================================================= */
-
-.o_action_manager {
-    height: calc(100vh - 46px);
-    overflow: hidden;
-}
-
-.o_action_manager .o_component {
-    height: 100%;
-    min-height: 0;
-}
-
-.o_action_manager .o_component > div {
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-bottom: 90px;
-}
-
-/* Evita que tablas grandes corten el contenido */
-.o_action_manager table {
-    width: 100%;
-}
-
-/* Da espacio inferior para que no se corte el último registro */
-.o_action_manager .table,
-.o_action_manager .o_list_table {
-    margin-bottom: 80px;
-}

@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="gestion_utiles_escolares.ReporteAlmacenMovimientos">
-        <div class="o_ram_page">
+        <div class="o_ram_page o_reporte_utiles_scroll">
 
             <div class="o_ram_body">
 
@@ -11,8 +11,8 @@
                     <div class="o_ram_month_box">
                         <i class="fa fa-calendar"/>
                         <input type="month"
-                               t-att-value="state.selectedMonth"
-                               t-on-change="onChangeMonth"/>
+                                t-att-value="state.selectedMonth"
+                                t-on-change="onChangeMonth"/>
                     </div>
 
                     <!-- Filtro por grado -->
