@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.AnioEscolarSystray">
+        <li class="o_anio_escolar_systray">
+            <button type="button"
+                    class="o_anio_escolar_btn"
+                    t-on-click="toggleDropdown">
+                <i class="fa fa-calendar me-1"/>
+                <span t-esc="state.current_name"/>
+                <i class="fa fa-chevron-down ms-1"/>
+            </button>
+
+            <div t-if="state.open" class="o_anio_escolar_dropdown">
+                <t t-foreach="state.anios" t-as="anio" t-key="anio.id">
+                    <button type="button"
+                            class="o_anio_escolar_option"
+                            t-att-class="anio.id === state.current_id ? 'o_anio_escolar_option active' : 'o_anio_escolar_option'"
+                            t-on-click="() => this.seleccionarAnio(anio.id)">
+                        <span t-esc="anio.name"/>
+                    </button>
+                </t>
+
+                <div class="o_anio_escolar_separator"/>
+
+                <button type="button"
+                        class="o_anio_escolar_new"
+                        t-on-click="abrirNuevoAnio">
+                    + Agregar nuevo año
+                </button>
+            </div>
+        </li>
+    </t>
+
+</templates>

@@ -24,7 +24,7 @@
 
     # Luego Lista de útiles porque ahora irá dentro de Matrículas
     "views/lista_utiles_views.xml",
-
+    
     # Luego Entregas
     'views/salida_almacen_utiles_views.xml',
 
@@ -36,6 +36,9 @@
     "views/reporte_recepcion_dashboard_views.xml",
     "views/reporte_almacen_movimientos_views.xml",
     "report/reporte_recepciones_pdf.xml",
+
+    'data/anio_escolar_data.xml',
+    'views/anio_escolar_views.xml',
 
 ],
    'assets': {

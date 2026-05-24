@@ -1,0 +1,66 @@
+.o_anio_escolar_systray {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-right: 8px;
+}
+
+.o_anio_escolar_btn {
+    background: #8bc34a;
+    color: white;
+    border: 2px solid #6fa92f;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.o_anio_escolar_btn:hover {
+    background: #79b43b;
+    color: white;
+}
+
+.o_anio_escolar_dropdown {
+    position: absolute;
+    top: 42px;
+    right: 0;
+    min-width: 220px;
+    background: white;
+    border: 1px solid #d8dadd;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+    z-index: 9999;
+    padding: 6px 0;
+}
+
+.o_anio_escolar_option,
+.o_anio_escolar_new {
+    width: 100%;
+    border: none;
+    background: white;
+    text-align: left;
+    padding: 9px 14px;
+    font-size: 14px;
+    color: #2f3a45;
+}
+
+.o_anio_escolar_option:hover,
+.o_anio_escolar_new:hover {
+    background: #f1f5f9;
+}
+
+.o_anio_escolar_option.active {
+    background: #0d6efd;
+    color: white;
+}
+
+.o_anio_escolar_separator {
+    border-top: 1px solid #e5e7eb;
+    margin: 5px 0;
+}
+
+.o_anio_escolar_new {
+    font-weight: 700;
+    color: #198754;
+}
