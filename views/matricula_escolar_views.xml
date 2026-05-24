@@ -29,7 +29,12 @@
             <list string="Estado por alumno">
                 <field name="estudiante_id" string="Estudiante"/>
                 <field name="grado_escolar" string="Grado escolar"/>
-                <field name="estado" string="Estado del estudiante" widget="badge"/>
+                <field name="estado"
+                        string="Estado del estudiante"
+                        widget="badge"
+                        decoration-success="estado == 'activo'"
+                        decoration-danger="estado == 'retirado'"
+                        decoration-muted="estado == 'finalizado'"/>
                 <field name="situacion_siguiente_anio" string="Situación para el siguiente año"/>
                 <field name="apoderado_principal_id" string="Apoderado principal"/>
             </list>
@@ -53,7 +58,7 @@
                         <field name="anio_escolar_id"
                                 readonly="1"
                                 force_save="1"
-                                options="{'no_open': True, 'no_create': True}"/>
+                               options="{'no_open': True, 'no_create': True}"/>
 
                         <field name="grado_escolar"/>
                         <field name="anio_escolar" invisible="1"/>
