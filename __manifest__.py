@@ -38,6 +38,7 @@
 
     'views/anio_escolar_views.xml',
     'views/anio_escolar_views.xml',
+    'views/sobrante_utiles_views.xml',
 
 ],
    'assets': {

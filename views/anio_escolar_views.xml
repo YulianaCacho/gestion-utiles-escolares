@@ -49,6 +49,13 @@
                             class="btn-secondary"
                             invisible="not id"/>
 
+                    <button name="action_generar_sobrantes_desde_anio_anterior"
+                            type="object"
+                            string="Generar sobrantes del año anterior"
+                            class="btn-secondary"
+                            invisible="not id"
+                            confirm="Se calcularán los sobrantes del año anterior para usarlos en este año escolar. ¿Deseas continuar?"/>
+
                     <button name="action_pasar_a_borrador_prueba"
                             type="object"
                             string="Pasar a borrador para prueba"
