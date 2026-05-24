@@ -324,9 +324,17 @@ class MatriculaEscolar(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        if vals.get("anio_escolar_id"):
-            anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
-            vals["anio_escolar"] = anio.anio
+        if "anio_escolar_id" in vals and vals.get("anio_escolar_id"):
+            nuevo_anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
+
+            for rec in self:
+                if rec.anio_escolar_id and rec.anio_escolar_id.id != nuevo_anio.id:
+                   raise UserError(
+                       "No puedes cambiar el año escolar de una matrícula ya registrada. "
+                       "Para otro periodo, genera o crea una nueva matrícula en el año correspondiente."
+                    )
+
+            vals["anio_escolar"] = nuevo_anio.anio
 
         return super().write(vals)
 

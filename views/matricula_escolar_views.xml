@@ -8,7 +8,6 @@
         <field name="arch" type="xml">
             <list string="Lista de matrícula">
                 <field name="estudiante_id"/>
-                <field name="anio_escolar_id"/>
                 <field name="grado_escolar"/>
                 <field name="situacion_siguiente_anio"/>
                 <field name="apoderado_principal_id"/>
@@ -26,7 +25,10 @@
                 <sheet>
                     <group string="Datos de matrícula">
                         <field name="estudiante_id"/>
-                        <field name="anio_escolar_id"/>
+                        <field name="anio_escolar_id"
+                               readonly="1"
+                               force_save="1"
+                               options="{'no_open': True, 'no_create': True}"/>
                         <field name="grado_escolar"/>
                         <field name="anio_escolar" invisible="1"/>
                         <field name="lista_utiles_id"/>
