@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from odoo import models, fields, api
-
+from odoo.exceptions import UserError
 
 class AnioEscolar(models.Model):
     _inherit = "anio.escolar"
@@ -32,6 +32,139 @@ class AnioEscolar(models.Model):
         string="Movimientos",
         compute="_compute_resumen_anio"
     )
+
+    def _siguiente_grado(self, grado):
+        mapa = {
+             "inicial_3": "inicial_4",
+             "inicial_4": "inicial_5",
+             "inicial_5": "1er_grado",
+             "1er_grado": "2do_grado",
+             "2do_grado": "3er_grado",
+             "3er_grado": "4to_grado",
+             "4to_grado": "5to_grado",
+             "5to_grado": "6to_grado",
+             "6to_grado": "6to_grado",
+        }
+        return mapa.get(grado, grado)
+
+
+    def _buscar_lista_utiles_del_anio(self, grado):
+        self.ensure_one()
+
+        return self.env["lista.utiles.grado"].search([
+           ("anio_escolar_id", "=", self.id),
+           ("grado_escolar", "=", grado),
+        ], limit=1)
+
+
+    def action_copiar_listas_desde_anio_anterior(self):
+        total = 0
+
+        for rec in self:
+            if not rec.anio_anterior_id:
+                raise UserError("Primero debes seleccionar el año anterior.")
+
+            listas_anteriores = self.env["lista.utiles.grado"].search([
+                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
+            ])
+
+            for lista in listas_anteriores:
+                existe = self.env["lista.utiles.grado"].search_count([
+                   ("anio_escolar_id", "=", rec.id),
+                   ("grado_escolar", "=", lista.grado_escolar),
+                ])
+
+                if existe:
+                     continue
+
+                lista.copy({
+                    "anio_escolar_id": rec.id,
+                    "anio": str(rec.anio),
+                })
+                total += 1
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Listas copiadas",
+                "message": f"Se copiaron {total} listas al nuevo año escolar.",
+                "type": "success",
+                "sticky": False,
+           }
+      }
+
+
+    def action_generar_matriculas_desde_anio_anterior(self):
+        Matricula = self.env["matricula.escolar"]
+
+        creadas = 0
+        repetidores = 0
+        retirados = 0
+        omitidas = 0
+
+        for rec in self:
+            if not rec.anio_anterior_id:
+               raise UserError("Primero debes seleccionar el año anterior.")
+
+            matriculas_anteriores = Matricula.search([
+               ("anio_escolar_id", "=", rec.anio_anterior_id.id),
+               ("estado", "=", "activo"),
+            ])
+
+            for matricula in matriculas_anteriores:
+                if matricula.situacion_siguiente_anio == "retirado":
+                   retirados += 1
+                   continue
+
+                ya_existe = Matricula.search_count([
+                   ("anio_escolar_id", "=", rec.id),
+                   ("estudiante_id", "=", matricula.estudiante_id.id),
+                ])
+
+                if ya_existe:
+                   omitidas += 1
+                   continue
+
+                if matricula.situacion_siguiente_anio == "repite":
+                   nuevo_grado = matricula.grado_escolar
+                   repetidores += 1
+                else:
+                   nuevo_grado = rec._siguiente_grado(matricula.grado_escolar)
+
+                lista = rec._buscar_lista_utiles_del_anio(nuevo_grado)
+
+                nueva = Matricula.create({
+                   "estudiante_id": matricula.estudiante_id.id,
+                   "anio_escolar_id": rec.id,
+                   "anio_escolar": rec.anio,
+                   "grado_escolar": nuevo_grado,
+                   "lista_utiles_id": lista.id if lista else False,
+                   "estado": "activo",
+                   "apoderado_principal_id": matricula.apoderado_principal_id.id if matricula.apoderado_principal_id else False,
+                   "apoderado_secundario_id": matricula.apoderado_secundario_id.id if matricula.apoderado_secundario_id else False,
+                   "matricula_anterior_id": matricula.id,
+                  "situacion_siguiente_anio": "promovido",
+                })
+
+                matricula.matricula_siguiente_id = nueva.id
+                creadas += 1
+
+        return {
+           "type": "ir.actions.client",
+           "tag": "display_notification",
+           "params": {
+               "title": "Matrículas generadas",
+                "message": (
+                    f"Creadas: {creadas}. "
+                    f"Repetidores: {repetidores}. "
+                    f"Retirados: {retirados}. "
+                    f"Omitidas: {omitidas}."
+                ),
+                "type": "success",
+                "sticky": False,
+            }
+       }
 
     @api.depends("matricula_ids", "lista_utiles_ids")
     def _compute_resumen_anio(self):
@@ -121,6 +254,28 @@ class MatriculaEscolar(models.Model):
         "anio.escolar",
         string="Año escolar",
         default=lambda self: self.env.user.anio_escolar_actual_id.id if self.env.user.anio_escolar_actual_id else False
+    )
+
+    situacion_siguiente_anio = fields.Selection(
+        [
+            ("promovido", "Promovido al siguiente grado"),
+            ("repite", "Repite grado"),
+            ("retirado", "Retirado / no continúa"),
+        ],
+        string="Situación para el siguiente año",
+        default="promovido"
+    )
+
+    matricula_anterior_id = fields.Many2one(
+        "matricula.escolar",
+        string="Matrícula anterior",
+        readonly=True
+   )
+
+    matricula_siguiente_id = fields.Many2one(
+        "matricula.escolar",
+        string="Matrícula siguiente",
+        readonly=True
     )
 
     @api.model

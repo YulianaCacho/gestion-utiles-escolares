@@ -9,8 +9,8 @@
             <list string="Lista de matrícula">
                 <field name="estudiante_id"/>
                 <field name="anio_escolar_id"/>
-                <field name="anio_escolar_visual" invisible="1"/>
                 <field name="grado_escolar"/>
+                <field name="situacion_siguiente_anio"/>
                 <field name="apoderado_principal_id"/>
             </list>
         </field>
@@ -28,8 +28,12 @@
                         <field name="estudiante_id"/>
                         <field name="anio_escolar_id"/>
                         <field name="grado_escolar"/>
+                        <field name="anio_escolar" invisible="1"/>
                         <field name="lista_utiles_id"/>
                         <field name="estado"/>
+                        <field name="situacion_siguiente_anio"/>
+                        <field name="matricula_anterior_id" readonly="1"/>
+                        <field name="matricula_siguiente_id" readonly="1"/>
                     </group>
 
                     <group string="Relación familiar">

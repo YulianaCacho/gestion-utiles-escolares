@@ -35,6 +35,15 @@
                              type="object"
                              string="Vincular datos existentes"
                              class="btn-secondary"/>
+                    <button name="action_copiar_listas_desde_anio_anterior"
+                            type="object"
+                            string="Copiar listas del año anterior"
+                            class="btn-secondary"/>
+
+                    <button name="action_generar_matriculas_desde_anio_anterior"
+                            type="object"
+                            string="Generar matrículas desde año anterior"
+                            class="btn-secondary"/>
                     
                     <field name="estado"
                            widget="statusbar"
