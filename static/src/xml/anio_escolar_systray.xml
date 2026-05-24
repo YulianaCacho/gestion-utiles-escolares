@@ -25,8 +25,14 @@
 
                 <button type="button"
                         class="o_anio_escolar_new"
+                        t-on-click="abrirGestionAnios">
+                      𖦹 Gestionar años escolares
+                </button>
+
+                <button type="button"
+                        class="o_anio_escolar_new"
                         t-on-click="abrirNuevoAnio">
-                    + Agregar nuevo año
+                     + Agregar nuevo año
                 </button>
             </div>
         </li>

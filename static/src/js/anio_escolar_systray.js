@@ -24,6 +24,7 @@ export class AnioEscolarSystray extends Component {
         });
     }
 
+
     async loadData() {
         const data = await this.orm.call("anio.escolar", "get_selector_data", []);
 
@@ -50,17 +51,32 @@ export class AnioEscolarSystray extends Component {
         window.location.reload();
     }
 
+    abrirGestionAnios() {
+        this.state.open = false;
+
+        this.action.doAction({
+           type: "ir.actions.act_window",
+           name: "Años escolares",
+           res_model: "anio.escolar",
+           views: [[false, "list"], [false, "form"]],
+           target: "current",
+       });
+   }
+
     abrirNuevoAnio() {
         this.state.open = false;
 
         this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Agregar nuevo año escolar",
-            res_model: "anio.escolar",
-            views: [[false, "form"]],
-            target: "current",
+           type: "ir.actions.act_window",
+           name: "Agregar nuevo año escolar",
+           res_model: "anio.escolar",
+           views: [[false, "form"]],
+           target: "current",
+           context: {
+               default_estado: "borrador",
+           },
         });
-    }
+   }
 }
 
 registry.category("systray").add(
