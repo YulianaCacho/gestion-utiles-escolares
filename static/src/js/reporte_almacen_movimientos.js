@@ -30,15 +30,24 @@ class ReporteAlmacenMovimientos extends Component {
             responsables: [],
             gradoSeleccionado: "",
             responsableSeleccionado: "",
+            anioEscolarId: false,
         });
 
         onWillStart(async () => {
+            await this.loadCurrentYear();
             await this.loadData();
         });
     }
 
+    async loadCurrentYear() {
+        const anioData = await this.orm.call("anio.escolar", "get_selector_data", []);
+        this.state.anioEscolarId = anioData.current_id || false;
+    }
+
     async loadData() {
         this.state.loading = true;
+
+        await this.loadCurrentYear();
 
         let year = null;
         let month = null;
@@ -58,6 +67,7 @@ class ReporteAlmacenMovimientos extends Component {
                 year: year,
                 grado: this.state.gradoSeleccionado || false,
                 responsable_id: this.state.responsableSeleccionado || false,
+                anio_escolar_id: this.state.anioEscolarId || false,
             }
         );
 

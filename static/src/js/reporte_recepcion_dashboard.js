@@ -12,16 +12,6 @@ function normalizeText(value) {
         .trim();
 }
 
-function getMany2oneValue(record, fieldName) {
-    const value = record[fieldName];
-
-    if (Array.isArray(value)) {
-        return value[1] || "";
-    }
-
-    return value || "";
-}
-
 function firstExistingValue(record, fields) {
     for (const field of fields) {
         const value = record[field];
@@ -76,14 +66,27 @@ class ReporteRecepcionDashboard extends Component {
             yearLabel: "2026",
             rows: [],
             selectedIds: [],
+            anioEscolarId: false,
         });
 
         onWillStart(async () => {
+            await this.loadCurrentYear();
             await this.loadData();
         });
     }
 
+    async loadCurrentYear() {
+        const anioData = await this.orm.call("anio.escolar", "get_selector_data", []);
+        this.state.anioEscolarId = anioData.current_id || false;
+
+        if (anioData.current_name) {
+            this.state.yearLabel = anioData.current_name.replace("Año escolar ", "");
+        }
+    }
+
     async loadData() {
+        await this.loadCurrentYear();
+
         const model = "recepcion.utiles.escolar";
 
         const fieldsInfo = await this.orm.call(
@@ -125,13 +128,26 @@ class ReporteRecepcionDashboard extends Component {
             "porcentaje_avance",
             "avance",
             "progreso",
+
+            "anio_escolar_id",
+            "anio_escolar",
         ];
 
         const existingFields = possibleFields.filter((field) => fieldsInfo[field]);
 
+        let domain = [];
+
+        if (fieldsInfo["anio_escolar_id"] && this.state.anioEscolarId) {
+            domain = [["anio_escolar_id", "=", this.state.anioEscolarId]];
+        } else if (fieldsInfo["anio_escolar"] && this.state.yearLabel) {
+            domain = [["anio_escolar", "=", parseInt(this.state.yearLabel, 10)]];
+        } else {
+            domain = [["id", "=", 0]];
+        }
+
         const records = await this.orm.searchRead(
             model,
-            [],
+            domain,
             existingFields,
             { limit: 500, order: "id desc" }
         );
@@ -151,7 +167,7 @@ class ReporteRecepcionDashboard extends Component {
                     "lista_utiles_id",
                     "lista_utiles_grado_id",
                     "lista_id",
-                ]) || "Lista 2026";
+                ]) || `Lista ${this.state.yearLabel}`;
 
             const total = Number(
                 firstExistingValue(rec, [
@@ -279,15 +295,15 @@ class ReporteRecepcionDashboard extends Component {
         const ids = [...this.state.selectedIds];
 
         if (!ids.length) {
-           this.notification.add(
-               "Selecciona al menos una recepción para generar el PDF.",
-               { type: "warning" }
-           );
-           return;
-       }
+            this.notification.add(
+                "Selecciona al menos una recepción para generar el PDF.",
+                { type: "warning" }
+            );
+            return;
+        }
 
-       const url = `/report/pdf/gestion_utiles_escolares.report_recepciones_pdf_template/${ids.join(",")}`;
-       window.open(url, "_blank");
+        const url = `/report/pdf/gestion_utiles_escolares.report_recepciones_pdf_template/${ids.join(",")}`;
+        window.open(url, "_blank");
     }
 }
 
