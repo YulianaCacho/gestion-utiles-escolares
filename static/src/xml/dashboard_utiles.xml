@@ -20,7 +20,7 @@
             <div class="o_utiles_summary_grid">
                 <div class="o_utiles_summary_card">
                     <span class="o_utiles_summary_number" t-esc="state.totalItems"/>
-                    <span class="o_utiles_summary_label">Ítems totales</span>
+                    <span class="o_utiles_summary_label">Ítems disponibles</span>
                 </div>
 
                 <div class="o_utiles_summary_card">
@@ -42,7 +42,16 @@
             <div class="o_utiles_stock_panel">
 
                 <div class="o_utiles_panel_header">
-                    <h2>Stock en almacén general</h2>
+                    <div>
+                        <h2>Stock en almacén general</h2>
+                        <small>
+                            Año actual:
+                            <strong t-esc="state.currentYearLabel"/>
+                            · Sobrante:
+                            <strong t-esc="state.previousYearLabel"/>
+                        </small>
+                    </div>
+
                     <span>Actualizado: <t t-esc="state.updatedAt"/></span>
                 </div>
 
@@ -62,9 +71,16 @@
                             <tr>
                                 <th>Producto</th>
                                 <th>Categoría</th>
-                                <th>En almacén</th>
+                                <th>
+                                    Año actual
+                                    <t t-esc="state.currentYearLabel"/>
+                                </th>
+                                <th>
+                                    Sobrante
+                                    <t t-esc="state.previousYearLabel"/>
+                                </th>
+                                <th>Total disponible</th>
                                 <th>Retirado</th>
-                                <th>Disponibilidad</th>
                                 <th>Estado</th>
                             </tr>
                         </thead>
@@ -84,17 +100,19 @@
                                         <span class="o_utiles_category_badge" t-esc="product.category"/>
                                     </td>
 
-                                    <td t-esc="product.qty"/>
-                                    <td t-esc="product.reserved"/>
+                                    <td t-esc="product.currentQty"/>
+                                    <td t-esc="product.previousQty"/>
 
                                     <td>
                                         <div class="o_utiles_availability">
                                             <span class="o_utiles_bar">
                                                 <span t-att-style="progressWidth(product)"/>
                                             </span>
-                                            <span t-esc="product.available"/>
+                                            <strong t-esc="product.totalQty"/>
                                         </div>
                                     </td>
+
+                                    <td t-esc="product.reserved"/>
 
                                     <td>
                                         <span t-att-class="'o_utiles_status ' + statusClass(product.status)"
@@ -104,7 +122,7 @@
                             </t>
 
                             <tr t-else="">
-                                <td colspan="6" class="o_utiles_empty">
+                                <td colspan="7" class="o_utiles_empty">
                                     No hay productos para mostrar.
                                 </td>
                             </tr>
