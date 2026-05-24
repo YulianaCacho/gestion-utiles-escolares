@@ -36,9 +36,7 @@
     "views/reporte_recepcion_dashboard_views.xml",
     "views/reporte_almacen_movimientos_views.xml",
 
-    'data/anio_escolar_data.xml',
     'views/anio_escolar_views.xml',
-    'data/anio_escolar_data.xml',
     'views/anio_escolar_views.xml',
 
 ],
