@@ -26,8 +26,7 @@
                 <sheet>
                     <group string="Datos de matrícula">
                         <field name="estudiante_id"/>
-                        <field name="anio_escolar" invisible="1"/>
-                        <field name="anio_escolar_visual"/>
+                        <field name="anio_escolar_id"/>
                         <field name="grado_escolar"/>
                         <field name="lista_utiles_id"/>
                         <field name="estado"/>
