@@ -44,6 +44,12 @@
                             type="object"
                             string="Generar matrículas desde año anterior"
                             class="btn-secondary"/>
+                    <button name="action_eliminar_anio_prueba"
+                            type="object"
+                            string="Eliminar año de prueba"
+                            class="btn-danger"
+                            invisible="estado != 'borrador'"
+                            confirm="Esta acción eliminará el año escolar de prueba junto con sus matrículas y listas vinculadas. ¿Deseas continuar?"/>
                     
                     <field name="estado"
                            widget="statusbar"

@@ -164,6 +164,96 @@ class AnioEscolar(models.Model):
             }
        }
 
+    def action_eliminar_anio_prueba(self):
+        Matricula = self.env["matricula.escolar"]
+        Lista = self.env["lista.utiles.grado"]
+        Recepcion = self.env["recepcion.utiles.escolar"]
+        Salida = self.env["salida.almacen.utiles"]
+        Movimiento = self.env["almacen.utiles.movimiento"]
+
+        for rec in self:
+            if rec.estado != "borrador":
+                raise UserError(
+                    "Solo se puede eliminar un año escolar que esté en estado Borrador. "
+                     "No se deben borrar años activos o cerrados."
+               )
+
+            anios_dependientes = self.search([
+                ("anio_anterior_id", "=", rec.id)
+            ])
+
+            if anios_dependientes:
+               nombres = ", ".join(anios_dependientes.mapped("name"))
+               raise UserError(
+                   f"No puedes eliminar {rec.name} porque está configurado como año anterior de: {nombres}. "
+                   "Primero elimina o modifica esos años."
+                )
+
+            recepciones = Recepcion.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            salidas = Salida.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            movimientos = Movimiento.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            if recepciones or salidas or movimientos:
+                raise UserError(
+                   "No puedes eliminar este año porque ya tiene recepciones, entregas o movimientos de almacén. "
+                  "Para pruebas, elimina solo años que todavía no tengan operaciones de almacén."
+               )
+
+            matriculas = Matricula.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            listas = Lista.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            # Limpiar relación con matrícula anterior
+            for matricula in matriculas:
+                if matricula.matricula_anterior_id:
+                   matricula.matricula_anterior_id.write({
+                      "matricula_siguiente_id": False
+                   })
+
+            matriculas.unlink()
+
+            # Eliminar líneas de listas antes de borrar la lista
+            for lista in listas:
+                if lista.linea_ids:
+                    lista.linea_ids.unlink()
+
+            listas.unlink()
+
+            # Si algún usuario tenía seleccionado este año, volver al año anterior
+            usuarios = self.env["res.users"].sudo().search([
+               ("anio_escolar_actual_id", "=", rec.id)
+            ])
+
+            nuevo_anio = rec.anio_anterior_id or self.search([
+                ("id", "!=", rec.id)
+            ], order="anio desc", limit=1)
+
+            usuarios.write({
+                "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
+            })
+
+            rec.unlink()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Años escolares",
+            "res_model": "anio.escolar",
+            "view_mode": "list,form",
+            "target": "current",
+        }
+
     @api.depends("matricula_ids", "lista_utiles_ids")
     def _compute_resumen_anio(self):
         Movimiento = self.env["almacen.utiles.movimiento"]
