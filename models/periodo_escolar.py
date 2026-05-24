@@ -3,6 +3,7 @@ from datetime import datetime
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 
+
 class AnioEscolar(models.Model):
     _inherit = "anio.escolar"
 
@@ -33,227 +34,6 @@ class AnioEscolar(models.Model):
         compute="_compute_resumen_anio"
     )
 
-    def _buscar_lista_utiles_del_anio(self, grado):
-        self.ensure_one()
-
-        return self.env["lista.utiles.grado"].search([
-           ("anio_escolar_id", "=", self.id),
-           ("grado_escolar", "=", grado),
-        ], limit=1)
-
-
-    def action_copiar_listas_desde_anio_anterior(self):
-        total = 0
-
-        for rec in self:
-            if not rec.anio_anterior_id:
-                raise UserError("Primero debes seleccionar el año anterior.")
-
-            listas_anteriores = self.env["lista.utiles.grado"].search([
-                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
-            ])
-
-            for lista in listas_anteriores:
-                existe = self.env["lista.utiles.grado"].search_count([
-                   ("anio_escolar_id", "=", rec.id),
-                   ("grado_escolar", "=", lista.grado_escolar),
-                ])
-
-                if existe:
-                     continue
-
-                lista.copy({
-                    "anio_escolar_id": rec.id,
-                    "anio": str(rec.anio),
-                })
-                total += 1
-
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": "Listas copiadas",
-                "message": f"Se copiaron {total} listas al nuevo año escolar.",
-                "type": "success",
-                "sticky": False,
-           }
-      }
-
-    def _siguiente_grado(self, grado):
-        mapa = {
-             "inicial_3": "inicial_4",
-             "inicial_4": "inicial_5",
-             "inicial_5": "1er_grado",
-             "1er_grado": "2do_grado",
-             "2do_grado": "3er_grado",
-             "3er_grado": "4to_grado",
-             "4to_grado": "5to_grado",
-             "5to_grado": "6to_grado",
-             "6to_grado": "6to_grado",
-        }
-        return mapa.get(grado, grado)
-
-    def action_generar_matriculas_desde_anio_anterior(self):
-        Matricula = self.env["matricula.escolar"]
-
-        creadas = 0
-        repetidores = 0
-        retirados = 0
-        omitidas = 0
-
-        for rec in self:
-            if not rec.anio_anterior_id:
-               raise UserError("Primero debes seleccionar el año anterior.")
-
-            matriculas_anteriores = Matricula.search([
-               ("anio_escolar_id", "=", rec.anio_anterior_id.id),
-               ("estado", "=", "activo"),
-            ])
-
-            for matricula in matriculas_anteriores:
-                if matricula.situacion_siguiente_anio == "retirado":
-                   retirados += 1
-                   continue
-
-                ya_existe = Matricula.search_count([
-                   ("anio_escolar_id", "=", rec.id),
-                   ("estudiante_id", "=", matricula.estudiante_id.id),
-                ])
-
-                if ya_existe:
-                   omitidas += 1
-                   continue
-
-                if matricula.situacion_siguiente_anio == "repite":
-                   nuevo_grado = matricula.grado_escolar
-                   repetidores += 1
-                else:
-                   nuevo_grado = rec._siguiente_grado(matricula.grado_escolar)
-
-                lista = rec._buscar_lista_utiles_del_anio(nuevo_grado)
-
-                nueva = Matricula.create({
-                   "estudiante_id": matricula.estudiante_id.id,
-                   "anio_escolar_id": rec.id,
-                   "anio_escolar": rec.anio,
-                   "grado_escolar": nuevo_grado,
-                   "lista_utiles_id": lista.id if lista else False,
-                   "estado": "activo",
-                   "apoderado_principal_id": matricula.apoderado_principal_id.id if matricula.apoderado_principal_id else False,
-                   "apoderado_secundario_id": matricula.apoderado_secundario_id.id if matricula.apoderado_secundario_id else False,
-                   "matricula_anterior_id": matricula.id,
-                  "situacion_siguiente_anio": "promovido",
-                })
-
-                matricula.matricula_siguiente_id = nueva.id
-                creadas += 1
-
-        return {
-           "type": "ir.actions.client",
-           "tag": "display_notification",
-           "params": {
-               "title": "Matrículas generadas",
-                "message": (
-                    f"Creadas: {creadas}. "
-                    f"Repetidores: {repetidores}. "
-                    f"Retirados: {retirados}. "
-                    f"Omitidas: {omitidas}."
-                ),
-                "type": "success",
-                "sticky": False,
-            }
-       }
-
-    def action_eliminar_anio_prueba(self):
-        Matricula = self.env["matricula.escolar"]
-        Lista = self.env["lista.utiles.grado"]
-        Recepcion = self.env["recepcion.utiles.escolar"]
-        Salida = self.env["salida.almacen.utiles"]
-        Movimiento = self.env["almacen.utiles.movimiento"]
-
-        for rec in self:
-            if rec.estado != "borrador":
-                raise UserError(
-                    "Solo se puede eliminar un año escolar que esté en estado Borrador. "
-                     "No se deben borrar años activos o cerrados."
-               )
-
-            anios_dependientes = self.search([
-                ("anio_anterior_id", "=", rec.id)
-            ])
-
-            if anios_dependientes:
-               nombres = ", ".join(anios_dependientes.mapped("name"))
-               raise UserError(
-                   f"No puedes eliminar {rec.name} porque está configurado como año anterior de: {nombres}. "
-                   "Primero elimina o modifica esos años."
-                )
-
-            recepciones = Recepcion.search_count([
-                ("anio_escolar_id", "=", rec.id)
-            ])
-
-            salidas = Salida.search_count([
-                ("anio_escolar_id", "=", rec.id)
-            ])
-
-            movimientos = Movimiento.search_count([
-                ("anio_escolar_id", "=", rec.id)
-            ])
-
-            if recepciones or salidas or movimientos:
-                raise UserError(
-                   "No puedes eliminar este año porque ya tiene recepciones, entregas o movimientos de almacén. "
-                  "Para pruebas, elimina solo años que todavía no tengan operaciones de almacén."
-               )
-
-            matriculas = Matricula.search([
-                ("anio_escolar_id", "=", rec.id)
-            ])
-
-            listas = Lista.search([
-                ("anio_escolar_id", "=", rec.id)
-            ])
-
-            # Limpiar relación con matrícula anterior
-            for matricula in matriculas:
-                if matricula.matricula_anterior_id:
-                   matricula.matricula_anterior_id.write({
-                      "matricula_siguiente_id": False
-                   })
-
-            matriculas.unlink()
-
-            # Eliminar líneas de listas antes de borrar la lista
-            for lista in listas:
-                if lista.linea_ids:
-                    lista.linea_ids.unlink()
-
-            listas.unlink()
-
-            # Si algún usuario tenía seleccionado este año, volver al año anterior
-            usuarios = self.env["res.users"].sudo().search([
-               ("anio_escolar_actual_id", "=", rec.id)
-            ])
-
-            nuevo_anio = rec.anio_anterior_id or self.search([
-                ("id", "!=", rec.id)
-            ], order="anio desc", limit=1)
-
-            usuarios.write({
-                "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
-            })
-
-            rec.unlink()
-
-        return {
-            "type": "ir.actions.act_window",
-            "name": "Años escolares",
-            "res_model": "anio.escolar",
-            "view_mode": "list,form",
-            "target": "current",
-        }
-
     @api.depends("matricula_ids", "lista_utiles_ids")
     def _compute_resumen_anio(self):
         Movimiento = self.env["almacen.utiles.movimiento"]
@@ -264,6 +44,28 @@ class AnioEscolar(models.Model):
             rec.total_movimientos = Movimiento.search_count([
                 ("anio_escolar_id", "=", rec.id)
             ])
+
+    def _siguiente_grado(self, grado):
+        mapa = {
+            "inicial_3": "inicial_4",
+            "inicial_4": "inicial_5",
+            "inicial_5": "1er_grado",
+            "1er_grado": "2do_grado",
+            "2do_grado": "3er_grado",
+            "3er_grado": "4to_grado",
+            "4to_grado": "5to_grado",
+            "5to_grado": "6to_grado",
+            "6to_grado": "6to_grado",
+        }
+        return mapa.get(grado, grado)
+
+    def _buscar_lista_utiles_del_anio(self, grado):
+        self.ensure_one()
+
+        return self.env["lista.utiles.grado"].search([
+            ("anio_escolar_id", "=", self.id),
+            ("grado_escolar", "=", grado),
+        ], limit=1)
 
     def action_vincular_datos_existentes(self):
         Matricula = self.env["matricula.escolar"]
@@ -334,6 +136,203 @@ class AnioEscolar(models.Model):
             }
         }
 
+    def action_copiar_listas_desde_anio_anterior(self):
+        total = 0
+
+        for rec in self:
+            if not rec.anio_anterior_id:
+                raise UserError("Primero debes seleccionar el año anterior.")
+
+            listas_anteriores = self.env["lista.utiles.grado"].search([
+                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
+            ])
+
+            for lista in listas_anteriores:
+                existe = self.env["lista.utiles.grado"].search_count([
+                    ("anio_escolar_id", "=", rec.id),
+                    ("grado_escolar", "=", lista.grado_escolar),
+                ])
+
+                if existe:
+                    continue
+
+                lista.copy({
+                    "anio_escolar_id": rec.id,
+                    "anio": str(rec.anio),
+                })
+                total += 1
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Listas copiadas",
+                "message": f"Se copiaron {total} listas al nuevo año escolar.",
+                "type": "success",
+                "sticky": False,
+            }
+        }
+
+    def action_generar_matriculas_desde_anio_anterior(self):
+        Matricula = self.env["matricula.escolar"]
+
+        creadas = 0
+        repetidores = 0
+        retirados = 0
+        omitidas = 0
+
+        for rec in self:
+            if not rec.anio_anterior_id:
+                raise UserError("Primero debes seleccionar el año anterior.")
+
+            matriculas_anteriores = Matricula.search([
+                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
+                ("estado", "=", "activo"),
+            ])
+
+            for matricula in matriculas_anteriores:
+                if matricula.situacion_siguiente_anio == "retirado":
+                    retirados += 1
+                    continue
+
+                ya_existe = Matricula.search_count([
+                    ("anio_escolar_id", "=", rec.id),
+                    ("estudiante_id", "=", matricula.estudiante_id.id),
+                ])
+
+                if ya_existe:
+                    omitidas += 1
+                    continue
+
+                if matricula.situacion_siguiente_anio == "repite":
+                    nuevo_grado = matricula.grado_escolar
+                    repetidores += 1
+                else:
+                    nuevo_grado = rec._siguiente_grado(matricula.grado_escolar)
+
+                lista = rec._buscar_lista_utiles_del_anio(nuevo_grado)
+
+                nueva = Matricula.create({
+                    "estudiante_id": matricula.estudiante_id.id,
+                    "anio_escolar_id": rec.id,
+                    "anio_escolar": rec.anio,
+                    "grado_escolar": nuevo_grado,
+                    "lista_utiles_id": lista.id if lista else False,
+                    "estado": "activo",
+                    "apoderado_principal_id": matricula.apoderado_principal_id.id if matricula.apoderado_principal_id else False,
+                    "apoderado_secundario_id": matricula.apoderado_secundario_id.id if matricula.apoderado_secundario_id else False,
+                    "matricula_anterior_id": matricula.id,
+                    "situacion_siguiente_anio": "promovido",
+                })
+
+                matricula.matricula_siguiente_id = nueva.id
+                creadas += 1
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Matrículas generadas",
+                "message": (
+                    f"Creadas: {creadas}. "
+                    f"Repetidores: {repetidores}. "
+                    f"Retirados: {retirados}. "
+                    f"Omitidas: {omitidas}."
+                ),
+                "type": "success",
+                "sticky": False,
+            }
+        }
+
+    def action_eliminar_anio_prueba(self):
+        self.unlink()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Años escolares",
+            "res_model": "anio.escolar",
+            "view_mode": "list,form",
+            "target": "current",
+        }
+
+    def unlink(self):
+        Matricula = self.env["matricula.escolar"]
+        Lista = self.env["lista.utiles.grado"]
+        Recepcion = self.env["recepcion.utiles.escolar"]
+        Salida = self.env["salida.almacen.utiles"]
+        Movimiento = self.env["almacen.utiles.movimiento"]
+
+        for rec in self:
+            if rec.estado != "borrador":
+                raise UserError(
+                    "No puedes eliminar un año escolar activo o cerrado. "
+                    "Solo se pueden eliminar años en estado Borrador usados para prueba."
+                )
+
+            anios_dependientes = self.search([
+                ("anio_anterior_id", "=", rec.id)
+            ])
+
+            if anios_dependientes:
+                nombres = ", ".join(anios_dependientes.mapped("name"))
+                raise UserError(
+                    f"No puedes eliminar {rec.name} porque está configurado como año anterior de: {nombres}. "
+                    "Primero elimina o modifica esos años."
+                )
+
+            recepciones = Recepcion.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            salidas = Salida.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            movimientos = Movimiento.search_count([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            if recepciones or salidas or movimientos:
+                raise UserError(
+                    "No puedes eliminar este año porque tiene recepciones, entregas o movimientos registrados."
+                )
+
+            matriculas = Matricula.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            listas = Lista.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            for matricula in matriculas:
+                if matricula.matricula_anterior_id:
+                    matricula.matricula_anterior_id.write({
+                        "matricula_siguiente_id": False
+                    })
+
+            matriculas.unlink()
+
+            for lista in listas:
+                if lista.linea_ids:
+                    lista.linea_ids.unlink()
+
+            listas.unlink()
+
+            usuarios = self.env["res.users"].sudo().search([
+                ("anio_escolar_actual_id", "=", rec.id)
+            ])
+
+            nuevo_anio = rec.anio_anterior_id or self.search([
+                ("id", "!=", rec.id)
+            ], order="anio desc", limit=1)
+
+            usuarios.write({
+                "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
+            })
+
+        return super().unlink()
+
 
 class MatriculaEscolar(models.Model):
     _inherit = "matricula.escolar"
@@ -358,7 +357,7 @@ class MatriculaEscolar(models.Model):
         "matricula.escolar",
         string="Matrícula anterior",
         readonly=True
-   )
+    )
 
     matricula_siguiente_id = fields.Many2one(
         "matricula.escolar",
@@ -387,19 +386,19 @@ class MatriculaEscolar(models.Model):
     def _onchange_lista_por_anio_grado(self):
         for rec in self:
             if not rec.grado_escolar:
-               rec.lista_utiles_id = False
-               continue
+                rec.lista_utiles_id = False
+                continue
 
             anio = rec.anio_escolar_id
 
             if not anio and self.env.user.anio_escolar_actual_id:
-               anio = self.env.user.anio_escolar_actual_id
-               rec.anio_escolar_id = anio.id
-               rec.anio_escolar = anio.anio
+                anio = self.env.user.anio_escolar_actual_id
+                rec.anio_escolar_id = anio.id
+                rec.anio_escolar = anio.anio
 
             dominio = [
-               ("grado_escolar", "=", rec.grado_escolar),
-           ]
+                ("grado_escolar", "=", rec.grado_escolar),
+            ]
 
             if anio:
                 dominio.append(("anio_escolar_id", "=", anio.id))
@@ -410,14 +409,18 @@ class MatriculaEscolar(models.Model):
 
             if not lista and anio:
                 lista = self.env["lista.utiles.grado"].search([
-                  ("grado_escolar", "=", rec.grado_escolar),
-                  ("anio", "=", str(anio.anio)),
+                    ("grado_escolar", "=", rec.grado_escolar),
+                    ("anio", "=", str(anio.anio)),
                 ], limit=1)
 
             rec.lista_utiles_id = lista.id if lista else False
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            if not vals.get("anio_escolar_id") and self.env.user.anio_escolar_actual_id:
+                vals["anio_escolar_id"] = self.env.user.anio_escolar_actual_id.id
+
             if vals.get("anio_escolar_id"):
                 anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
                 vals["anio_escolar"] = anio.anio
@@ -430,9 +433,9 @@ class MatriculaEscolar(models.Model):
 
             for rec in self:
                 if rec.anio_escolar_id and rec.anio_escolar_id.id != nuevo_anio.id:
-                   raise UserError(
-                       "No puedes cambiar el año escolar de una matrícula ya registrada. "
-                       "Para otro periodo, genera o crea una nueva matrícula en el año correspondiente."
+                    raise UserError(
+                        "No puedes cambiar el año escolar de una matrícula ya registrada. "
+                        "Para otro periodo, genera o crea una nueva matrícula en el año correspondiente."
                     )
 
             vals["anio_escolar"] = nuevo_anio.anio
@@ -469,6 +472,9 @@ class ListaUtilesGrado(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            if not vals.get("anio_escolar_id") and self.env.user.anio_escolar_actual_id:
+                vals["anio_escolar_id"] = self.env.user.anio_escolar_actual_id.id
+
             if vals.get("anio_escolar_id"):
                 anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
                 vals["anio"] = str(anio.anio)
