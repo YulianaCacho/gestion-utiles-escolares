@@ -6,4 +6,4 @@ from . import recepcion_utiles
 from . import matricula_escolar
 from . import almacen_utiles
 from . import salida_almacen_utiles
-from . import anio_lectivo
+from . import anio_escolar
