@@ -39,6 +39,8 @@
 
     'data/anio_escolar_data.xml',
     'views/anio_escolar_views.xml',
+    'data/anio_escolar_data.xml',
+    'views/anio_escolar_views.xml',
 
 ],
    'assets': {

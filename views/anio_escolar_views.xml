@@ -12,6 +12,9 @@
                 <field name="fecha_inicio"/>
                 <field name="fecha_fin"/>
                 <field name="estado"/>
+                <field name="total_matriculas"/>
+                <field name="total_listas"/>
+                <field name="total_movimientos"/>
             </list>
         </field>
     </record>
@@ -28,6 +31,11 @@
                             class="btn-primary"
                             invisible="estado == 'activo'"/>
 
+                     <button name="action_vincular_datos_existentes"
+                             type="object"
+                             string="Vincular datos existentes"
+                             class="btn-secondary"/>
+                    
                     <field name="estado"
                            widget="statusbar"
                            statusbar_visible="borrador,activo,cerrado"/>

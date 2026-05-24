@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <list string="Listas de útiles por grado">
                 <field name="name" string="Nombre de la lista"/>
-                <field name="anio" string="Año escolar"/>
+               <field name="anio_escolar_id" string="Año escolar"/>
                 <field name="grado_escolar" string="Grado escolar"/>
                 <field name="cantidad_productos" string="Cantidad de productos"/>
             </list>
@@ -25,7 +25,8 @@
 
                     <group string="Datos de la lista">
                         <group>
-                            <field name="anio"/>
+                            <field name="anio_escolar_id"/>
+                            <field name="anio" invisible="1"/>
                             <field name="grado_escolar"/>
                             <field name="cantidad_productos" readonly="1"/>
                         </group>

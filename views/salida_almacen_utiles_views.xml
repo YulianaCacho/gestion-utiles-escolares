@@ -11,6 +11,7 @@
                        widget="badge"
                        decoration-success="estado == 'validado'"/>
                 <field name="fecha_salida"/>
+                <field name="anio_escolar_id"/>
                 <field name="responsable_id"/>
                 <field name="miss_id"
                        string="Miss / docente que recibe"
@@ -54,6 +55,7 @@
                     <group string="Datos de la entrega">
                         <group>
                             <field name="fecha_salida"/>
+                            <field name="anio_escolar_id"/>
                             <field name="responsable_id"/>
                             <field name="user_id"/>
                         </group>

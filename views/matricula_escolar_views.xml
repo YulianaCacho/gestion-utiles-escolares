@@ -8,7 +8,8 @@
         <field name="arch" type="xml">
             <list string="Lista de matrícula">
                 <field name="estudiante_id"/>
-                <field name="anio_escolar_visual"/>
+                <field name="anio_escolar_id"/>
+                <field name="anio_escolar_visual" invisible="1"/>
                 <field name="grado_escolar"/>
                 <field name="apoderado_principal_id"/>
             </list>
@@ -51,7 +52,7 @@
         <field name="res_model">matricula.escolar</field>
         <field name="view_mode">form,list</field>
         <field name="view_id" ref="view_matricula_escolar_form"/>
-        <field name="context">{'default_estado': 'activo', 'default_anio_escolar': 2026}</field>
+        <field name="context">{'default_estado': 'activo'}</field>
     </record>
 
     <!-- Acción: Lista de matrícula -->
