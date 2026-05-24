@@ -146,58 +146,89 @@ class AnioEscolarSobrantes(models.Model):
     def action_generar_sobrantes_desde_anio_anterior(self):
         Movimiento = self.env["almacen.utiles.movimiento"]
         Sobrante = self.env["sobrante.utiles.anio"]
+        Producto = self.env["product.product"]
 
         total_creados = 0
         total_actualizados = 0
 
         for rec in self:
             if not rec.anio_anterior_id:
-                raise UserError("Primero debes seleccionar el año anterior.")
+               raise UserError("Primero debes seleccionar el año anterior.")
 
-            productos = Movimiento.search([
-                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
-                ("product_id", "!=", False),
-            ]).mapped("product_id")
+        # ==========================================================
+        # 1. Intentar calcular sobrantes desde movimientos del año anterior
+        # ==========================================================
+
+            movimientos_anio_anterior = Movimiento.search([
+               ("anio_escolar_id", "=", rec.anio_anterior_id.id),
+               ("product_id", "!=", False),
+            ])
+
+            productos = movimientos_anio_anterior.mapped("product_id")
+            sobrantes_calculados = {}
 
             for producto in productos:
-                movimientos = Movimiento.search([
-                    ("anio_escolar_id", "=", rec.anio_anterior_id.id),
-                    ("product_id", "=", producto.id),
-                ])
+                movimientos_producto = movimientos_anio_anterior.filtered(
+                   lambda m: m.product_id.id == producto.id
+                )
 
                 entradas = sum(
-                    movimientos.filtered(
-                        lambda m: m.tipo_movimiento == "entrada"
+                    movimientos_producto.filtered(
+                       lambda m: m.tipo_movimiento == "entrada"
                     ).mapped("cantidad")
                 )
 
                 salidas = sum(
-                    movimientos.filtered(
-                        lambda m: m.tipo_movimiento == "salida"
-                    ).mapped("cantidad")
+                   movimientos_producto.filtered(
+                       lambda m: m.tipo_movimiento == "salida"
+                   ).mapped("cantidad")
                 )
 
                 ajustes = sum(
-                    movimientos.filtered(
-                        lambda m: m.tipo_movimiento == "ajuste"
-                    ).mapped("cantidad")
+                   movimientos_producto.filtered(
+                      lambda m: m.tipo_movimiento == "ajuste"
+                   ).mapped("cantidad")
                 )
 
                 cantidad_sobrante = entradas - salidas + ajustes
 
-                if cantidad_sobrante <= 0:
-                    continue
+                if cantidad_sobrante > 0:
+                    sobrantes_calculados[producto.id] = cantidad_sobrante
+
+        # ==========================================================
+        # 2. Si no hay movimientos, usar stock actual de productos
+        #    Esto sirve para tu caso porque el dashboard muestra stock,
+        #    pero aún no hay movimientos por año escolar.
+        # ==========================================================
+
+            if not sobrantes_calculados:
+               productos_con_stock = Producto.search([
+                   ("active", "=", True),
+               ])
+
+               for producto in productos_con_stock:
+                   cantidad_stock = producto.qty_available
+
+                   if cantidad_stock > 0:
+                      sobrantes_calculados[producto.id] = cantidad_stock
+
+        # ==========================================================
+        # 3. Crear o actualizar registros de sobrantes
+        # ==========================================================
+
+            for producto_id, cantidad_sobrante in sobrantes_calculados.items():
+                producto = Producto.browse(producto_id)
 
                 sobrante_existente = Sobrante.search([
-                    ("anio_origen_id", "=", rec.anio_anterior_id.id),
-                    ("anio_destino_id", "=", rec.id),
-                    ("product_id", "=", producto.id),
+                   ("anio_origen_id", "=", rec.anio_anterior_id.id),
+                   ("anio_destino_id", "=", rec.id),
+                   ("product_id", "=", producto.id),
                 ], limit=1)
-
+ 
                 if sobrante_existente:
                     sobrante_existente.write({
-                        "cantidad_inicial": cantidad_sobrante,
-                    })
+                       "cantidad_inicial": cantidad_sobrante,
+                   })
                     total_actualizados += 1
                 else:
                     Sobrante.create({
@@ -206,6 +237,7 @@ class AnioEscolarSobrantes(models.Model):
                         "product_id": producto.id,
                         "cantidad_inicial": cantidad_sobrante,
                         "cantidad_usada": 0,
+                        "observacion": "Sobrante generado desde stock disponible del año anterior.",
                     })
                     total_creados += 1
 
@@ -213,12 +245,12 @@ class AnioEscolarSobrantes(models.Model):
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": "Sobrantes generados",
-                "message": (
-                    f"Sobrantes creados: {total_creados}. "
-                    f"Sobrantes actualizados: {total_actualizados}."
+               "title": "Sobrantes generados",
+               "message": (
+                   f"Sobrantes creados: {total_creados}. "
+                   f"Sobrantes actualizados: {total_actualizados}."
                 ),
-                "type": "success",
-                "sticky": False,
+               "type": "success",
+               "sticky": False,
             }
-        }
+       }
