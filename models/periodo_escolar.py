@@ -358,42 +358,42 @@ class AnioEscolar(models.Model):
         Sobrante = self.env["sobrante.utiles.anio"]
 
         for rec in self:
-            recepciones = Recepcion.search([
-                ("anio_escolar_id", "=", rec.id)
+            # 1. Si el usuario tiene seleccionado este año, cambiarlo al año anterior
+            usuarios = self.env["res.users"].sudo().search([
+                ("anio_escolar_actual_id", "=", rec.id)
             ])
 
-            salidas = Salida.search([
-                ("anio_escolar_id", "=", rec.id)
-            ])
+            nuevo_anio = rec.anio_anterior_id or self.search([
+                ("id", "!=", rec.id)
+            ], order="anio desc", limit=1)
 
+            if usuarios:
+                usuarios.write({
+                    "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
+                })
+
+            # 2. Eliminar movimientos del año
             movimientos = Movimiento.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
-
-            movimientos_reales = Movimiento.browse()
-
-            for mov in movimientos:
-                tiene_recepcion = bool(mov.recepcion_id)
-
-                tiene_salida = False
-                if "salida_almacen_id" in mov._fields:
-                    tiene_salida = bool(mov.salida_almacen_id)
-
-                if tiene_recepcion or tiene_salida:
-                    movimientos_reales |= mov
-
-            if recepciones or salidas or movimientos_reales:
-                raise UserError(
-                    "No se puede eliminar este año porque sí tiene recepciones, "
-                    "entregas o movimientos reales vinculados. "
-                    "Primero revisa el historial de movimientos, recepciones y entregas."
-                )
-
-            # Eliminar movimientos huérfanos o de prueba del año
             if movimientos:
                 movimientos.unlink()
 
-            # Eliminar matrículas del año
+            # 3. Eliminar recepciones del año
+            recepciones = Recepcion.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+            if recepciones:
+                recepciones.unlink()
+
+            # 4. Eliminar entregas/salidas del año
+            salidas = Salida.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+            if salidas:
+                salidas.unlink()
+
+            # 5. Eliminar matrículas del año
             matriculas = Matricula.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
@@ -407,7 +407,7 @@ class AnioEscolar(models.Model):
             if matriculas:
                 matriculas.unlink()
 
-            # Eliminar listas y sus productos/líneas
+            # 6. Eliminar líneas y listas de útiles del año
             listas = Lista.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
@@ -419,32 +419,17 @@ class AnioEscolar(models.Model):
             if listas:
                 listas.unlink()
 
-            # Eliminar sobrantes relacionados al año
+            # 7. Eliminar sobrantes vinculados al año
             sobrantes = Sobrante.search([
                 "|",
                 ("anio_destino_id", "=", rec.id),
                 ("anio_origen_id", "=", rec.id),
             ])
-
             if sobrantes:
                 sobrantes.unlink()
 
-            # Si algún usuario tenía seleccionado ese año, volver al año anterior
-            usuarios = self.env["res.users"].sudo().search([
-                ("anio_escolar_actual_id", "=", rec.id)
-            ])
-
-            nuevo_anio = rec.anio_anterior_id or self.search([
-                ("id", "!=", rec.id)
-            ], order="anio desc", limit=1)
-
-            usuarios.write({
-                "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
-            })
-
-            rec.estado = "borrador"
-
-        self.unlink()
+        # 8. Eliminar el año sin intentar pasarlo a borrador
+        self.with_context(forzar_eliminar_anio_prueba=True).unlink()
 
         return {
             "type": "ir.actions.act_window",
@@ -455,6 +440,9 @@ class AnioEscolar(models.Model):
         }
 
     def unlink(self):
+        if self.env.context.get("forzar_eliminar_anio_prueba"):
+                return super().unlink()
+        
         Matricula = self.env["matricula.escolar"]
         Lista = self.env["lista.utiles.grado"]
         Recepcion = self.env["recepcion.utiles.escolar"]
