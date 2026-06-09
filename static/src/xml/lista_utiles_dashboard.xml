@@ -16,17 +16,27 @@
                 </div>
 
                 <div class="o_lu_header_actions">
-                    <button type="button"
-                            class="o_lu_btn o_lu_btn_light"
-                            title="Configuración / Importar y exportar"
-                            t-on-click="() => this.openConfigImportExport()">
-                        <i class="fa fa-cog"/>
-                    </button>
+                    <div class="o_lu_config_dropdown">
 
-                    <button type="button"
-                            class="o_lu_btn o_lu_btn_primary"
-                            title="Nueva lista"
-                            t-on-click="() => this.openNew()">
+                        <button type="button" class="o_lu_btn o_lu_btn_light" title="Configuración / Importar y exportar" t-on-click.stop="() => this.toggleConfigMenu()">
+                            <i class="fa fa-cog"/>
+                        </button>
+
+                        <div t-if="state.showConfigMenu" class="o_lu_config_menu">
+                            <button type="button" class="o_lu_config_item" t-on-click="() => this.openImportRecords()">
+                                <i class="fa fa-download"/>
+                                <span>Importar registros</span>
+                            </button>
+
+                            <button type="button" class="o_lu_config_item" t-on-click="() => this.exportAllRecords()">
+                                <i class="fa fa-upload"/>
+                                <span>Exportar todo</span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <button type="button" class="o_lu_btn o_lu_btn_primary" title="Nueva lista" t-on-click="() => this.openNew()">
                         <i class="fa fa-plus"/>
                         <span>Nuevo</span>
                     </button>
@@ -36,24 +46,16 @@
             <div class="o_lu_tools_row">
                 <div class="o_lu_search_box">
                     <i class="fa fa-search"/>
-                    <input type="text"
-                           placeholder="Buscar lista..."
-                           t-att-value="state.search"
-                           t-on-input="(ev) => this.onSearchInput(ev)"
-                           t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+                    <input type="text" placeholder="Buscar lista..." t-att-value="state.search" t-on-input="(ev) => this.onSearchInput(ev)" t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
                 </div>
 
                 <div class="o_lu_tools_buttons">
-                    <button type="button"
-                            class="o_lu_btn o_lu_btn_light"
-                            t-on-click="() => this.doSearch()">
+                    <button type="button" class="o_lu_btn o_lu_btn_light" t-on-click="() => this.doSearch()">
                         <i class="fa fa-filter"/>
                         <span>Filtrar</span>
                     </button>
 
-                    <button type="button"
-                            class="o_lu_btn o_lu_btn_light"
-                            t-on-click="() => this.exportCsv()">
+                    <button type="button" class="o_lu_btn o_lu_btn_light" t-on-click="() => this.exportCsv()">
                         <i class="fa fa-download"/>
                         <span>Exportar</span>
                     </button>
@@ -115,10 +117,7 @@
                             </t>
 
                             <t t-elif="state.rows.length">
-                                <tr t-foreach="state.rows"
-                                    t-as="row"
-                                    t-key="row.id"
-                                    t-on-click="() => this.openForm(row.id)">
+                                <tr t-foreach="state.rows" t-as="row" t-key="row.id" t-on-click="() => this.openForm(row.id)">
 
                                     <td class="o_lu_check_col">
                                         <input type="checkbox" t-on-click.stop="() => {}"/>
@@ -141,13 +140,11 @@
                                     </td>
 
                                     <td>
-                                        <span t-att-class="'o_lu_grade_badge ' + row.grado_class"
-                                              t-esc="row.grado"/>
+                                        <span t-att-class="'o_lu_grade_badge ' + row.grado_class" t-esc="row.grado"/>
                                     </td>
 
                                     <td class="o_lu_qty_col">
-                                        <span t-att-class="'o_lu_qty_badge ' + row.grado_class"
-                                              t-esc="row.cantidad"/>
+                                        <span t-att-class="'o_lu_qty_badge ' + row.grado_class" t-esc="row.cantidad"/>
                                     </td>
                                 </tr>
                             </t>

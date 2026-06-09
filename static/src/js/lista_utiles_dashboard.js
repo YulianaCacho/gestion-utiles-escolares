@@ -15,14 +15,15 @@ class ListaUtilesDashboard extends Component {
         this.state = useState({
             loading: true,
             search: "",
+            showConfigMenu: false,
             titulo: "Lista de útiles por grado",
             subtitulo: "",
             stats: {
-                total_listas: 0,
-                total_utiles: 0,
-                promedio_grado: 0,
-            },
-            rows: [],
+                    total_listas: 0,
+                    total_utiles: 0,
+                    promedio_grado: 0,
+                },
+                rows: [],
         });
 
         onWillStart(async () => {
@@ -96,22 +97,26 @@ class ListaUtilesDashboard extends Component {
         });
     }
 
-    openConfigImportExport() {
+    toggleConfigMenu() {
+        this.state.showConfigMenu = !this.state.showConfigMenu;
+    }
+
+    openImportRecords() {
+        this.state.showConfigMenu = false;
+
         this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Configuración - Importar y exportar listas",
-            res_model: "lista.utiles.grado",
-            views: [
-                [false, "list"],
-                [false, "form"],
-            ],
-            target: "current",
-            context: {
-                create: true,
-                import: true,
-                export_xlsx: true,
+            type: "ir.actions.client",
+            tag: "import",
+            params: {
+                model: "lista.utiles.grado",
+                context: {},
             },
         });
+    }
+
+    exportAllRecords() {
+        this.state.showConfigMenu = false;
+        this.exportCsv();
     }
 
     exportCsv() {

@@ -392,3 +392,52 @@
         min-width: 760px;
     }
 }
+
+/* =========================================================
+   MENÚ DE CONFIGURACIÓN - IMPORTAR / EXPORTAR
+   ========================================================= */
+
+.o_lu_config_dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.o_lu_config_menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 275px;
+    background: #ffffff;
+    border: 1px solid #d8d1c4;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+    padding: 10px 0;
+    z-index: 9999;
+}
+
+.o_lu_config_item {
+    width: 100%;
+    height: 52px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 22px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #111111;
+    text-align: left;
+    cursor: pointer;
+}
+
+.o_lu_config_item:hover {
+    background: #f7f5ef;
+}
+
+.o_lu_config_item i {
+    width: 22px;
+    color: #1f6b00;
+    font-size: 18px;
+    text-align: center;
+}
