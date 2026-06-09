@@ -21,6 +21,7 @@
 
     # Luego Matrículas
     'views/matricula_escolar_views.xml',
+  
 
     # Luego Lista de útiles porque ahora irá dentro de Matrículas
     "views/lista_utiles_views.xml",
@@ -39,6 +40,7 @@
     'views/anio_escolar_views.xml',
     'views/anio_escolar_views.xml',
     'views/sobrante_utiles_views.xml',
+    
 
 ],
    'assets': {
@@ -64,11 +66,26 @@
             "gestion_utiles_escolares/static/src/js/recepcion_almacen_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/recepcion_almacen_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/recepcion_utiles_form_clean.css",
+        
        
             "gestion_utiles_escolares/static/src/css/entregas_list_clean.css",
             "gestion_utiles_escolares/static/src/css/anio_escolar_systray.css",
             "gestion_utiles_escolares/static/src/js/anio_escolar_systray.js",
             "gestion_utiles_escolares/static/src/xml/anio_escolar_systray.xml", 
+           
+           
+            "gestion_utiles_escolares/static/src/js/matricula_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/matricula_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/matricula_dashboard.css",
+            
+            "gestion_utiles_escolares/static/src/js/lista_utiles_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/lista_utiles_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/lista_utiles_dashboard.css",
+        
+            "gestion_utiles_escolares/static/src/js/estado_alumno_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/estado_alumno_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/estado_alumno_dashboard.css",
+            
         ],
     },
     "installable": True,

@@ -1,0 +1,443 @@
+.o_action_manager .o_content:has(.o_lista_utiles_dashboard_full),
+.o_action_manager .o_action:has(.o_lista_utiles_dashboard_full) {
+    overflow: hidden !important;
+}
+
+.o_lista_utiles_dashboard_full {
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100vh - 48px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 18px 20px 22px 20px !important;
+    box-sizing: border-box !important;
+    background: #f8f7f4;
+}
+
+.o_lu_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.o_lu_title_block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.o_lu_title_icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #e7f5d9;
+    color: #4d8f26;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+}
+
+.o_lu_title_block h2 {
+    margin: 0;
+    font-size: 22px;
+    line-height: 1.1;
+    font-weight: 850;
+    color: #171717;
+}
+
+.o_lu_subtitle {
+    margin-top: 3px;
+    color: #555;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.o_lu_header_actions,
+.o_lu_tools_buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.o_lu_btn {
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    border: 1px solid #d1ccc1;
+    background: #ffffff;
+    color: #161616;
+    padding: 0 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 750;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+.o_lu_btn:hover {
+    background: #f3f2ee;
+}
+
+.o_lu_tools_row {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.o_lu_search_box {
+    height: 42px;
+    border: 1px solid #d1ccc1;
+    border-radius: 9px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: #777;
+}
+
+.o_lu_search_box input {
+    width: 100%;
+    height: 39px;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    font-size: 15px;
+}
+
+.o_lu_stats_grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.o_lu_stat_card {
+    min-height: 76px;
+    border-radius: 12px;
+    border: 1px solid #efede7;
+    background: #fffefa;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+}
+
+.o_lu_stat_icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.o_lu_stat_icon.green {
+    background: #e9f8dc;
+    color: #4c922d;
+}
+
+.o_lu_stat_icon.blue {
+    background: #e7f1ff;
+    color: #2e73bb;
+}
+
+.o_lu_stat_icon.orange {
+    background: #fff0d8;
+    color: #c77916;
+}
+
+.o_lu_stat_label {
+    color: #555;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.o_lu_stat_value {
+    margin-top: 2px;
+    color: #111;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 900;
+}
+
+.o_lu_table_card {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #d9d5ca;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.o_lu_table_wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.o_lu_table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.o_lu_table thead th {
+    height: 42px;
+    padding: 10px 14px;
+    background: #ffffff;
+    border-bottom: 1px solid #ded9cf;
+    color: #4b4b4b;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.o_lu_table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #e7e2d8;
+    color: #151515;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.o_lu_table tbody tr {
+    cursor: pointer;
+    background: #ffffff;
+}
+
+.o_lu_table tbody tr:hover {
+    background: #fbfaf6;
+}
+
+.o_lu_check_col {
+    width: 42px !important;
+    text-align: center !important;
+}
+
+.o_lu_qty_col {
+    width: 110px !important;
+    text-align: right !important;
+}
+
+.o_lu_name_cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.o_lu_name_text {
+    font-weight: 850;
+    color: #151515;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_lu_row_icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.o_lu_row_icon.grado-inicial {
+    background: #ffe5ef;
+    color: #b63d69;
+}
+
+.o_lu_row_icon.grado-verde {
+    background: #e7f6dc;
+    color: #4f8d2f;
+}
+
+.o_lu_row_icon.grado-azul {
+    background: #e2f1ff;
+    color: #2e71b7;
+}
+
+.o_lu_row_icon.grado-naranja {
+    background: #fff0d9;
+    color: #bf7419;
+}
+
+.o_lu_year_badge,
+.o_lu_grade_badge,
+.o_lu_qty_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.o_lu_year_badge {
+    background: #e4f1ff;
+    color: #2168a8;
+}
+
+.o_lu_grade_badge.grado-inicial,
+.o_lu_qty_badge.grado-inicial {
+    background: #ffe5ef;
+    color: #b63d69;
+}
+
+.o_lu_grade_badge.grado-verde,
+.o_lu_qty_badge.grado-verde {
+    background: #e7f6dc;
+    color: #477f2e;
+}
+
+.o_lu_grade_badge.grado-azul,
+.o_lu_qty_badge.grado-azul {
+    background: #e2f1ff;
+    color: #2e71b7;
+}
+
+.o_lu_grade_badge.grado-naranja,
+.o_lu_qty_badge.grado-naranja {
+    background: #fff0d9;
+    color: #bf7419;
+}
+
+.o_lu_grade_badge.grado-default,
+.o_lu_qty_badge.grado-default {
+    background: #eeeeee;
+    color: #555555;
+}
+
+.o_lu_table_footer {
+    min-height: 44px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #eee9df;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.o_lu_footer_buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.o_lu_footer_btn {
+    width: 34px;
+    height: 31px;
+    border-radius: 8px;
+    border: 1px solid #d1ccc1;
+    background: #ffffff;
+    color: #333;
+}
+
+.o_lu_empty {
+    text-align: center;
+    padding: 28px !important;
+    color: #777 !important;
+    font-weight: 650;
+}
+
+.o_lu_table input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .o_lista_utiles_dashboard_full {
+        padding: 14px 12px 18px 12px !important;
+    }
+
+    .o_lu_header,
+    .o_lu_tools_row {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .o_lu_header_actions,
+    .o_lu_tools_buttons {
+        justify-content: flex-start;
+    }
+
+    .o_lu_stats_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .o_lu_table {
+        min-width: 760px;
+    }
+}
+
+/* =========================================================
+   MENÚ DE CONFIGURACIÓN - IMPORTAR / EXPORTAR
+   ========================================================= */
+
+.o_lu_config_dropdown {
+    position: relative;
+    display: inline-flex;
+}
+
+.o_lu_config_menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 275px;
+    background: #ffffff;
+    border: 1px solid #d8d1c4;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+    padding: 10px 0;
+    z-index: 9999;
+}
+
+.o_lu_config_item {
+    width: 100%;
+    height: 52px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 22px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #111111;
+    text-align: left;
+    cursor: pointer;
+}
+
+.o_lu_config_item:hover {
+    background: #f7f5ef;
+}
+
+.o_lu_config_item i {
+    width: 22px;
+    color: #1f6b00;
+    font-size: 18px;
+    text-align: center;
+}

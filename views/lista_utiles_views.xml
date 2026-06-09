@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <list string="Listas de útiles por grado">
                 <field name="name" string="Nombre de la lista"/>
-               <field name="anio_escolar_id" string="Año escolar"/>
+                <field name="anio_escolar_id" string="Año escolar"/>
                 <field name="grado_escolar" string="Grado escolar"/>
                 <field name="cantidad_productos" string="Cantidad de productos"/>
             </list>
@@ -52,17 +52,20 @@
         </field>
     </record>
 
+    <!-- Acción normal: se abre desde la ruedita del dashboard -->
     <record id="action_lista_utiles_grado" model="ir.actions.act_window">
-        <field name="name">Lista de útiles por grado</field>
+        <field name="name">Gestionar listas de útiles</field>
         <field name="res_model">lista.utiles.grado</field>
-       <field name="view_mode">list,form</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_lista_utiles_grado_list"/>
     </record>
 
-    <menuitem
-        id="menu_lista_utiles_grado"
-        name="☷ Lista de útiles por grado"
-        parent="menu_utiles_escolares_root"
-        action="action_lista_utiles_grado"
-        sequence="30"/>
+    <!-- Acción moderna tipo dashboard -->
+    <record id="action_lista_utiles_dashboard" model="ir.actions.client">
+        <field name="name">Lista de útiles por grado</field>
+        <field name="tag">lista_utiles_dashboard</field>
+    </record>
+
+    <menuitem id="menu_lista_utiles_grado" name="☷ Lista de útiles por grado" parent="menu_utiles_escolares_root" action="action_lista_utiles_dashboard" sequence="30"/>
 
 </odoo>

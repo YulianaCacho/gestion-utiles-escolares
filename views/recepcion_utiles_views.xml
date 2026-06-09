@@ -51,12 +51,22 @@
                         type="object"
                         icon="fa-check"/>
 
+                <button name="action_enviar_productos_almacen"
+                        string="Enviar a almacén"
+                        type="object"
+                        icon="fa-truck"
+                        class="btn-primary"
+                        invisible="estado != 'validado' or estado_almacen in ['enviado', 'sin_productos']"/>
+ 
                 <field name="estado"
-                       widget="statusbar"
-                       statusbar_visible="borrador,incompleto,completo,validado"/>
+                        widget="statusbar"
+                        statusbar_visible="borrador,incompleto,completo,validado"/>
+
             </header>
 
             <sheet>
+
+                <field name="estado_almacen" invisible="1"/>
 
                 <div class="o_recepcion_title_row">
                     <div class="o_recepcion_title_left">

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.EstadoAlumnoDashboard">
+        <div class="o_estado_alumno_dashboard_full">
+
+            <!-- BARRA SUPERIOR -->
+            <div class="o_ea_topbar">
+
+                <div class="o_ea_left">
+                    <button type="button"
+                            class="o_ea_new_btn"
+                            t-on-click="() => this.openNew()">
+                        <i class="fa fa-plus"/>
+                        <span>Nuevo</span>
+                    </button>
+
+                    <h2>Estado por alumno</h2>
+                </div>
+
+                <div class="o_ea_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           placeholder="Buscar..."
+                           t-att-value="state.search"
+                           t-on-input="(ev) => this.onSearchInput(ev)"
+                           t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+                </div>
+
+                <div class="o_ea_view_buttons">
+                    <button type="button"
+                            t-att-class="'o_ea_view_btn ' + (state.viewMode === 'table' ? 'active' : '')"
+                            t-on-click="() => this.setViewMode('table')"
+                            title="Vista tabla">
+                        <i class="fa fa-table"/>
+                    </button>
+
+                    <button type="button"
+                            t-att-class="'o_ea_view_btn ' + (state.viewMode === 'card' ? 'active' : '')"
+                            t-on-click="() => this.setViewMode('card')"
+                            title="Vista tarjetas">
+                        <i class="fa fa-th-large"/>
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- CARGANDO -->
+            <t t-if="state.loading">
+                <div class="o_ea_empty">Cargando estudiantes...</div>
+            </t>
+
+            <!-- VISTA TARJETAS -->
+            <t t-elif="state.viewMode === 'card'">
+                <div class="o_ea_cards_grid">
+
+                    <div t-foreach="state.rows"
+                         t-as="row"
+                         t-key="row.id"
+                         t-att-class="'o_ea_student_card ' + row.color_class"
+                         t-on-click="() => this.openForm(row.id)">
+
+                        <div class="o_ea_card_header">
+                            <div t-att-class="'o_ea_avatar ' + row.color_class"
+                                 t-esc="row.iniciales"/>
+
+                            <div class="o_ea_student_name" t-esc="row.estudiante"/>
+                        </div>
+
+                        <div class="o_ea_card_body">
+
+                            <div class="o_ea_info_row">
+                                <span>🎓 Grado</span>
+                                <span t-att-class="'o_ea_badge ' + row.grado_class"
+                                      t-esc="row.grado"/>
+                            </div>
+
+                            <div class="o_ea_info_row">
+                                <span>⊙ Estado</span>
+                                <span t-att-class="'o_ea_status_badge ' + row.estado_class">
+                                    <span class="o_ea_dot"></span>
+                                    <span t-esc="row.estado_label"/>
+                                </span>
+                            </div>
+
+                            <div class="o_ea_info_row">
+                                <span>↗ Sig. año</span>
+                                <span t-att-class="'o_ea_next_text ' + row.situacion_class"
+                                      t-esc="row.situacion_short"/>
+                            </div>
+
+                            <div class="o_ea_guardian_block">
+                                <div class="o_ea_guardian_label">♙ Apoderado</div>
+                                <div class="o_ea_guardian_name" t-esc="row.apoderado_principal"/>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="o_ea_footer">
+                    <span t-esc="'Mostrando ' + state.rows.length + ' de ' + state.rows.length"/>
+                    <div>
+                        <button type="button" disabled="disabled">‹</button>
+                        <button type="button" disabled="disabled">›</button>
+                    </div>
+                </div>
+            </t>
+
+            <!-- VISTA TABLA -->
+            <t t-else="">
+                <div class="o_ea_table_card">
+                    <table class="o_ea_table">
+                        <thead>
+                            <tr>
+                                <th class="o_ea_check_col">
+                                    <input type="checkbox"/>
+                                </th>
+                                <th>Estudiante</th>
+                                <th>Grado</th>
+                                <th>Estado</th>
+                                <th>Situación sig. año</th>
+                                <th>Apoderado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr t-foreach="state.rows"
+                                t-as="row"
+                                t-key="row.id"
+                                t-on-click="() => this.openForm(row.id)">
+
+                                <td class="o_ea_check_col">
+                                    <input type="checkbox" t-on-click.stop="() => {}"/>
+                                </td>
+
+                                <td>
+                                    <span class="o_ea_table_student_name" t-esc="row.estudiante"/>
+                                </td>
+
+                                <td>
+                                    <span t-att-class="'o_ea_badge ' + row.grado_class"
+                                          t-esc="row.grado"/>
+                                </td>
+
+                                <td>
+                                    <span t-att-class="'o_ea_status_badge ' + row.estado_class">
+                                        <span class="o_ea_dot"></span>
+                                        <span t-esc="row.estado_label"/>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span t-att-class="'o_ea_next_text ' + row.situacion_class">
+                                        ↗ <span t-esc="row.situacion_short"/>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <div class="o_ea_guardian_table">
+                                        <span t-att-class="'o_ea_guardian_avatar ' + row.color_class"
+                                              t-esc="row.apoderado_iniciales"/>
+                                        <span class="o_ea_guardian_table_name"
+                                              t-esc="row.apoderado_principal"/>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr t-if="!state.rows.length">
+                                <td colspan="6" class="o_ea_empty">
+                                    No hay estudiantes registrados.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+
+        </div>
+    </t>
+
+</templates>
