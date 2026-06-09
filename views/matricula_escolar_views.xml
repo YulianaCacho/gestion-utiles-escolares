@@ -213,11 +213,21 @@
     <!-- ========================= -->
     <menuitem id="menu_registrar_matricula" name="✚ Registrar matrícula" parent="menu_utiles_escolares_root" action="action_registrar_matricula" sequence="10"/>
 
+    <!-- Acción cliente para dashboard de lista de matrícula -->
+    <record id="action_matricula_dashboard" model="ir.actions.client">
+        <field name="name">Lista de matrícula</field>
+        <field name="tag">matricula_dashboard</field>
+    </record>
+
 
     <!-- ========================= -->
     <!-- MENÚ: LISTA DE MATRÍCULA -->
     <!-- ========================= -->
-    <menuitem id="menu_lista_matricula" name="▤ Lista de matrícula" parent="menu_utiles_escolares_root" action="action_matricula_dashboard" sequence="20"/>
+    <menuitem id="menu_lista_matricula" 
+                name="▤ Lista de matrícula" 
+                parent="menu_utiles_escolares_root" 
+                action="action_matricula_dashboard" 
+                sequence="20"/>
 
 
     <!-- ========================= -->
