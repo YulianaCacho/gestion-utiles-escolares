@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.SobrantesDashboard">
+        <div class="o_sobrantes_dashboard_full">
+
+            <!-- ENCABEZADO -->
+            <div class="o_sob_header">
+                <div class="o_sob_title_block">
+                    <h2 t-esc="state.titulo"/>
+                </div>
+
+                <div class="o_sob_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           placeholder="Buscar producto..."
+                           t-att-value="state.search"
+                           t-on-input="(ev) => this.onSearchInput(ev)"
+                           t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+                </div>
+            </div>
+
+            <!-- TARJETAS -->
+            <div class="o_sob_stats_grid">
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-cubes"/>
+                        <span>Total productos</span>
+                    </div>
+                    <div class="o_sob_stat_value" t-esc="state.stats.total_productos"/>
+                    <div class="o_sob_stat_subtitle">en inventario</div>
+                </div>
+
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-sort-amount-desc"/>
+                        <span>Unidades disponibles</span>
+                    </div>
+                    <div class="o_sob_stat_value" t-esc="state.stats.unidades_disponibles"/>
+                    <div class="o_sob_stat_subtitle">unidades totales</div>
+                </div>
+
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-check-circle-o"/>
+                        <span>Disponibles</span>
+                    </div>
+                    <div class="o_sob_stat_value" t-esc="state.stats.disponibles"/>
+                    <div class="o_sob_stat_subtitle">con stock positivo</div>
+                </div>
+
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-calendar"/>
+                        <span>Año destino</span>
+                    </div>
+                    <div class="o_sob_stat_value small" t-esc="state.stats.anio_destino"/>
+                    <div class="o_sob_stat_subtitle">año escolar activo</div>
+                </div>
+            </div>
+
+            <!-- TABLA -->
+            <div class="o_sob_table_card">
+                <table class="o_sob_table">
+                    <thead>
+                        <tr>
+                            <th class="o_sob_check_col">
+                                <input type="checkbox"/>
+                            </th>
+                            <th>Año origen</th>
+                            <th>Año destino</th>
+                            <th>Producto</th>
+                            <th class="o_sob_num_col">Sob. ini.</th>
+                            <th class="o_sob_num_col">Cant. us.</th>
+                            <th class="o_sob_num_col">Disponibilidad</th>
+                            <th>Unidad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <t t-if="state.loading">
+                            <tr>
+                                <td colspan="9" class="o_sob_empty">
+                                    Cargando sobrantes...
+                                </td>
+                            </tr>
+                        </t>
+
+                        <t t-elif="state.rows.length">
+                            <tr t-foreach="state.rows"
+                                t-as="row"
+                                t-key="row.id"
+                                t-on-click="() => this.openForm(row.id)">
+
+                                <td class="o_sob_check_col">
+                                    <input type="checkbox" t-on-click.stop="() => {}"/>
+                                </td>
+
+                                <td>
+                                    <span class="o_sob_year_badge" t-esc="row.anio_origen"/>
+                                </td>
+
+                                <td>
+                                    <span class="o_sob_year_badge green" t-esc="row.anio_destino"/>
+                                </td>
+
+                                <td>
+                                    <div class="o_sob_product_cell">
+                                        <span class="o_sob_code_badge" t-esc="row.codigo"/>
+                                        <span class="o_sob_product_name" t-esc="row.producto"/>
+                                    </div>
+                                </td>
+
+                                <td class="o_sob_num_col">
+                                    <span class="o_sob_number" t-esc="row.cantidad_inicial"/>
+                                </td>
+
+                                <td class="o_sob_num_col">
+                                    <span class="o_sob_number muted" t-esc="row.cantidad_usada"/>
+                                </td>
+
+                                <td class="o_sob_num_col">
+                                    <span class="o_sob_available">
+                                        <span class="o_sob_dot"></span>
+                                        <span t-esc="row.cantidad_disponible"/>
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="o_sob_unit_badge" t-esc="row.unidad"/>
+                                </td>
+
+                                <td>
+                                    <span t-att-class="'o_sob_status_badge ' + row.estado_class">
+                                        <span class="o_sob_dot"></span>
+                                        <span t-esc="row.estado"/>
+                                    </span>
+                                </td>
+                            </tr>
+                        </t>
+
+                        <t t-else="">
+                            <tr>
+                                <td colspan="9" class="o_sob_empty">
+                                    No hay sobrantes registrados para este año escolar.
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

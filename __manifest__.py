@@ -86,6 +86,9 @@
             "gestion_utiles_escolares/static/src/xml/estado_alumno_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/estado_alumno_dashboard.css",
             
+            "gestion_utiles_escolares/static/src/js/sobrantes_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/sobrantes_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/sobrantes_dashboard.css",
         ],
     },
     "installable": True,

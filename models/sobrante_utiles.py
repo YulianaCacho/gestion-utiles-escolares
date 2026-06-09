@@ -123,6 +123,92 @@ class SobranteUtilesAnio(models.Model):
 
         return [("anio_destino_id", "=", anio_actual.id)]
 
+    # =========================
+    # DASHBOARD MODERNO: SOBRANTES DEL AÑO ANTERIOR
+    # =========================
+
+    def _dashboard_estado_label(self, estado):
+        mapa = {
+            "disponible": "Disponible",
+            "agotado": "Agotado",
+        }
+        return mapa.get(estado, estado or "Sin estado")
+
+    def _dashboard_estado_class(self, estado):
+        if estado == "disponible":
+            return "estado-disponible"
+        if estado == "agotado":
+            return "estado-agotado"
+        return "estado-default"
+
+    @api.model
+    def get_sobrantes_dashboard(self, search=None):
+        domain = []
+        search = (search or "").strip()
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        if anio_actual:
+            domain.append(("anio_destino_id", "=", anio_actual.id))
+
+        if search:
+            domain += [
+                "|", "|", "|",
+                ("product_id.name", "ilike", search),
+                ("product_id.default_code", "ilike", search),
+                ("anio_origen_id.name", "ilike", search),
+                ("anio_destino_id.name", "ilike", search),
+            ]
+
+        records = self.search(domain, order="product_id asc")
+
+        total_productos = len(records)
+        unidades_disponibles = sum(records.mapped("cantidad_disponible"))
+        disponibles = len(records.filtered(lambda r: r.cantidad_disponible > 0))
+
+        anio_origen = ""
+        anio_destino = ""
+
+        if anio_actual:
+            anio_destino = str(anio_actual.anio or "")
+            if anio_actual.anio_anterior_id:
+                anio_origen = str(anio_actual.anio_anterior_id.anio or "")
+
+        if not anio_origen and records:
+            anio_origen = str(records[0].anio_origen_id.anio or "")
+        if not anio_destino and records:
+            anio_destino = str(records[0].anio_destino_id.anio or "")
+
+        rows = []
+
+        for rec in records:
+            producto = rec.product_id
+            codigo = producto.default_code or "SIN-COD"
+            nombre = producto.name or producto.display_name or "Producto sin nombre"
+
+            rows.append({
+                "id": rec.id,
+                "anio_origen": rec.anio_origen_id.name or "",
+                "anio_destino": rec.anio_destino_id.name or "",
+                "codigo": codigo,
+                "producto": nombre,
+                "cantidad_inicial": "%.2f" % rec.cantidad_inicial,
+                "cantidad_usada": "%.2f" % rec.cantidad_usada,
+                "cantidad_disponible": "%.2f" % rec.cantidad_disponible,
+                "unidad": rec.uom_id.name or "",
+                "estado": self._dashboard_estado_label(rec.estado),
+                "estado_class": self._dashboard_estado_class(rec.estado),
+            })
+
+        return {
+            "titulo": "Sobrantes del año anterior",
+            "stats": {
+                "total_productos": total_productos,
+                "unidades_disponibles": "%.0f" % unidades_disponibles,
+                "disponibles": disponibles,
+                "anio_destino": "%s → %s" % (anio_origen, anio_destino) if anio_origen and anio_destino else "",
+            },
+            "rows": rows,
+        }
 
 class AnioEscolarSobrantes(models.Model):
     _inherit = "anio.escolar"
