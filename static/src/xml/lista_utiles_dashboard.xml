@@ -18,8 +18,8 @@
                 <div class="o_lu_header_actions">
                     <button type="button"
                             class="o_lu_btn o_lu_btn_light"
-                            title="Gestionar registros"
-                            t-on-click="() => this.openManageRecords()">
+                            title="Configuración / Importar y exportar"
+                            t-on-click="() => this.openConfigImportExport()">
                         <i class="fa fa-cog"/>
                     </button>
 

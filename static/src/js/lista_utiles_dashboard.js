@@ -96,16 +96,21 @@ class ListaUtilesDashboard extends Component {
         });
     }
 
-    openManageRecords() {
+    openConfigImportExport() {
         this.action.doAction({
             type: "ir.actions.act_window",
-            name: "Gestionar listas de útiles",
+            name: "Configuración - Importar y exportar listas",
             res_model: "lista.utiles.grado",
             views: [
                 [false, "list"],
                 [false, "form"],
             ],
             target: "current",
+            context: {
+                create: true,
+                import: true,
+                export_xlsx: true,
+            },
         });
     }
 
