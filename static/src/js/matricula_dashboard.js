@@ -127,16 +127,14 @@ class MatriculaDashboard extends Component {
         this.state.showConfigMenu = false;
 
         this.action.doAction({
-            type: "ir.actions.act_window",
-            name: "Importar registros",
-            res_model: "matricula.escolar",
-            views: [
-                [false, "list"],
-                [false, "form"],
-            ],
-            target: "current",
-            context: {
-                import_enabled: true,
+            type: "ir.actions.client",
+            tag: "import",
+            name: "Importar matrículas",
+            params: {
+                model: "matricula.escolar",
+                context: {
+                    active_model: "matricula.escolar",
+                },
             },
         });
     }
