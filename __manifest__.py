@@ -21,6 +21,7 @@
 
     # Luego Matrículas
     'views/matricula_escolar_views.xml',
+    'views/matricula_dashboard_views.xml',
 
     # Luego Lista de útiles porque ahora irá dentro de Matrículas
     "views/lista_utiles_views.xml",
@@ -39,7 +40,7 @@
     'views/anio_escolar_views.xml',
     'views/anio_escolar_views.xml',
     'views/sobrante_utiles_views.xml',
-    "views/matricula_dashboard_views.xml",
+    
 
 ],
    'assets': {
