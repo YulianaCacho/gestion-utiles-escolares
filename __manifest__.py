@@ -64,11 +64,13 @@
             "gestion_utiles_escolares/static/src/js/recepcion_almacen_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/recepcion_almacen_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/recepcion_utiles_form_clean.css",
+            "gestion_utiles_escolares/static/src/css/matricula_escolar_form_clean.css"
        
             "gestion_utiles_escolares/static/src/css/entregas_list_clean.css",
             "gestion_utiles_escolares/static/src/css/anio_escolar_systray.css",
             "gestion_utiles_escolares/static/src/js/anio_escolar_systray.js",
             "gestion_utiles_escolares/static/src/xml/anio_escolar_systray.xml", 
+            
         ],
     },
     "installable": True,
