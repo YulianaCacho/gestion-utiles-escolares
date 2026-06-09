@@ -230,6 +230,13 @@
     <!-- ========================= -->
     <!-- MENÚ: ESTADO POR ALUMNO -->
     <!-- ========================= -->
-    <menuitem id="menu_estado_por_alumno" name="⊙ Estado por alumno" parent="menu_utiles_escolares_root" action="action_estado_por_alumno" sequence="40"/>
+    
+    <!-- Acción cliente moderna para Estado por alumno -->
+    <record id="action_estado_alumno_dashboard" model="ir.actions.client">
+        <field name="name">Estado por alumno</field>
+        <field name="tag">estado_alumno_dashboard</field>
+    </record>
+
+    <menuitem id="menu_estado_por_alumno" name="⊙ Estado por alumno" parent="menu_utiles_escolares_root" action="action_estado_alumno_dashboard" sequence="40"/>
 
 </odoo>

@@ -81,6 +81,10 @@
             "gestion_utiles_escolares/static/src/js/lista_utiles_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/lista_utiles_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/lista_utiles_dashboard.css",
+        
+            "gestion_utiles_escolares/static/src/js/estado_alumno_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/estado_alumno_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/estado_alumno_dashboard.css",
             
         ],
     },

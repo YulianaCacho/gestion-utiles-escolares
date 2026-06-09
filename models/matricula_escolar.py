@@ -292,3 +292,108 @@ class MatriculaEscolar(models.Model):
             },
             "rows": rows,
         }
+        
+    # =========================
+    # DASHBOARD MODERNO: ESTADO POR ALUMNO
+    # =========================
+
+    def _estado_alumno_label_estado(self, estado):
+        mapa = {
+            "activo": "Activo",
+            "retirado": "Retirado",
+            "finalizado": "Finalizado",
+        }
+        return mapa.get(estado, estado or "Sin estado")
+
+    def _estado_alumno_class_estado(self, estado):
+        if estado == "activo":
+            return "estado-activo"
+        if estado == "retirado":
+            return "estado-retirado"
+        if estado == "finalizado":
+            return "estado-finalizado"
+        return "estado-finalizado"
+
+    def _estado_alumno_short_situacion(self, situacion):
+        mapa = {
+            "promovido": "Promovido",
+            "repite": "Repite",
+            "retirado": "Retirado",
+        }
+        return mapa.get(situacion, "Promovido")
+
+    def _estado_alumno_class_situacion(self, situacion):
+        if situacion == "repite":
+            return "situacion-repite"
+        if situacion == "retirado":
+            return "situacion-retirado"
+        return "situacion-promovido"
+
+    def _estado_alumno_color_class(self, index):
+        colores = [
+            "color-purple",
+            "color-green",
+            "color-orange",
+            "color-pink",
+            "color-blue",
+            "color-brown",
+            "color-lime",
+            "color-red",
+        ]
+        return colores[index % len(colores)]
+
+    @api.model
+    def get_estado_alumno_dashboard(self, search=None):
+        domain = []
+        search = (search or "").strip()
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        if anio_actual:
+            if "anio_escolar_id" in self._fields:
+                domain.append(("anio_escolar_id", "=", anio_actual.id))
+            else:
+                domain.append(("anio_escolar", "=", anio_actual.anio))
+
+        if search:
+            domain += [
+                "|", "|", "|",
+                ("estudiante_id.name", "ilike", search),
+                ("grado_escolar", "ilike", search),
+                ("apoderado_principal_id.name", "ilike", search),
+                ("estado", "ilike", search),
+            ]
+
+        records = self.search(domain, order="estudiante_id asc")
+
+        rows = []
+
+        for index, rec in enumerate(records):
+            situacion = "promovido"
+
+            if "situacion_siguiente_anio" in rec._fields:
+                situacion = rec.situacion_siguiente_anio or "promovido"
+
+            apoderado = (
+                rec.apoderado_principal_id.name
+                if rec.apoderado_principal_id
+                else "No registrado"
+            )
+
+            rows.append({
+                "id": rec.id,
+                "iniciales": self._dashboard_iniciales(rec.estudiante_id.name or ""),
+                "estudiante": rec.estudiante_id.name or "Sin estudiante",
+                "grado": self._dashboard_grado_label(rec.grado_escolar),
+                "grado_class": self._dashboard_grado_class(rec.grado_escolar),
+                "estado_label": self._estado_alumno_label_estado(rec.estado),
+                "estado_class": self._estado_alumno_class_estado(rec.estado),
+                "situacion_short": self._estado_alumno_short_situacion(situacion),
+                "situacion_class": self._estado_alumno_class_situacion(situacion),
+                "apoderado_principal": apoderado,
+                "apoderado_iniciales": self._dashboard_iniciales(apoderado),
+                "color_class": self._estado_alumno_color_class(index),
+            })
+
+        return {
+            "rows": rows,
+        }

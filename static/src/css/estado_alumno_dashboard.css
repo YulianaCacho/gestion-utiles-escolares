@@ -1,0 +1,418 @@
+.o_action_manager .o_content:has(.o_estado_alumno_dashboard_full),
+.o_action_manager .o_action:has(.o_estado_alumno_dashboard_full) {
+    overflow: hidden !important;
+}
+
+.o_estado_alumno_dashboard_full {
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100vh - 48px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 14px 18px 24px 18px !important;
+    box-sizing: border-box !important;
+    background: #f8f7f4;
+}
+
+/* BARRA SUPERIOR */
+
+.o_ea_topbar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(320px, 520px) auto;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.o_ea_left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.o_ea_left h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 850;
+    color: #111;
+    white-space: nowrap;
+}
+
+.o_ea_new_btn {
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #cfc8bc;
+    background: #fff;
+    color: #111;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.o_ea_new_btn:hover {
+    background: #f5f3ee;
+}
+
+.o_ea_search_box {
+    height: 48px;
+    border: 1px solid #cfc8bc;
+    border-radius: 12px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    color: #333;
+}
+
+.o_ea_search_box input {
+    width: 100%;
+    height: 44px;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    font-size: 18px;
+}
+
+.o_ea_view_buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.o_ea_view_btn {
+    width: 46px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid #cfc8bc;
+    background: #fff;
+    color: #222;
+    cursor: pointer;
+    font-size: 17px;
+}
+
+.o_ea_view_btn:hover,
+.o_ea_view_btn.active {
+    background: #f0eee8;
+}
+
+/* TARJETAS */
+
+.o_ea_cards_grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
+    gap: 16px;
+}
+
+.o_ea_student_card {
+    border: 1px solid #d7d1c7;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.o_ea_student_card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
+.o_ea_card_header {
+    min-height: 126px;
+    padding: 22px 16px 14px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.o_ea_student_card.color-purple .o_ea_card_header { background: #eeebff; }
+.o_ea_student_card.color-green .o_ea_card_header { background: #e5f7f0; }
+.o_ea_student_card.color-orange .o_ea_card_header { background: #faeae3; }
+.o_ea_student_card.color-pink .o_ea_card_header { background: #fdebf2; }
+.o_ea_student_card.color-blue .o_ea_card_header { background: #e6f3ff; }
+.o_ea_student_card.color-brown .o_ea_card_header { background: #fff1d8; }
+.o_ea_student_card.color-lime .o_ea_card_header { background: #edf8e5; }
+.o_ea_student_card.color-red .o_ea_card_header { background: #fde8e8; }
+
+.o_ea_avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 999px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    font-weight: 850;
+}
+
+.o_ea_avatar.color-purple,
+.o_ea_guardian_avatar.color-purple { background: #473693; }
+
+.o_ea_avatar.color-green,
+.o_ea_guardian_avatar.color-green { background: #096957; }
+
+.o_ea_avatar.color-orange,
+.o_ea_guardian_avatar.color-orange { background: #86351d; }
+
+.o_ea_avatar.color-pink,
+.o_ea_guardian_avatar.color-pink { background: #8b2953; }
+
+.o_ea_avatar.color-blue,
+.o_ea_guardian_avatar.color-blue { background: #0e5b9d; }
+
+.o_ea_avatar.color-brown,
+.o_ea_guardian_avatar.color-brown { background: #805000; }
+
+.o_ea_avatar.color-lime,
+.o_ea_guardian_avatar.color-lime { background: #3c761f; }
+
+.o_ea_avatar.color-red,
+.o_ea_guardian_avatar.color-red { background: #912525; }
+
+.o_ea_student_name {
+    width: 100%;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 850;
+    color: #1e1e1e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.o_ea_card_body {
+    padding: 12px 16px 14px 16px;
+}
+
+.o_ea_info_row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.o_ea_badge,
+.o_ea_status_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.o_ea_badge.grado-1 { background: #e8e3ff; color: #5a42c4; }
+.o_ea_badge.grado-2 { background: #dff7ef; color: #167c67; }
+.o_ea_badge.grado-3 { background: #dff0ff; color: #2474bd; }
+.o_ea_badge.grado-4 { background: #e5f2ff; color: #176bb1; }
+.o_ea_badge.grado-5 { background: #fff0d6; color: #a76612; }
+.o_ea_badge.grado-6 { background: #fff0d6; color: #a76612; }
+.o_ea_badge.grado-default { background: #eee; color: #555; }
+
+.o_ea_status_badge.estado-activo {
+    background: #e7f3d9;
+    color: #2d6d17;
+}
+
+.o_ea_status_badge.estado-retirado {
+    background: #ffe1e1;
+    color: #a52828;
+}
+
+.o_ea_status_badge.estado-finalizado {
+    background: #eee;
+    color: #555;
+}
+
+.o_ea_dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.o_ea_next_text.situacion-promovido {
+    color: #087458;
+    font-weight: 850;
+}
+
+.o_ea_next_text.situacion-repite {
+    color: #b36b00;
+    font-weight: 850;
+}
+
+.o_ea_next_text.situacion-retirado {
+    color: #a52828;
+    font-weight: 850;
+}
+
+.o_ea_guardian_block {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid #dedbd3;
+}
+
+.o_ea_guardian_label {
+    color: #555;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.o_ea_guardian_name {
+    margin-top: 3px;
+    color: #111;
+    font-size: 13px;
+    line-height: 1.2;
+    font-weight: 850;
+}
+
+/* FOOTER */
+
+.o_ea_footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+    color: #444;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.o_ea_footer button {
+    width: 38px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid #cfc8bc;
+    background: #fff;
+}
+
+/* TABLA */
+
+.o_ea_table_card {
+    width: 100%;
+    border: 1px solid #d7d1c7;
+    border-radius: 14px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.o_ea_table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.o_ea_table thead th {
+    height: 48px;
+    background: #fffefa;
+    border-bottom: 1px solid #d7d1c7;
+    padding: 12px 16px;
+    color: #4e4e4e;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.o_ea_table tbody td {
+    height: 58px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #e7e2da;
+    color: #202020;
+    vertical-align: middle;
+    font-size: 15px;
+}
+
+.o_ea_table tbody tr {
+    cursor: pointer;
+}
+
+.o_ea_table tbody tr:hover {
+    background: #fbfaf7;
+}
+
+.o_ea_check_col {
+    width: 42px !important;
+    text-align: center !important;
+}
+
+.o_ea_table_student_name {
+    font-weight: 850;
+    color: #1d1d1d;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_ea_guardian_table {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.o_ea_guardian_avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 850;
+    flex-shrink: 0;
+}
+
+.o_ea_guardian_table_name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #333;
+    font-weight: 650;
+}
+
+.o_ea_empty {
+    padding: 40px !important;
+    text-align: center;
+    color: #777;
+    font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+    .o_ea_topbar {
+        grid-template-columns: 1fr;
+    }
+
+    .o_ea_view_buttons {
+        justify-content: flex-start;
+    }
+
+    .o_ea_table {
+        min-width: 900px;
+    }
+
+    .o_ea_table_card {
+        overflow-x: auto;
+    }
+}
