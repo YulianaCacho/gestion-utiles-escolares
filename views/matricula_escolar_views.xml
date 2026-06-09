@@ -54,7 +54,7 @@
                         <div class="o_ge_matricula_card">
                             <div class="o_ge_card_header">
                                 <span class="o_ge_card_icon">
-                                    <i class="fa fa-id-card-o"/>
+                                    <i class="fa fa-id-card-o" title="Datos de matrícula"/>
                                 </span>
                                 <span>DATOS DE MATRÍCULA</span>
                             </div>
@@ -118,7 +118,7 @@
                         <div class="o_ge_matricula_card">
                             <div class="o_ge_card_header">
                                 <span class="o_ge_card_icon">
-                                    <i class="fa fa-users"/>
+                                    <i class="fa fa-users" title="Relación familiar"/>
                                 </span>
                                 <span>RELACIÓN FAMILIAR</span>
                             </div>
@@ -142,7 +142,7 @@
                         <div class="o_ge_matricula_card">
                             <div class="o_ge_card_header">
                                 <span class="o_ge_card_icon">
-                                    <i class="fa fa-sticky-note-o"/>
+                                    <i class="fa fa-sticky-note-o" title="Observación"/>
                                 </span>
                                 <span>OBSERVACIÓN</span>
                             </div>
