@@ -4,6 +4,7 @@ import { Component, onWillStart, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
+
 class RecepcionAlmacenDashboard extends Component {
     static template = "gestion_utiles_escolares.RecepcionAlmacenDashboard";
 
@@ -130,6 +131,25 @@ class RecepcionAlmacenDashboard extends Component {
             id: linea.id,
             cantidad_recibida: linea.cantidad_recibida || 0,
         }));
+    }
+
+    editarRecepcion(row, ev = null) {
+        if (ev) {
+            ev.stopPropagation();
+        }
+
+        if (!row || !row.id) {
+            return;
+        }
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Editar recepción",
+            res_model: "recepcion.utiles.escolar",
+            res_id: row.id,
+            views: [[false, "form"]],
+            target: "current",
+        });
     }
 
     async guardar() {

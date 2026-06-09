@@ -72,7 +72,7 @@
                             <th>Fecha</th>
                             <th>Recibido por</th>
                             <th>Ítems</th>
-                            <th>Estado</th>
+                            <th>Acciones</th>  
                         </tr>
                     </thead>
 
@@ -100,9 +100,19 @@
                                 </td>
                             </tr>
                         </t>
+                        
+                        <td>
+                            <button type="button"
+                                    class="o_rad_icon_edit"
+                                    t-on-click="(ev) => this.editarRecepcion(row, ev)"
+                                    title="Editar recepción">
+                                    <i class="fa fa-pencil"/>
+                                    Editar
+                            </button>
+                        </td>
 
                         <tr t-else="">
-                            <td colspan="6" class="o_rad_empty">
+                            <td colspan="7" class="o_rad_empty">
                                 Todavía no hay recepciones registradas.
                             </td>
                         </tr>

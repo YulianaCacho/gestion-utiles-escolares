@@ -382,3 +382,17 @@
 .o_action_manager .o_list_table {
     margin-bottom: 80px;
 }
+
+.o_rad_icon_edit {
+    border: 1px solid #cfe8b7;
+    background: #f7fff0;
+    color: #3f7d20;
+    border-radius: 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.o_rad_icon_edit:hover {
+    background: #eaffd8;
+}
