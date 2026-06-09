@@ -78,6 +78,10 @@
             "gestion_utiles_escolares/static/src/xml/matricula_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/matricula_dashboard.css",
             
+            "gestion_utiles_escolares/static/src/js/lista_utiles_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/lista_utiles_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/lista_utiles_dashboard.css",
+            
         ],
     },
     "installable": True,

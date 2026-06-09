@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.ListaUtilesDashboard">
+        <div class="o_lista_utiles_dashboard_full">
+
+            <div class="o_lu_header">
+                <div class="o_lu_title_block">
+                    <div class="o_lu_title_icon">
+                        <i class="fa fa-list-alt"/>
+                    </div>
+                    <div>
+                        <h2 t-esc="state.titulo"/>
+                        <div class="o_lu_subtitle" t-esc="state.subtitulo"/>
+                    </div>
+                </div>
+
+                <div class="o_lu_header_actions">
+                    <button type="button"
+                            class="o_lu_btn o_lu_btn_light"
+                            title="Gestionar registros"
+                            t-on-click="() => this.openManageRecords()">
+                        <i class="fa fa-cog"/>
+                    </button>
+
+                    <button type="button"
+                            class="o_lu_btn o_lu_btn_primary"
+                            title="Nueva lista"
+                            t-on-click="() => this.openNew()">
+                        <i class="fa fa-plus"/>
+                        <span>Nuevo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="o_lu_tools_row">
+                <div class="o_lu_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           placeholder="Buscar lista..."
+                           t-att-value="state.search"
+                           t-on-input="(ev) => this.onSearchInput(ev)"
+                           t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+                </div>
+
+                <div class="o_lu_tools_buttons">
+                    <button type="button"
+                            class="o_lu_btn o_lu_btn_light"
+                            t-on-click="() => this.doSearch()">
+                        <i class="fa fa-filter"/>
+                        <span>Filtrar</span>
+                    </button>
+
+                    <button type="button"
+                            class="o_lu_btn o_lu_btn_light"
+                            t-on-click="() => this.exportCsv()">
+                        <i class="fa fa-download"/>
+                        <span>Exportar</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="o_lu_stats_grid">
+                <div class="o_lu_stat_card">
+                    <div class="o_lu_stat_icon green">
+                        <i class="fa fa-list"/>
+                    </div>
+                    <div>
+                        <div class="o_lu_stat_label">Total listas</div>
+                        <div class="o_lu_stat_value" t-esc="state.stats.total_listas"/>
+                    </div>
+                </div>
+
+                <div class="o_lu_stat_card">
+                    <div class="o_lu_stat_icon blue">
+                        <i class="fa fa-cube"/>
+                    </div>
+                    <div>
+                        <div class="o_lu_stat_label">Total útiles</div>
+                        <div class="o_lu_stat_value" t-esc="state.stats.total_utiles"/>
+                    </div>
+                </div>
+
+                <div class="o_lu_stat_card">
+                    <div class="o_lu_stat_icon orange">
+                        <i class="fa fa-graduation-cap"/>
+                    </div>
+                    <div>
+                        <div class="o_lu_stat_label">Promedio por grado</div>
+                        <div class="o_lu_stat_value" t-esc="state.stats.promedio_grado"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_lu_table_card">
+                <div class="o_lu_table_wrap">
+                    <table class="o_lu_table">
+                        <thead>
+                            <tr>
+                                <th class="o_lu_check_col">
+                                    <input type="checkbox"/>
+                                </th>
+                                <th>Nombre de la lista</th>
+                                <th>Año escolar</th>
+                                <th>Grado escolar</th>
+                                <th class="o_lu_qty_col">Cantidad</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-if="state.loading">
+                                <tr>
+                                    <td colspan="5" class="o_lu_empty">Cargando listas...</td>
+                                </tr>
+                            </t>
+
+                            <t t-elif="state.rows.length">
+                                <tr t-foreach="state.rows"
+                                    t-as="row"
+                                    t-key="row.id"
+                                    t-on-click="() => this.openForm(row.id)">
+
+                                    <td class="o_lu_check_col">
+                                        <input type="checkbox" t-on-click.stop="() => {}"/>
+                                    </td>
+
+                                    <td>
+                                        <div class="o_lu_name_cell">
+                                            <div t-att-class="'o_lu_row_icon ' + row.icon_class">
+                                                <i t-att-class="'fa ' + row.icon"/>
+                                            </div>
+                                            <span class="o_lu_name_text" t-esc="row.name"/>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="o_lu_year_badge">
+                                            <i class="fa fa-calendar"/>
+                                            <span t-esc="row.anio"/>
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span t-att-class="'o_lu_grade_badge ' + row.grado_class"
+                                              t-esc="row.grado"/>
+                                    </td>
+
+                                    <td class="o_lu_qty_col">
+                                        <span t-att-class="'o_lu_qty_badge ' + row.grado_class"
+                                              t-esc="row.cantidad"/>
+                                    </td>
+                                </tr>
+                            </t>
+
+                            <t t-else="">
+                                <tr>
+                                    <td colspan="5" class="o_lu_empty">
+                                        No hay listas registradas para este año escolar.
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="o_lu_table_footer">
+                    <span t-esc="'1-' + state.rows.length + ' de ' + state.rows.length + ' listas'"/>
+                    <div class="o_lu_footer_buttons">
+                        <button type="button" class="o_lu_footer_btn" disabled="disabled">
+                            <i class="fa fa-angle-left"/>
+                        </button>
+                        <button type="button" class="o_lu_footer_btn" disabled="disabled">
+                            <i class="fa fa-angle-right"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

@@ -213,8 +213,10 @@
     <!-- ========================= -->
     <menuitem id="menu_registrar_matricula" name="✚ Registrar matrícula" parent="menu_utiles_escolares_root" action="action_registrar_matricula" sequence="10"/>
 
-    <!-- Acción cliente para dashboard de lista de matrícula -->
-    <record id="action_matricula_dashboard" model="ir.actions.client">
+    <!-- ========================= -->
+    <!-- ACCIÓN: DASHBOARD MODERNO DE MATRÍCULA -->
+    <!-- ========================= -->
+    <record id="action_matricula_dashboard_client" model="ir.actions.client">
         <field name="name">Lista de matrícula</field>
         <field name="tag">matricula_dashboard</field>
     </record>
@@ -223,16 +225,7 @@
     <!-- ========================= -->
     <!-- MENÚ: LISTA DE MATRÍCULA -->
     <!-- ========================= -->
-    <menuitem id="menu_lista_matricula" name="▤ Lista de matrícula" parent="menu_utiles_escolares_root" action="action_matricula_dashboard" sequence="20"/>
-    
-    <!-- Acción cliente para dashboard moderno de matrícula -->
-    <record id="action_matricula_dashboard" model="ir.actions.client">
-        <field name="name">Lista de matrícula moderna</field>
-        <field name="tag">matricula_dashboard</field>
-    </record>
-
-    <menuitem id="menu_lista_matricula_moderna" name="▦ Lista de matrícula moderna" parent="menu_utiles_escolares_root" action="action_matricula_dashboard" sequence="21"/>
-
+    <menuitem id="menu_lista_matricula" name="▤ Lista de matrícula" parent="menu_utiles_escolares_root" action="action_matricula_dashboard_client" sequence="20"/>
 
     <!-- ========================= -->
     <!-- MENÚ: ESTADO POR ALUMNO -->
