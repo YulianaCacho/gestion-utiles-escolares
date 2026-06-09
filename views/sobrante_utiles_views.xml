@@ -48,6 +48,7 @@
         </field>
     </record>
 
+    <!-- Acción normal de Odoo por si luego necesitas abrir lista/formulario -->
     <record id="action_sobrante_utiles_anio" model="ir.actions.act_window">
         <field name="name">Sobrantes del año anterior</field>
         <field name="res_model">sobrante.utiles.anio</field>
@@ -55,10 +56,16 @@
         <field name="domain">[('es_anio_actual', '=', True)]</field>
     </record>
 
+    <!-- Acción moderna tipo dashboard -->
+    <record id="action_sobrantes_dashboard" model="ir.actions.client">
+        <field name="name">Sobrantes del año anterior</field>
+        <field name="tag">sobrantes_dashboard</field>
+    </record>
+
     <menuitem id="menu_sobrante_utiles_anio"
               name="☑ Útiles sobrantes"
               parent="menu_almacen_utiles_root"
-              action="action_sobrante_utiles_anio"
+              action="action_sobrantes_dashboard"
               sequence="40"/>
 
 </odoo>

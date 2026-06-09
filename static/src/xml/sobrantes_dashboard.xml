@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="gestion_utiles_escolares.SobrantesDashboard">
+        <div class="o_sobrantes_dashboard_full">
+
+            <!-- ENCABEZADO -->
+            <div class="o_sob_header">
+                <div class="o_sob_title_block">
+                    <h2 t-esc="state.titulo"/>
+                </div>
+
+                <div class="o_sob_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text"
+                           placeholder="Buscar producto..."
+                           t-att-value="state.search"
+                           t-on-input="(ev) => this.onSearchInput(ev)"
+                           t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+                </div>
+            </div>
+
+            <!-- TARJETAS -->
+            <div class="o_sob_stats_grid">
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-cubes"/>
+                        <span>Total productos</span>
+                    </div>
+                    <div class="o_sob_stat_value" t-esc="state.stats.total_productos"/>
+                    <div class="o_sob_stat_subtitle">en inventario</div>
+                </div>
+
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-sort-amount-desc"/>
+                        <span>Unidades disponibles</span>
+                    </div>
+                    <div class="o_sob_stat_value" t-esc="state.stats.unidades_disponibles"/>
+                    <div class="o_sob_stat_subtitle">unidades totales</div>
+                </div>
+
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-check-circle-o"/>
+                        <span>Disponibles</span>
+                    </div>
+                    <div class="o_sob_stat_value" t-esc="state.stats.disponibles"/>
+                    <div class="o_sob_stat_subtitle">con stock positivo</div>
+                </div>
+
+                <div class="o_sob_stat_card">
+                    <div class="o_sob_stat_label">
+                        <i class="fa fa-calendar"/>
+                        <span>Año destino</span>
+                    </div>
+                    <div class="o_sob_stat_value small" t-esc="state.stats.anio_destino"/>
+                    <div class="o_sob_stat_subtitle">año escolar activo</div>
+                </div>
+            </div>
+
+            <!-- LISTADO MODERNO TIPO TARJETAS -->
+            <div class="o_sob_list_card">
+
+                <div class="o_sob_list_header">
+                    <div>Producto</div>
+                    <div>Año origen <br/>→ destino</div>
+                    <div>Sob. inicial</div>
+                    <div>Cant. usada</div>
+                    <div>Disponible</div>
+                    <div>Estado</div>
+                </div>
+
+                <t t-if="state.loading">
+                    <div class="o_sob_empty">
+                        Cargando sobrantes...
+                    </div>
+                </t>
+
+                <t t-elif="state.rows.length">
+                    <div t-foreach="state.rows"
+                         t-as="row"
+                         t-key="row.id"
+                         class="o_sob_item_row"
+                         t-on-click="() => this.openForm(row.id)">
+
+                        <!-- PRODUCTO -->
+                        <div class="o_sob_item_product">
+                            <span class="o_sob_code_badge" t-esc="row.codigo"/>
+                            <span class="o_sob_product_name" t-esc="row.producto"/>
+                        </div>
+
+                        <!-- AÑO ORIGEN / DESTINO -->
+                        <div class="o_sob_item_years">
+                            <span class="o_sob_year_chip" t-esc="row.anio_origen_corto"/>
+                            <span class="o_sob_arrow">→</span>
+                            <span class="o_sob_year_chip green" t-esc="row.anio_destino_corto"/>
+                        </div>
+
+                        <!-- SOBRANTE INICIAL -->
+                        <div class="o_sob_item_number">
+                            <span t-esc="row.cantidad_inicial"/>
+                        </div>
+
+                        <!-- CANTIDAD USADA -->
+                        <div class="o_sob_item_number muted">
+                            <span t-esc="row.cantidad_usada"/>
+                        </div>
+
+                        <!-- DISPONIBLE -->
+                        <div class="o_sob_item_available">
+                            <span class="o_sob_available_number" t-esc="row.cantidad_disponible"/>
+                            <div class="o_sob_available_bar">
+                                <div class="o_sob_available_fill"
+                                     t-att-style="'width:' + row.disponible_pct + '%;'"/>
+                            </div>
+                        </div>
+
+                        <!-- ESTADO -->
+                        <div>
+                            <span t-att-class="'o_sob_status_badge ' + row.estado_class">
+                                <span class="o_sob_dot"></span>
+                                <span t-esc="row.estado"/>
+                            </span>
+                        </div>
+
+                    </div>
+                </t>
+
+                <t t-else="">
+                    <div class="o_sob_empty">
+                        No hay sobrantes registrados para este año escolar.
+                    </div>
+                </t>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>

@@ -70,6 +70,13 @@
                             invisible="not id or estado != 'borrador'"
                             confirm="Esta acción eliminará el año escolar de prueba junto con sus matrículas y listas vinculadas. ¿Deseas continuar?"/>
                     
+                    <button name="action_limpiar_y_eliminar_anio_prueba"
+                            type="object"
+                            string="Limpiar y eliminar año de prueba"
+                            class="btn-danger"
+                            invisible="not id"
+                            confirm="Esta acción limpiará listas vacías, matrículas de prueba, sobrantes y movimientos huérfanos del año seleccionado. Solo úsalo si el año fue creado por prueba. ¿Deseas continuar?"/>
+                   
                     <field name="estado"
                            widget="statusbar"
                            statusbar_visible="borrador,activo,cerrado"/>

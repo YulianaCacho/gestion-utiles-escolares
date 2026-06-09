@@ -1,0 +1,480 @@
+/* =========================================================
+   DASHBOARD MODERNO - SOBRANTES DEL AÑO ANTERIOR
+   ========================================================= */
+
+.o_action_manager .o_content:has(.o_sobrantes_dashboard_full),
+.o_action_manager .o_action:has(.o_sobrantes_dashboard_full) {
+    overflow: hidden !important;
+}
+
+.o_sobrantes_dashboard_full {
+    width: 100% !important;
+    max-width: none !important;
+    height: calc(100vh - 48px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 12px 14px 24px 14px !important;
+    box-sizing: border-box !important;
+    background: #faf9f5;
+}
+
+/* ENCABEZADO */
+
+.o_sob_header {
+    display: grid;
+    grid-template-columns: auto minmax(320px, 520px);
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+}
+
+.o_sob_title_block h2 {
+    margin: 0;
+    color: #202020;
+    font-size: 24px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.o_sob_search_box {
+    height: 44px;
+    border: 1px solid #a7d878;
+    border-radius: 8px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 13px;
+    color: #5fa12d;
+}
+
+.o_sob_search_box input {
+    width: 100%;
+    height: 40px;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* TARJETAS RESUMEN */
+
+.o_sob_stats_grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.o_sob_stat_card {
+    min-height: 82px;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 1px solid #f0eee7;
+    padding: 12px 16px;
+}
+
+.o_sob_stat_label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #8b8b8b;
+    font-size: 12px;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.o_sob_stat_label i {
+    color: #96a18c;
+}
+
+.o_sob_stat_value {
+    margin-top: 5px;
+    color: #3e8d25;
+    font-size: 25px;
+    line-height: 1;
+    font-weight: 950;
+}
+
+.o_sob_stat_value.small {
+    font-size: 18px;
+}
+
+.o_sob_stat_subtitle {
+    margin-top: 4px;
+    color: #7b7b7b;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+/* TABLA */
+
+.o_sob_table_card {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #dfe8cf;
+    background: #ffffff;
+    overflow-x: auto;
+}
+
+.o_sob_table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.o_sob_table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 42px;
+    padding: 10px 11px;
+    background: #fbfff5;
+    border-bottom: 1px solid #d8e7c7;
+    color: #4d862d;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.o_sob_table tbody td {
+    height: 43px;
+    padding: 8px 11px;
+    border-bottom: 1px solid #e8e5dc;
+    color: #242424;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.o_sob_table tbody tr {
+    cursor: pointer;
+    background: #ffffff;
+}
+
+.o_sob_table tbody tr:hover {
+    background: #fbfff6;
+}
+
+.o_sob_check_col {
+    width: 38px !important;
+    text-align: center !important;
+}
+
+.o_sob_num_col {
+    width: 95px !important;
+    text-align: right !important;
+}
+
+.o_sob_product_cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.o_sob_product_name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #222222;
+    font-weight: 750;
+}
+
+.o_sob_year_badge,
+.o_sob_code_badge,
+.o_sob_unit_badge,
+.o_sob_status_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.o_sob_year_badge {
+    background: #e5e1d6;
+    color: #676156;
+}
+
+.o_sob_year_badge.green {
+    background: #dcefc7;
+    color: #558727;
+}
+
+.o_sob_code_badge {
+    background: #e9f5d6;
+    color: #498119;
+    border: 1px solid #d7e9bf;
+    flex-shrink: 0;
+}
+
+.o_sob_unit_badge {
+    background: #e5e1d6;
+    color: #676156;
+}
+
+.o_sob_number {
+    font-weight: 850;
+    color: #303030;
+}
+
+.o_sob_number.muted {
+    color: #b2ada4;
+}
+
+.o_sob_available {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #3e8d25;
+    font-weight: 900;
+}
+
+.o_sob_status_badge.estado-disponible {
+    background: #e8f6d8;
+    color: #3e8d25;
+}
+
+.o_sob_status_badge.estado-agotado {
+    background: #ffe2e2;
+    color: #b12d2d;
+}
+
+.o_sob_status_badge.estado-default {
+    background: #eeeeee;
+    color: #555555;
+}
+
+.o_sob_dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+.o_sob_empty {
+    padding: 34px !important;
+    text-align: center;
+    color: #777777 !important;
+    font-weight: 750;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 1000px) {
+    .o_sob_header {
+        grid-template-columns: 1fr;
+    }
+
+    .o_sob_stats_grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .o_sob_stats_grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   LISTADO MODERNO TIPO TARJETAS - SOBRANTES
+   ========================================================= */
+
+.o_sob_list_card {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 12px;
+}
+
+.o_sob_list_header {
+    min-width: 980px;
+    display: grid;
+    grid-template-columns: minmax(250px, 2fr) 170px 115px 120px minmax(150px, 1fr) 130px;
+    align-items: center;
+    column-gap: 18px;
+    padding: 0 18px 8px 18px;
+    color: #858585;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.o_sob_item_row {
+    min-width: 980px;
+    display: grid;
+    grid-template-columns: minmax(250px, 2fr) 170px 115px 120px minmax(150px, 1fr) 130px;
+    align-items: center;
+    column-gap: 18px;
+    min-height: 64px;
+    margin-bottom: 8px;
+    padding: 10px 18px;
+    background: #ffffff;
+    border: 1px solid #a8df70;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.o_sob_item_row:hover {
+    background: #fbfff6;
+    box-shadow: 0 6px 16px rgba(80, 120, 30, 0.10);
+    transform: translateY(-1px);
+}
+
+.o_sob_item_product {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    min-width: 0;
+}
+
+.o_sob_item_product .o_sob_product_name {
+    max-width: 100%;
+    color: #111111;
+    font-size: 14px;
+    font-weight: 850;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.o_sob_code_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    border-radius: 5px;
+    padding: 3px 7px;
+    background: #f4ffe5;
+    border: 1px solid #9ed86d;
+    color: #4d8d22;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.o_sob_item_years {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.o_sob_year_chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 4px 9px;
+    background: #dedbd2;
+    color: #5b5b55;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 850;
+}
+
+.o_sob_year_chip.green {
+    background: #bfe49c;
+    color: #3d751f;
+}
+
+.o_sob_arrow {
+    color: #9b9b9b;
+    font-size: 17px;
+    font-weight: 850;
+}
+
+.o_sob_item_number {
+    color: #111111;
+    font-size: 14px;
+    font-weight: 850;
+    text-align: right;
+}
+
+.o_sob_item_number.muted {
+    color: #c6c1b7;
+}
+
+.o_sob_item_available {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.o_sob_available_number {
+    color: #2f7620;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.o_sob_available_bar {
+    width: 100%;
+    height: 5px;
+    background: #e8f1df;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.o_sob_available_fill {
+    height: 100%;
+    background: #4d9a25;
+    border-radius: 999px;
+}
+
+.o_sob_status_badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.o_sob_status_badge.estado-disponible {
+    background: #e5f4d5;
+    color: #2f7620;
+}
+
+.o_sob_status_badge.estado-agotado {
+    background: #ffe2e2;
+    color: #b12d2d;
+}
+
+.o_sob_status_badge.estado-default {
+    background: #eeeeee;
+    color: #555555;
+}
+
+.o_sob_dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
+@media (max-width: 1000px) {
+    .o_sob_list_header,
+    .o_sob_item_row {
+        min-width: 980px;
+    }
+}

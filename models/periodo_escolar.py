@@ -148,37 +148,80 @@ class AnioEscolar(models.Model):
         }
 
     def action_copiar_listas_desde_anio_anterior(self):
-        total = 0
+        listas_creadas = 0
+        listas_actualizadas = 0
+        lineas_creadas = 0
+        lineas_actualizadas = 0
+
+        Lista = self.env["lista.utiles.grado"]
+        Linea = self.env["lista.utiles.grado.linea"]
 
         for rec in self:
             if not rec.anio_anterior_id:
                 raise UserError("Primero debes seleccionar el año anterior.")
 
-            listas_anteriores = self.env["lista.utiles.grado"].search([
+            listas_anteriores = Lista.search([
                 ("anio_escolar_id", "=", rec.anio_anterior_id.id),
             ])
 
-            for lista in listas_anteriores:
-                existe = self.env["lista.utiles.grado"].search_count([
+            if not listas_anteriores:
+                raise UserError(
+                    "No se encontraron listas de útiles en el año anterior. "
+                    "Verifica que el año anterior tenga listas registradas."
+                )
+
+            for lista_anterior in listas_anteriores:
+                lista_nueva = Lista.search([
                     ("anio_escolar_id", "=", rec.id),
-                    ("grado_escolar", "=", lista.grado_escolar),
-                ])
+                    ("grado_escolar", "=", lista_anterior.grado_escolar),
+                ], limit=1)
 
-                if existe:
-                    continue
+                if not lista_nueva:
+                    lista_nueva = Lista.create({
+                        "anio_escolar_id": rec.id,
+                        "anio": str(rec.anio),
+                        "grado_escolar": lista_anterior.grado_escolar,
+                    })
+                    listas_creadas += 1
+                else:
+                    listas_actualizadas += 1
 
-                lista.copy({
-                    "anio_escolar_id": rec.id,
-                    "anio": str(rec.anio),
-                })
-                total += 1
+                for linea_anterior in lista_anterior.linea_ids:
+                    if not linea_anterior.product_id:
+                        continue
+
+                    linea_existente = Linea.search([
+                        ("lista_id", "=", lista_nueva.id),
+                        ("product_id", "=", linea_anterior.product_id.id),
+                    ], limit=1)
+
+                    valores_linea = {
+                        "lista_id": lista_nueva.id,
+                        "product_id": linea_anterior.product_id.id,
+                        "cantidad_esperada": linea_anterior.cantidad_esperada,
+                        "uom_id": linea_anterior.uom_id.id if linea_anterior.uom_id else False,
+                        "tipo_uso_escolar": linea_anterior.tipo_uso_escolar,
+                        "observacion": linea_anterior.observacion,
+                    }
+
+                    if linea_existente:
+                        linea_existente.write(valores_linea)
+                        lineas_actualizadas += 1
+                    else:
+                        Linea.create(valores_linea)
+                        lineas_creadas += 1
 
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": "Listas copiadas",
-                "message": f"Se copiaron {total} listas al nuevo año escolar.",
+                "title": "Listas copiadas correctamente",
+                "message": (
+                    f"Listas creadas: {listas_creadas}. "
+                    f"Listas existentes actualizadas: {listas_actualizadas}. "
+                    f"Productos copiados: {lineas_creadas}. "
+                    f"Productos actualizados: {lineas_actualizadas}."
+                ),
                 "type": "success",
                 "sticky": False,
             }
@@ -262,7 +305,7 @@ class AnioEscolar(models.Model):
 
         for rec in self:
             if rec.estado == "borrador":
-               continue
+                continue
 
             recepciones = Recepcion.search_count([
                 ("anio_escolar_id", "=", rec.id)
@@ -306,8 +349,100 @@ class AnioEscolar(models.Model):
             "view_mode": "list,form",
             "target": "current",
         }
+    def action_limpiar_y_eliminar_anio_prueba(self):
+        Matricula = self.env["matricula.escolar"]
+        Lista = self.env["lista.utiles.grado"]
+        Recepcion = self.env["recepcion.utiles.escolar"]
+        Salida = self.env["salida.almacen.utiles"]
+        Movimiento = self.env["almacen.utiles.movimiento"]
+        Sobrante = self.env["sobrante.utiles.anio"]
+
+        for rec in self:
+            # 1. Si el usuario tiene seleccionado este año, cambiarlo al año anterior
+            usuarios = self.env["res.users"].sudo().search([
+                ("anio_escolar_actual_id", "=", rec.id)
+            ])
+
+            nuevo_anio = rec.anio_anterior_id or self.search([
+                ("id", "!=", rec.id)
+            ], order="anio desc", limit=1)
+
+            if usuarios:
+                usuarios.write({
+                    "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
+                })
+
+            # 2. Eliminar movimientos del año
+            movimientos = Movimiento.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+            if movimientos:
+                movimientos.unlink()
+
+            # 3. Eliminar recepciones del año
+            recepciones = Recepcion.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+            if recepciones:
+                recepciones.unlink()
+
+            # 4. Eliminar entregas/salidas del año
+            salidas = Salida.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+            if salidas:
+                salidas.unlink()
+
+            # 5. Eliminar matrículas del año
+            matriculas = Matricula.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            for matricula in matriculas:
+                if matricula.matricula_anterior_id:
+                    matricula.matricula_anterior_id.write({
+                        "matricula_siguiente_id": False
+                    })
+
+            if matriculas:
+                matriculas.unlink()
+
+            # 6. Eliminar líneas y listas de útiles del año
+            listas = Lista.search([
+                ("anio_escolar_id", "=", rec.id)
+            ])
+
+            for lista in listas:
+                if lista.linea_ids:
+                    lista.linea_ids.unlink()
+
+            if listas:
+                listas.unlink()
+
+            # 7. Eliminar sobrantes vinculados al año
+            sobrantes = Sobrante.search([
+                "|",
+                ("anio_destino_id", "=", rec.id),
+                ("anio_origen_id", "=", rec.id),
+            ])
+            if sobrantes:
+                sobrantes.unlink()
+
+        # 8. Eliminar el año sin intentar pasarlo a borrador
+        self.with_context(forzar_eliminar_anio_prueba=True).unlink()
+
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Años escolares",
+            "res_model": "anio.escolar",
+            "view_mode": "list,form",
+            "target": "current",
+        }
 
     def unlink(self):
+        if self.env.context.get("forzar_eliminar_anio_prueba"):
+                return super().unlink()
+        
         Matricula = self.env["matricula.escolar"]
         Lista = self.env["lista.utiles.grado"]
         Recepcion = self.env["recepcion.utiles.escolar"]
