@@ -575,3 +575,48 @@ body,
         grid-template-columns: 1fr !important;
     }
 }
+
+/* =============================== */
+/* AJUSTE SCROLL FORMULARIO MATRÍCULA */
+/* =============================== */
+
+.o_ge_matricula_form_view {
+    width: 100% !important;
+}
+
+.o_ge_matricula_form_view .o_form_renderer {
+    width: 100% !important;
+    max-width: none !important;
+    display: block !important;
+}
+
+.o_ge_matricula_form_view .o_form_sheet_bg {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 24px 32px 40px 32px !important;
+    overflow: visible !important;
+}
+
+.o_ge_matricula_form_view .o_form_sheet {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+.o_ge_matricula_page {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+}
+
+.o_ge_matricula_card {
+    width: 100% !important;
+}
+
+/* Oculta/evita el espacio lateral vacío tipo chatter */
+.o_ge_matricula_form_view .o-mail-Form-chatter,
+.o_ge_matricula_form_view .o_FormRenderer_chatterContainer,
+.o_ge_matricula_form_view .o_chatter {
+    display: none !important;
+    width: 0 !important;
+}
