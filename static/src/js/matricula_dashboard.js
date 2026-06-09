@@ -33,19 +33,28 @@ class MatriculaDashboard extends Component {
 
     async loadDashboard() {
         this.state.loading = true;
+
         try {
             const data = await this.orm.call(
                 "matricula.escolar",
                 "get_matriculas_dashboard",
                 [],
-                { search: this.state.search }
+                {
+                    search: this.state.search,
+                }
             );
 
             this.state.titulo = data.titulo || "Lista de matrícula";
             this.state.subtitulo = data.subtitulo || "";
-            this.state.stats = data.stats || {};
+            this.state.stats = data.stats || {
+                total_estudiantes: 0,
+                grados_activos: 0,
+                matriculas_activas: 0,
+            };
             this.state.rows = data.rows || [];
+
         } catch (error) {
+            console.error(error);
             this.notification.add("No se pudo cargar la lista de matrícula.", {
                 type: "danger",
             });
@@ -71,6 +80,7 @@ class MatriculaDashboard extends Component {
     openForm(id) {
         this.action.doAction({
             type: "ir.actions.act_window",
+            name: "Matrícula",
             res_model: "matricula.escolar",
             res_id: id,
             views: [[false, "form"]],
@@ -81,6 +91,7 @@ class MatriculaDashboard extends Component {
     openNew() {
         this.action.doAction({
             type: "ir.actions.act_window",
+            name: "Nueva matrícula",
             res_model: "matricula.escolar",
             views: [[false, "form"]],
             target: "current",
@@ -100,97 +111,94 @@ class MatriculaDashboard extends Component {
         });
     }
 
-    toggleConfigMenu(ev = null) {
-    if (ev) {
-        ev.stopPropagation();
-    }
-    this.state.showConfigMenu = !this.state.showConfigMenu;
-}
+    toggleConfigMenu(ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
 
-async importarRegistros(ev = null) {
-    if (ev) {
-        ev.stopPropagation();
+        this.state.showConfigMenu = !this.state.showConfigMenu;
     }
 
-    this.state.showConfigMenu = false;
+    importarRegistros(ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
 
-    try {
-        await this.action.doAction({
-            type: "ir.actions.client",
-            tag: "import",
-            params: {
-                model: "matricula.escolar",
-                context: {},
+        this.state.showConfigMenu = false;
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Importar registros",
+            res_model: "matricula.escolar",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            target: "current",
+            context: {
+                import_enabled: true,
             },
         });
-    } catch (error) {
-        this.notification.add(
-            "No se pudo abrir la importación directa. Se abrirá la lista normal para importar desde Odoo.",
-            { type: "warning" }
-        );
-
-        this.openManageRecords();
-    }
-}
-
-exportarTodo(ev = null) {
-    if (ev) {
-        ev.stopPropagation();
     }
 
-    this.state.showConfigMenu = false;
+    exportarTodo(ev) {
+        if (ev) {
+            ev.stopPropagation();
+        }
 
-    const rows = this.state.rows || [];
+        this.state.showConfigMenu = false;
 
-    if (!rows.length) {
-        this.notification.add("No hay registros para exportar.", {
-            type: "warning",
+        const rows = this.state.rows || [];
+
+        if (!rows.length) {
+            this.notification.add("No hay registros para exportar.", {
+                type: "warning",
+            });
+            return;
+        }
+
+        const headers = [
+            "Estudiante",
+            "Grado escolar",
+            "Apoderado principal",
+            "Estado",
+        ];
+
+        const escapeCsv = (value) => {
+            const text = String(value || "");
+            return `"${text.replace(/"/g, '""')}"`;
+        };
+
+        const csvRows = [
+            headers.map(escapeCsv).join(","),
+            ...rows.map((row) => [
+                row.estudiante,
+                row.grado,
+                row.apoderado_principal,
+                row.estado,
+            ].map(escapeCsv).join(",")),
+        ];
+
+        const csvContent = csvRows.join("\n");
+        const blob = new Blob(["\ufeff" + csvContent], {
+            type: "text/csv;charset=utf-8;",
         });
-        return;
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "lista_matricula.csv";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(url);
+
+        this.notification.add("Exportación generada correctamente.", {
+            type: "success",
+        });
     }
-
-    const headers = [
-        "Estudiante",
-        "Grado escolar",
-        "Apoderado principal",
-        "Estado",
-    ];
-
-    const escapeCsv = (value) => {
-        const text = String(value || "");
-        return `"${text.replaceAll('"', '""')}"`;
-    };
-
-    const csvRows = [
-        headers.map(escapeCsv).join(","),
-        ...rows.map((row) => [
-            row.estudiante,
-            row.grado,
-            row.apoderado_principal,
-            row.estado,
-        ].map(escapeCsv).join(",")),
-    ];
-
-    const csvContent = csvRows.join("\n");
-    const blob = new Blob(["\ufeff" + csvContent], {
-        type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "lista_matricula.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(url);
-
-    this.notification.add("Exportación generada correctamente.", {
-        type: "success",
-    });
-}
 }
 
 registry.category("actions").add("matricula_dashboard", MatriculaDashboard);

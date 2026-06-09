@@ -21,18 +21,18 @@
                         <i class="fa fa-database"/>
                     </button>
                     <div class="o_md_config_dropdown">
-                        <button type="button" class="o_md_btn o_md_btn_light" title="Configuración" t-on-click="toggleConfigMenu">
-                            <i class="fa fa-cog"/>
+                        <button type="button" class="o_md_btn o_md_btn_light" title="Configuración" t-on-click="(ev) => this.toggleConfigMenu(ev)">
+                            <i class="fa fa-cog" title="Configuración"/>
                         </button>
 
                         <div t-if="state.showConfigMenu" class="o_md_config_menu">
-                            <button type="button" class="o_md_config_item" t-on-click="importarRegistros">
-                                <i class="fa fa-download"/>
+                            <button type="button" class="o_md_config_item" t-on-click="(ev) => this.importarRegistros(ev)">
+                                <i class="fa fa-download" title="Importar registros"/>
                                 <span>Importar registros</span>
                             </button>
 
-                            <button type="button" class="o_md_config_item" t-on-click="exportarTodo">
-                                <i class="fa fa-upload"/>
+                            <button type="button" class="o_md_config_item" t-on-click="(ev) => this.exportarTodo(ev)">
+                                <i class="fa fa-upload" title="Exportar todo"/>
                                 <span>Exportar todo</span>
                             </button>
                         </div>
