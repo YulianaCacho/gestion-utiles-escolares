@@ -456,3 +456,103 @@ body,
     display: block;
     height: 120px;
 }
+
+/* =============================== */
+/* FORMULARIO MATRÍCULA ESCOLAR */
+/* =============================== */
+
+.o_ge_matricula_page {
+    max-width: 760px !important;
+    padding: 18px 0 36px 0 !important;
+}
+
+.o_ge_matricula_card {
+    background: #ffffff !important;
+    border: 1px solid #dedbd2 !important;
+    border-radius: 14px !important;
+    margin-bottom: 18px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+}
+
+.o_ge_card_header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 14px 18px !important;
+    border-bottom: 1px solid #e5e0d6 !important;
+    color: #111827 !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+}
+
+.o_ge_card_icon {
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 8px !important;
+    background: #e8f8ec !important;
+    color: #24a148 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.o_ge_card_body {
+    padding: 16px 18px 18px 18px !important;
+}
+
+.o_ge_two_cols {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    column-gap: 24px !important;
+    row-gap: 14px !important;
+    margin-bottom: 14px !important;
+}
+
+.o_ge_field_block {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+}
+
+.o_ge_field_block label {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+}
+
+.o_ge_full {
+    margin-bottom: 14px !important;
+}
+
+.o_ge_matricula_page .o_input,
+.o_ge_matricula_page input,
+.o_ge_matricula_page textarea,
+.o_ge_matricula_page select {
+    border-radius: 9px !important;
+    border: 1px solid #bdb8ae !important;
+    background: #fbfaf5 !important;
+    min-height: 38px !important;
+    padding: 8px 11px !important;
+}
+
+.o_ge_matricula_page textarea {
+    min-height: 84px !important;
+}
+
+.o_ge_matricula_page .badge {
+    border-radius: 999px !important;
+    padding: 5px 10px !important;
+    font-weight: 700 !important;
+}
+
+@media only screen and (max-width: 768px) {
+    .o_ge_matricula_page {
+        max-width: 100% !important;
+    }
+
+    .o_ge_two_cols {
+        grid-template-columns: 1fr !important;
+    }
+}
