@@ -461,9 +461,28 @@ body,
 /* FORMULARIO MATRÍCULA ESCOLAR */
 /* =============================== */
 
+.o_ge_matricula_form_view .o_form_sheet_bg {
+    padding: 0 !important;
+}
+
+.o_ge_matricula_form_view .o_form_sheet {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+}
+
 .o_ge_matricula_page {
-    max-width: 760px !important;
-    padding: 18px 0 36px 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    padding: 18px 24px 36px 24px !important;
+    box-sizing: border-box !important;
+}
+
+.o_ge_matricula_card {
+    width: 100% !important;
 }
 
 .o_ge_matricula_card {
@@ -505,9 +524,9 @@ body,
 .o_ge_two_cols {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    column-gap: 24px !important;
-    row-gap: 14px !important;
-    margin-bottom: 14px !important;
+    column-gap: 32px !important;
+    row-gap: 18px !important;
+    margin-bottom: 18px !important;
 }
 
 .o_ge_field_block {
