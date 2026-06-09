@@ -461,9 +461,6 @@ body,
 /* FORMULARIO MATRÍCULA ESCOLAR */
 /* =============================== */
 
-.o_ge_matricula_form_view .o_form_sheet_bg {
-    padding: 0 !important;
-}
 
 .o_ge_matricula_form_view .o_form_sheet {
     width: 100% !important;
@@ -594,7 +591,7 @@ body,
     width: 100% !important;
     max-width: none !important;
     padding: 24px 32px 40px 32px !important;
-    overflow: visible !important;
+    overflow: initial !important;
 }
 
 .o_ge_matricula_form_view .o_form_sheet {
@@ -619,4 +616,28 @@ body,
 .o_ge_matricula_form_view .o_chatter {
     display: none !important;
     width: 0 !important;
+}
+
+/* =============================== */
+/* DEVOLVER SCROLL NORMAL EN MATRÍCULA */
+/* =============================== */
+
+.o_action_manager,
+.o_action_manager .o_action,
+.o_action_manager .o_content {
+    overflow-y: auto !important;
+}
+
+.o_ge_matricula_form_view {
+    min-height: auto !important;
+    overflow: visible !important;
+}
+
+.o_ge_matricula_form_view .o_form_renderer {
+    min-height: auto !important;
+    overflow: visible !important;
+}
+
+.o_ge_matricula_form_view .o_form_sheet_bg {
+    min-height: auto !important;
 }
