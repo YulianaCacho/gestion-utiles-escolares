@@ -73,6 +73,10 @@
             "gestion_utiles_escolares/static/src/js/anio_escolar_systray.js",
             "gestion_utiles_escolares/static/src/xml/anio_escolar_systray.xml", 
            
+           
+            "gestion_utiles_escolares/static/src/js/matricula_dashboard.js",
+            "gestion_utiles_escolares/static/src/xml/matricula_dashboard.xml",
+            "gestion_utiles_escolares/static/src/css/matricula_dashboard.css",
             
         ],
     },
