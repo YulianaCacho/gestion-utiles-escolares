@@ -185,15 +185,28 @@ class SobranteUtilesAnio(models.Model):
             codigo = producto.default_code or "SIN-COD"
             nombre = producto.name or producto.display_name or "Producto sin nombre"
 
+            cantidad_inicial = rec.cantidad_inicial or 0
+            cantidad_disponible = rec.cantidad_disponible or 0
+
+            if cantidad_inicial > 0:
+                disponible_pct = round((cantidad_disponible / cantidad_inicial) * 100)
+            else:
+                disponible_pct = 0
+
+            disponible_pct = max(0, min(disponible_pct, 100))
+
             rows.append({
                 "id": rec.id,
                 "anio_origen": rec.anio_origen_id.name or "",
                 "anio_destino": rec.anio_destino_id.name or "",
+                "anio_origen_corto": str(rec.anio_origen_id.anio or rec.anio_origen_id.name or ""),
+                "anio_destino_corto": str(rec.anio_destino_id.anio or rec.anio_destino_id.name or ""),
                 "codigo": codigo,
                 "producto": nombre,
                 "cantidad_inicial": "%.2f" % rec.cantidad_inicial,
                 "cantidad_usada": "%.2f" % rec.cantidad_usada,
-                "cantidad_disponible": "%.2f" % rec.cantidad_disponible,
+                "cantidad_disponible": "%.0f" % rec.cantidad_disponible,
+                "disponible_pct": disponible_pct,
                 "unidad": rec.uom_id.name or "",
                 "estado": self._dashboard_estado_label(rec.estado),
                 "estado_class": self._dashboard_estado_class(rec.estado),

@@ -59,96 +59,80 @@
                 </div>
             </div>
 
-            <!-- TABLA -->
-            <div class="o_sob_table_card">
-                <table class="o_sob_table">
-                    <thead>
-                        <tr>
-                            <th class="o_sob_check_col">
-                                <input type="checkbox"/>
-                            </th>
-                            <th>Año origen</th>
-                            <th>Año destino</th>
-                            <th>Producto</th>
-                            <th class="o_sob_num_col">Sob. ini.</th>
-                            <th class="o_sob_num_col">Cant. us.</th>
-                            <th class="o_sob_num_col">Disponibilidad</th>
-                            <th>Unidad</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
+            <!-- LISTADO MODERNO TIPO TARJETAS -->
+            <div class="o_sob_list_card">
 
-                    <tbody>
-                        <t t-if="state.loading">
-                            <tr>
-                                <td colspan="9" class="o_sob_empty">
-                                    Cargando sobrantes...
-                                </td>
-                            </tr>
-                        </t>
+                <div class="o_sob_list_header">
+                    <div>Producto</div>
+                    <div>Año origen <br/>→ destino</div>
+                    <div>Sob. inicial</div>
+                    <div>Cant. usada</div>
+                    <div>Disponible</div>
+                    <div>Estado</div>
+                </div>
 
-                        <t t-elif="state.rows.length">
-                            <tr t-foreach="state.rows"
-                                t-as="row"
-                                t-key="row.id"
-                                t-on-click="() => this.openForm(row.id)">
+                <t t-if="state.loading">
+                    <div class="o_sob_empty">
+                        Cargando sobrantes...
+                    </div>
+                </t>
 
-                                <td class="o_sob_check_col">
-                                    <input type="checkbox" t-on-click.stop="() => {}"/>
-                                </td>
+                <t t-elif="state.rows.length">
+                    <div t-foreach="state.rows"
+                         t-as="row"
+                         t-key="row.id"
+                         class="o_sob_item_row"
+                         t-on-click="() => this.openForm(row.id)">
 
-                                <td>
-                                    <span class="o_sob_year_badge" t-esc="row.anio_origen"/>
-                                </td>
+                        <!-- PRODUCTO -->
+                        <div class="o_sob_item_product">
+                            <span class="o_sob_code_badge" t-esc="row.codigo"/>
+                            <span class="o_sob_product_name" t-esc="row.producto"/>
+                        </div>
 
-                                <td>
-                                    <span class="o_sob_year_badge green" t-esc="row.anio_destino"/>
-                                </td>
+                        <!-- AÑO ORIGEN / DESTINO -->
+                        <div class="o_sob_item_years">
+                            <span class="o_sob_year_chip" t-esc="row.anio_origen_corto"/>
+                            <span class="o_sob_arrow">→</span>
+                            <span class="o_sob_year_chip green" t-esc="row.anio_destino_corto"/>
+                        </div>
 
-                                <td>
-                                    <div class="o_sob_product_cell">
-                                        <span class="o_sob_code_badge" t-esc="row.codigo"/>
-                                        <span class="o_sob_product_name" t-esc="row.producto"/>
-                                    </div>
-                                </td>
+                        <!-- SOBRANTE INICIAL -->
+                        <div class="o_sob_item_number">
+                            <span t-esc="row.cantidad_inicial"/>
+                        </div>
 
-                                <td class="o_sob_num_col">
-                                    <span class="o_sob_number" t-esc="row.cantidad_inicial"/>
-                                </td>
+                        <!-- CANTIDAD USADA -->
+                        <div class="o_sob_item_number muted">
+                            <span t-esc="row.cantidad_usada"/>
+                        </div>
 
-                                <td class="o_sob_num_col">
-                                    <span class="o_sob_number muted" t-esc="row.cantidad_usada"/>
-                                </td>
+                        <!-- DISPONIBLE -->
+                        <div class="o_sob_item_available">
+                            <span class="o_sob_available_number" t-esc="row.cantidad_disponible"/>
+                            <div class="o_sob_available_bar">
+                                <div class="o_sob_available_fill"
+                                     t-att-style="'width:' + row.disponible_pct + '%;'"/>
+                            </div>
+                        </div>
 
-                                <td class="o_sob_num_col">
-                                    <span class="o_sob_available">
-                                        <span class="o_sob_dot"></span>
-                                        <span t-esc="row.cantidad_disponible"/>
-                                    </span>
-                                </td>
+                        <!-- ESTADO -->
+                        <div>
+                            <span t-att-class="'o_sob_status_badge ' + row.estado_class">
+                                <span class="o_sob_dot"></span>
+                                <span t-esc="row.estado"/>
+                            </span>
+                        </div>
 
-                                <td>
-                                    <span class="o_sob_unit_badge" t-esc="row.unidad"/>
-                                </td>
+                    </div>
+                </t>
 
-                                <td>
-                                    <span t-att-class="'o_sob_status_badge ' + row.estado_class">
-                                        <span class="o_sob_dot"></span>
-                                        <span t-esc="row.estado"/>
-                                    </span>
-                                </td>
-                            </tr>
-                        </t>
+                <t t-else="">
+                    <div class="o_sob_empty">
+                        No hay sobrantes registrados para este año escolar.
+                    </div>
+                </t>
 
-                        <t t-else="">
-                            <tr>
-                                <td colspan="9" class="o_sob_empty">
-                                    No hay sobrantes registrados para este año escolar.
-                                </td>
-                            </tr>
-                        </t>
-                    </tbody>
-                </table>
             </div>
 
         </div>
