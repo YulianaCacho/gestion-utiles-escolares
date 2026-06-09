@@ -148,37 +148,80 @@ class AnioEscolar(models.Model):
         }
 
     def action_copiar_listas_desde_anio_anterior(self):
-        total = 0
+        listas_creadas = 0
+        listas_actualizadas = 0
+        lineas_creadas = 0
+        lineas_actualizadas = 0
+
+        Lista = self.env["lista.utiles.grado"]
+        Linea = self.env["lista.utiles.grado.linea"]
 
         for rec in self:
             if not rec.anio_anterior_id:
                 raise UserError("Primero debes seleccionar el año anterior.")
 
-            listas_anteriores = self.env["lista.utiles.grado"].search([
+            listas_anteriores = Lista.search([
                 ("anio_escolar_id", "=", rec.anio_anterior_id.id),
             ])
 
-            for lista in listas_anteriores:
-                existe = self.env["lista.utiles.grado"].search_count([
+            if not listas_anteriores:
+                raise UserError(
+                    "No se encontraron listas de útiles en el año anterior. "
+                    "Verifica que el año anterior tenga listas registradas."
+                )
+
+            for lista_anterior in listas_anteriores:
+                lista_nueva = Lista.search([
                     ("anio_escolar_id", "=", rec.id),
-                    ("grado_escolar", "=", lista.grado_escolar),
-                ])
+                    ("grado_escolar", "=", lista_anterior.grado_escolar),
+                ], limit=1)
 
-                if existe:
-                    continue
+                if not lista_nueva:
+                    lista_nueva = Lista.create({
+                        "anio_escolar_id": rec.id,
+                        "anio": str(rec.anio),
+                        "grado_escolar": lista_anterior.grado_escolar,
+                    })
+                    listas_creadas += 1
+                else:
+                    listas_actualizadas += 1
 
-                lista.copy({
-                    "anio_escolar_id": rec.id,
-                    "anio": str(rec.anio),
-                })
-                total += 1
+                for linea_anterior in lista_anterior.linea_ids:
+                    if not linea_anterior.product_id:
+                        continue
+
+                    linea_existente = Linea.search([
+                        ("lista_id", "=", lista_nueva.id),
+                        ("product_id", "=", linea_anterior.product_id.id),
+                    ], limit=1)
+
+                    valores_linea = {
+                        "lista_id": lista_nueva.id,
+                        "product_id": linea_anterior.product_id.id,
+                        "cantidad_esperada": linea_anterior.cantidad_esperada,
+                        "uom_id": linea_anterior.uom_id.id if linea_anterior.uom_id else False,
+                        "tipo_uso_escolar": linea_anterior.tipo_uso_escolar,
+                        "observacion": linea_anterior.observacion,
+                    }
+
+                    if linea_existente:
+                        linea_existente.write(valores_linea)
+                        lineas_actualizadas += 1
+                    else:
+                        Linea.create(valores_linea)
+                        lineas_creadas += 1
 
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
-                "title": "Listas copiadas",
-                "message": f"Se copiaron {total} listas al nuevo año escolar.",
+                "title": "Listas copiadas correctamente",
+                "message": (
+                    f"Listas creadas: {listas_creadas}. "
+                    f"Listas existentes actualizadas: {listas_actualizadas}. "
+                    f"Productos copiados: {lineas_creadas}. "
+                    f"Productos actualizados: {lineas_actualizadas}."
+                ),
                 "type": "success",
                 "sticky": False,
             }
@@ -262,7 +305,7 @@ class AnioEscolar(models.Model):
 
         for rec in self:
             if rec.estado == "borrador":
-               continue
+                continue
 
             recepciones = Recepcion.search_count([
                 ("anio_escolar_id", "=", rec.id)
