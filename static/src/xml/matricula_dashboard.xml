@@ -20,114 +20,125 @@
                     <button type="button" class="o_md_btn o_md_btn_light" t-on-click="openManageRecords">
                         <i class="fa fa-database"/>
                     </button>
-                    <button type="button" class="o_md_btn o_md_btn_light" title="Configuración">
-                        <i class="fa fa-cog"/>
-                    </button>
-                    <button type="button" class="o_md_btn o_md_btn_primary" t-on-click="openNew">
-                        <i class="fa fa-plus"/>
-                        Nuevo
-                    </button>
-                </div>
-            </div>
-
-            <!-- Stats -->
-            <div class="o_matricula_stats_grid">
-                <div class="o_md_stat_card">
-                    <div class="o_md_stat_icon green">
-                        <i class="fa fa-users"/>
-                    </div>
-                    <div>
-                        <div class="o_md_stat_label">Total estudiantes</div>
-                        <div class="o_md_stat_value" t-esc="state.stats.total_estudiantes"/>
-                    </div>
-                </div>
-
-                <div class="o_md_stat_card">
-                    <div class="o_md_stat_icon blue">
-                        <i class="fa fa-graduation-cap"/>
-                    </div>
-                    <div>
-                        <div class="o_md_stat_label">Grados activos</div>
-                        <div class="o_md_stat_value" t-esc="state.stats.grados_activos"/>
-                    </div>
-                </div>
-
-                <div class="o_md_stat_card">
-                    <div class="o_md_stat_icon orange">
-                        <i class="fa fa-check-circle-o"/>
-                    </div>
-                    <div>
-                        <div class="o_md_stat_label">Matrículas activas</div>
-                        <div class="o_md_stat_value" t-esc="state.stats.matriculas_activas"/>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Search -->
-            <div class="o_md_table_card">
-                <div class="o_md_table_toolbar">
-                    <div class="o_md_search_box">
-                        <i class="fa fa-search"/>
-                        <input type="text"
-                               placeholder="Buscar estudiante..."
-                               t-att-value="state.search"
-                               t-on-input="onSearchInput"
-                               t-on-keydown="onSearchKeydown"/>
-                        <button type="button" class="o_md_filter_btn" t-on-click="doSearch">
-                            <i class="fa fa-filter"/>
+                    <div class="o_md_config_dropdown">
+                        <button type="button" class="o_md_btn o_md_btn_light" title="Configuración" t-on-click="toggleConfigMenu">
+                            <i class="fa fa-cog"/>
                         </button>
-                    </div>
 
-                    <div class="o_md_pager">
-                        <span t-esc="state.rows.length + ' registros'"/>
+                        <div t-if="state.showConfigMenu" class="o_md_config_menu">
+                            <button type="button" class="o_md_config_item" t-on-click="importarRegistros">
+                                <i class="fa fa-download"/>
+                                <span>Importar registros</span>
+                            </button>
+
+                            <button type="button" class="o_md_config_item" t-on-click="exportarTodo">
+                                <i class="fa fa-upload"/>
+                                <span>Exportar todo</span>
+                            </button>
+                        </div>
                     </div>
+                </button>
+                <button type="button" class="o_md_btn o_md_btn_primary" t-on-click="openNew">
+                    <i class="fa fa-plus"/>
+                        Nuevo
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="o_matricula_stats_grid">
+            <div class="o_md_stat_card">
+                <div class="o_md_stat_icon green">
+                    <i class="fa fa-users"/>
+                </div>
+                <div>
+                    <div class="o_md_stat_label">Total estudiantes</div>
+                    <div class="o_md_stat_value" t-esc="state.stats.total_estudiantes"/>
+                </div>
+            </div>
+
+            <div class="o_md_stat_card">
+                <div class="o_md_stat_icon blue">
+                    <i class="fa fa-graduation-cap"/>
+                </div>
+                <div>
+                    <div class="o_md_stat_label">Grados activos</div>
+                    <div class="o_md_stat_value" t-esc="state.stats.grados_activos"/>
+                </div>
+            </div>
+
+            <div class="o_md_stat_card">
+                <div class="o_md_stat_icon orange">
+                    <i class="fa fa-check-circle-o"/>
+                </div>
+                <div>
+                    <div class="o_md_stat_label">Matrículas activas</div>
+                    <div class="o_md_stat_value" t-esc="state.stats.matriculas_activas"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="o_md_table_card">
+            <div class="o_md_table_toolbar">
+                <div class="o_md_search_box">
+                    <i class="fa fa-search"/>
+                    <input type="text" placeholder="Buscar estudiante..." t-att-value="state.search" t-on-input="onSearchInput" t-on-keydown="onSearchKeydown"/>
+                    <button type="button" class="o_md_filter_btn" t-on-click="doSearch">
+                        <i class="fa fa-filter"/>
+                    </button>
                 </div>
 
-                <div class="o_md_table_wrap">
-                    <table class="o_md_table">
-                        <thead>
-                            <tr>
-                                <th style="width: 36px;"></th>
-                                <th>Estudiante</th>
-                                <th>Grado escolar</th>
-                                <th>Apoderado principal</th>
-                                <th style="width: 60px;"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-if="state.rows.length">
-                                <tr t-foreach="state.rows" t-as="row" t-key="row.id" t-on-click="() => this.openForm(row.id)">
-                                    <td>
-                                        <input type="checkbox" t-on-click.stop="() => {}"/>
-                                    </td>
-                                    <td>
-                                        <div class="o_md_student_cell">
-                                            <div class="o_md_avatar" t-esc="row.iniciales"/>
-                                            <div class="o_md_student_name" t-esc="row.estudiante"/>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span t-att-class="'o_md_grado_badge ' + row.grado_class" t-esc="row.grado"/>
-                                    </td>
-                                    <td class="o_md_guardian_cell" t-esc="row.apoderado_principal"/>
-                                    <td class="o_md_more_cell">
-                                        <button type="button" class="o_md_more_btn" t-on-click.stop="() => this.openForm(row.id)">
-                                            <i class="fa fa-ellipsis-h"/>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </t>
-                            <tr t-else="">
-                                <td colspan="5" class="o_md_empty">
-                                    No hay matrículas registradas.
+                <div class="o_md_pager">
+                    <span t-esc="state.rows.length + ' registros'"/>
+                </div>
+            </div>
+
+            <div class="o_md_table_wrap">
+                <table class="o_md_table">
+                    <thead>
+                        <tr>
+                            <th style="width: 36px;"></th>
+                            <th>Estudiante</th>
+                            <th>Grado escolar</th>
+                            <th>Apoderado principal</th>
+                            <th style="width: 60px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="state.rows.length">
+                            <tr t-foreach="state.rows" t-as="row" t-key="row.id" t-on-click="() => this.openForm(row.id)">
+                                <td>
+                                    <input type="checkbox" t-on-click.stop="() => {}"/>
+                                </td>
+                                <td>
+                                    <div class="o_md_student_cell">
+                                        <div class="o_md_avatar" t-esc="row.iniciales"/>
+                                        <div class="o_md_student_name" t-esc="row.estudiante"/>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span t-att-class="'o_md_grado_badge ' + row.grado_class" t-esc="row.grado"/>
+                                </td>
+                                <td class="o_md_guardian_cell" t-esc="row.apoderado_principal"/>
+                                <td class="o_md_more_cell">
+                                    <button type="button" class="o_md_more_btn" t-on-click.stop="() => this.openForm(row.id)">
+                                        <i class="fa fa-ellipsis-h"/>
+                                    </button>
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
-                </div>
+                        </t>
+                        <tr t-else="">
+                            <td colspan="5" class="o_md_empty">
+                                    No hay matrículas registradas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-
         </div>
-    </t>
+
+    </div>
+</t>
 
 </templates>

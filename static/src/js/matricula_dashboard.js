@@ -15,6 +15,7 @@ class MatriculaDashboard extends Component {
         this.state = useState({
             loading: true,
             search: "",
+            showConfigMenu: false,
             titulo: "Lista de matrícula",
             subtitulo: "",
             stats: {
@@ -98,6 +99,98 @@ class MatriculaDashboard extends Component {
             target: "current",
         });
     }
+
+    toggleConfigMenu(ev = null) {
+    if (ev) {
+        ev.stopPropagation();
+    }
+    this.state.showConfigMenu = !this.state.showConfigMenu;
+}
+
+async importarRegistros(ev = null) {
+    if (ev) {
+        ev.stopPropagation();
+    }
+
+    this.state.showConfigMenu = false;
+
+    try {
+        await this.action.doAction({
+            type: "ir.actions.client",
+            tag: "import",
+            params: {
+                model: "matricula.escolar",
+                context: {},
+            },
+        });
+    } catch (error) {
+        this.notification.add(
+            "No se pudo abrir la importación directa. Se abrirá la lista normal para importar desde Odoo.",
+            { type: "warning" }
+        );
+
+        this.openManageRecords();
+    }
+}
+
+exportarTodo(ev = null) {
+    if (ev) {
+        ev.stopPropagation();
+    }
+
+    this.state.showConfigMenu = false;
+
+    const rows = this.state.rows || [];
+
+    if (!rows.length) {
+        this.notification.add("No hay registros para exportar.", {
+            type: "warning",
+        });
+        return;
+    }
+
+    const headers = [
+        "Estudiante",
+        "Grado escolar",
+        "Apoderado principal",
+        "Estado",
+    ];
+
+    const escapeCsv = (value) => {
+        const text = String(value || "");
+        return `"${text.replaceAll('"', '""')}"`;
+    };
+
+    const csvRows = [
+        headers.map(escapeCsv).join(","),
+        ...rows.map((row) => [
+            row.estudiante,
+            row.grado,
+            row.apoderado_principal,
+            row.estado,
+        ].map(escapeCsv).join(",")),
+    ];
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob(["\ufeff" + csvContent], {
+        type: "text/csv;charset=utf-8;",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "lista_matricula.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+
+    this.notification.add("Exportación generada correctamente.", {
+        type: "success",
+    });
+}
 }
 
 registry.category("actions").add("matricula_dashboard", MatriculaDashboard);
