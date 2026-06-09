@@ -78,11 +78,18 @@ class MatriculaEscolar(models.Model):
 
     observacion = fields.Text(string='Observación')
 
+    # =========================
+    # CAMPOS COMPUTADOS
+    # =========================
+
     @api.depends('estudiante_id', 'anio_escolar', 'grado_escolar')
     def _compute_name(self):
         for rec in self:
             estudiante = rec.estudiante_id.name or ''
-            grado = dict(rec._fields['grado_escolar'].selection).get(rec.grado_escolar, '')
+            grado = dict(rec._fields['grado_escolar'].selection).get(
+                rec.grado_escolar,
+                ''
+            )
             anio = rec.anio_escolar or ''
             rec.name = f'{estudiante} - {grado} - {anio}'
 
@@ -96,9 +103,14 @@ class MatriculaEscolar(models.Model):
         anio_actual = self.env.user.anio_escolar_actual_id
 
         for rec in self:
-            rec.es_anio_actual = bool(
-                anio_actual and rec.anio_escolar == anio_actual.anio
-            )
+            if 'anio_escolar_id' in rec._fields and rec.anio_escolar_id:
+                rec.es_anio_actual = bool(
+                    anio_actual and rec.anio_escolar_id.id == anio_actual.id
+                )
+            else:
+                rec.es_anio_actual = bool(
+                    anio_actual and rec.anio_escolar == anio_actual.anio
+                )
 
     def _search_es_anio_actual(self, operator, value):
         anio_actual = self.env.user.anio_escolar_actual_id
@@ -106,13 +118,24 @@ class MatriculaEscolar(models.Model):
         if not anio_actual:
             return [('id', '=', 0)]
 
+        if 'anio_escolar_id' in self._fields:
+            campo = 'anio_escolar_id'
+            valor = anio_actual.id
+        else:
+            campo = 'anio_escolar'
+            valor = anio_actual.anio
+
         if operator in ('=', '==') and value:
-            return [('anio_escolar', '=', anio_actual.anio)]
+            return [(campo, '=', valor)]
 
         if operator in ('!=', '<>') and value:
-            return [('anio_escolar', '!=', anio_actual.anio)]
+            return [(campo, '!=', valor)]
 
-        return [('anio_escolar', '=', anio_actual.anio)]
+        return [(campo, '=', valor)]
+
+    # =========================
+    # ONCHANGE
+    # =========================
 
     @api.onchange('grado_escolar', 'anio_escolar')
     def _onchange_grado_anio(self):
@@ -125,8 +148,7 @@ class MatriculaEscolar(models.Model):
                 ('grado_escolar', '=', rec.grado_escolar),
             ]
 
-            # Si existe el campo anio_escolar_id, buscar primero por el año escolar real.
-            if hasattr(rec, 'anio_escolar_id') and rec.anio_escolar_id:
+            if 'anio_escolar_id' in rec._fields and rec.anio_escolar_id:
                 dominio.append(('anio_escolar_id', '=', rec.anio_escolar_id.id))
                 lista = self.env['lista.utiles.grado'].search(dominio, limit=1)
 
@@ -134,13 +156,16 @@ class MatriculaEscolar(models.Model):
                     rec.lista_utiles_id = lista.id
                     continue
 
-            # Si no encuentra por anio_escolar_id, busca por el campo antiguo anio.
             lista = self.env['lista.utiles.grado'].search([
                 ('grado_escolar', '=', rec.grado_escolar),
                 ('anio', '=', str(rec.anio_escolar)),
             ], limit=1)
 
             rec.lista_utiles_id = lista.id if lista else False
+
+    # =========================
+    # VALIDACIONES
+    # =========================
 
     @api.constrains('estudiante_id', 'anio_escolar')
     def _check_matricula_unica_por_anio(self):
@@ -155,3 +180,115 @@ class MatriculaEscolar(models.Model):
                 raise ValidationError(
                     'Este estudiante ya tiene una matrícula registrada para ese año escolar.'
                 )
+
+    # =========================
+    # DASHBOARD LISTA DE MATRÍCULA
+    # =========================
+
+    def _dashboard_iniciales(self, nombre):
+        if not nombre:
+            return ""
+
+        partes = [p for p in nombre.strip().split() if p]
+
+        if len(partes) == 1:
+            return partes[0][:2].upper()
+
+        return (partes[0][:1] + partes[1][:1]).upper()
+
+    def _dashboard_grado_label(self, grado):
+        mapa = {
+            "inicial_3": "Inicial 3 años",
+            "inicial_4": "Inicial 4 años",
+            "inicial_5": "Inicial 5 años",
+            "1er_grado": "1er grado",
+            "2do_grado": "2do grado",
+            "3er_grado": "3er grado",
+            "4to_grado": "4to grado",
+            "5to_grado": "5to grado",
+            "6to_grado": "6to grado",
+        }
+
+        return mapa.get(grado, grado or "Sin asignar")
+
+    def _dashboard_grado_class(self, grado):
+        label = (self._dashboard_grado_label(grado) or "").lower()
+
+        if "1er" in label:
+            return "grado-1"
+        if "2do" in label:
+            return "grado-2"
+        if "3er" in label:
+            return "grado-3"
+        if "4to" in label:
+            return "grado-4"
+        if "5to" in label:
+            return "grado-5"
+        if "6to" in label:
+            return "grado-6"
+
+        return "grado-default"
+
+    @api.model
+    def get_matriculas_dashboard(self, search=None):
+        domain = []
+        search = (search or "").strip()
+        anio_actual = self.env.user.anio_escolar_actual_id
+
+        if anio_actual:
+            if 'anio_escolar_id' in self._fields:
+                domain.append(("anio_escolar_id", "=", anio_actual.id))
+            else:
+                domain.append(("anio_escolar", "=", anio_actual.anio))
+
+        if search:
+            domain += [
+                "|", "|",
+                ("estudiante_id.name", "ilike", search),
+                ("grado_escolar", "ilike", search),
+                ("apoderado_principal_id.name", "ilike", search),
+            ]
+
+        records = self.search(domain, order="estudiante_id asc")
+
+        grados = set()
+        activos = 0
+        rows = []
+
+        for rec in records:
+            grado_label = self._dashboard_grado_label(rec.grado_escolar)
+
+            if grado_label and grado_label != "Sin asignar":
+                grados.add(grado_label)
+
+            if rec.estado == "activo":
+                activos += 1
+
+            rows.append({
+                "id": rec.id,
+                "iniciales": self._dashboard_iniciales(
+                    rec.estudiante_id.name or ""
+                ),
+                "estudiante": rec.estudiante_id.name or "Sin estudiante",
+                "grado": grado_label,
+                "grado_class": self._dashboard_grado_class(rec.grado_escolar),
+                "apoderado_principal": (
+                    rec.apoderado_principal_id.name
+                    if rec.apoderado_principal_id
+                    else "No registrado"
+                ),
+                "estado": rec.estado or "",
+            })
+
+        return {
+            "titulo": "Lista de matrícula",
+            "subtitulo": "Año escolar %s · I.E.P. Genios del Millennium" % (
+                anio_actual.anio if anio_actual else ""
+            ),
+            "stats": {
+                "total_estudiantes": len(records),
+                "grados_activos": len(grados),
+                "matriculas_activas": activos,
+            },
+            "rows": rows,
+        }
