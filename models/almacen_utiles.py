@@ -1,6 +1,19 @@
 from datetime import datetime
 from odoo import models, fields, api
+from odoo.exceptions import UserError, ValidationError
 
+
+GRADO_ESCOLAR_SELECTION = [
+    ("inicial_3", "Inicial 3 años"),
+    ("inicial_4", "Inicial 4 años"),
+    ("inicial_5", "Inicial 5 años"),
+    ("1er_grado", "1er grado"),
+    ("2do_grado", "2do grado"),
+    ("3er_grado", "3er grado"),
+    ("4to_grado", "4to grado"),
+    ("5to_grado", "5to grado"),
+    ("6to_grado", "6to grado"),
+]
 
 class AlmacenUtilesMovimiento(models.Model):
     _name = "almacen.utiles.movimiento"
@@ -20,21 +33,55 @@ class AlmacenUtilesMovimiento(models.Model):
     )
 
     tipo_movimiento = fields.Selection(
-        [
-            ("entrada", "Entrada a almacén"),
-            ("salida", "Salida de almacén"),
-            ("ajuste", "Ajuste de inventario"),
-        ],
-        string="Tipo de movimiento",
-        default="entrada",
-        required=True
-    )
+    [
+        ("entrada", "Entrada"),
+        ("salida", "Salida"),
+        ("ajuste", "Ajuste de inventario"),
+    ],
+    string="Tipo de movimiento",
+    default="entrada",
+    required=True
+)
+
+    motivo_movimiento = fields.Selection(
+    [
+        ("entrada_padres", "Ingreso por padres de familia"),
+        ("entrada_compra", "Ingreso por compra directa"),
+        ("entrada_traslado_interno", "Ingreso por traslado interno"),
+        ("entrada_traslado_anio", "Ingreso desde año anterior"),
+        ("entrada_otro", "Otro ingreso"),
+
+        ("salida_uso", "Salida por uso"),
+        ("salida_entrega_estudiante", "Salida por entrega a estudiante"),
+        ("salida_traslado_seccion", "Salida por traslado a otra sección"),
+        ("salida_fin_anio", "Salida de fin de año"),
+        ("salida_otro", "Otra salida"),
+
+        ("ajuste_inventario", "Ajuste de inventario"),
+    ],
+    string="Motivo",
+    default="entrada_padres",
+    required=True,
+    index=True
+)
 
     anio_escolar_id = fields.Many2one(
         "anio.escolar",
         string="Año escolar",
         default=lambda self: self.env.user.anio_escolar_actual_id,
         index=True
+    )
+    
+    anio_origen_id = fields.Many2one(
+        "anio.escolar",
+        string="Año origen",
+        help="Se usa cuando el movimiento corresponde a un traslado o cierre de año."
+    )
+
+    anio_destino_id = fields.Many2one(
+        "anio.escolar",
+        string="Año destino",
+        help="Se usa cuando el movimiento corresponde a un traslado o cierre de año."
     )
 
     recepcion_id = fields.Many2one(
@@ -60,11 +107,10 @@ class AlmacenUtilesMovimiento(models.Model):
     )
 
     grado_escolar = fields.Selection(
-        related="recepcion_id.grado_escolar",
-        string="Grado escolar",
-        store=True,
-        readonly=True
-    )
+        GRADO_ESCOLAR_SELECTION,
+        string="Grado o sección",
+        index=True
+)
 
     product_id = fields.Many2one(
         "product.product",
@@ -101,11 +147,16 @@ class AlmacenUtilesMovimiento(models.Model):
 
     observacion = fields.Char(string="Observación")
 
-    @api.depends("tipo_movimiento", "product_id", "cantidad")
+    @api.depends("tipo_movimiento", "motivo_movimiento", "product_id", "cantidad")
     def _compute_name(self):
         for rec in self:
             producto = rec.product_id.display_name or "Producto"
-            rec.name = f"{rec.tipo_movimiento or ''} - {producto} - {rec.cantidad or 0}"
+            motivo = rec._motivo_label(rec.motivo_movimiento)
+            rec.name = f"{rec.tipo_movimiento or ''} - {motivo} - {producto} - {rec.cantidad or 0}"
+
+    def _motivo_label(self, motivo):
+        selection = dict(self._fields["motivo_movimiento"].selection)
+        return selection.get(motivo, motivo or "Sin motivo")
 
     def _fmt_qty(self, value):
         value = float(value or 0)
