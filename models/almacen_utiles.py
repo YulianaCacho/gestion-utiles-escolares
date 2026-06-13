@@ -264,108 +264,79 @@ class AlmacenUtilesMovimiento(models.Model):
             "Diciembre",
         ]
 
-        grupos = {}
+        def iniciales(nombre):
+            partes = (nombre or "").split()
+            if not partes:
+                return "--"
+            return "".join([p[0].upper() for p in partes[:2]])
 
-        for mov in movimientos:
-            salida = getattr(mov, "salida_almacen_id", False)
+        def fecha_local(fecha):
+            if not fecha:
+                return "", ""
+
+            local = fields.Datetime.context_timestamp(self, fecha)
+            fecha_txt = local.strftime("%d %b.").replace("Jun.", "jun.").replace("Jul.", "jul.")
+            hora_txt = local.strftime("%I:%M %p").lower()
+            hora_txt = hora_txt.replace("am", "a. m.").replace("pm", "p. m.")
+            return fecha_txt, hora_txt
+
+        def motivo_label(mov):
+            if "motivo_movimiento" in self._fields:
+                selection = dict(self._fields["motivo_movimiento"].selection)
+                motivo = selection.get(mov.motivo_movimiento)
+                if motivo:
+                    return motivo
 
             if mov.tipo_movimiento == "entrada" and mov.recepcion_id:
-                key = f"entrada-{mov.recepcion_id.id}"
-            elif mov.tipo_movimiento == "salida" and salida:
-                key = f"salida-{salida.id}"
-            else:
-                key = f"{mov.tipo_movimiento}-{mov.id}"
+                return "Ingreso por padres de familia"
 
-            grupos.setdefault(key, self.env["almacen.utiles.movimiento"])
-            grupos[key] |= mov
+            if mov.tipo_movimiento == "salida":
+                return "Salida de almacén"
+
+            if mov.tipo_movimiento == "ajuste":
+                return "Ajuste de inventario"
+
+            return mov.observacion or "Movimiento de almacén"
 
         eventos = []
 
-        for key, movs in grupos.items():
-            movs = movs.sorted(key=lambda m: m.fecha or datetime.min, reverse=True)
-            primero = movs[0]
-            total = sum(movs.mapped("cantidad"))
-            items = self._build_items_text(movs)
+        for mov in movimientos:
+            fecha_txt, hora_txt = fecha_local(mov.fecha)
+            cantidad = float(mov.cantidad or 0)
 
-            responsable = primero.responsable_id.name or "Sin responsable"
-
-            if primero.tipo_movimiento == "entrada":
-                recepcion = primero.recepcion_id
-                estudiante = (
-                    recepcion.estudiante_id.name
-                    if recepcion and recepcion.estudiante_id
-                    else "Estudiante"
-                )
-                grado_label = self._grado_label(
-                    recepcion.grado_escolar if recepcion else primero.grado_escolar
-                )
-
-                avance = recepcion.porcentaje_avance if recepcion else 0
-
-                if avance >= 100:
-                    estado = "Lista completa al 100%."
-                elif avance > 0:
-                    estado = f"Lista incompleta al {self._fmt_qty(avance)}%."
-                else:
-                    estado = "Recepción registrada."
-
-                detalle = f"{estudiante} ({grado_label}) entregó: {items}. {estado}"
-
-                eventos.append({
-                    "id": key,
-                    "tipo": "entrada",
-                    "titulo": "Entrada — Recepción por matrícula",
-                    "badge": f"+{self._fmt_qty(total)} ítems",
-                    "badge_class": "o_ram_badge_pos",
-                    "fecha": self._fecha_label(primero.fecha),
-                    "responsable": responsable,
-                    "detalle": detalle,
-                })
-
-            elif primero.tipo_movimiento == "salida":
-                salida = getattr(primero, "salida_almacen_id", False)
-
-                docente = (
-                    salida.miss_id.name
-                    if salida and salida.miss_id
-                    else primero.destino or "Docente"
-                )
-                grado_label = self._grado_label(
-                    salida.grado_escolar if salida else primero.grado_escolar
-                )
-                autorizado = (
-                    salida.responsable_id.name
-                    if salida and salida.responsable_id
-                    else responsable
-                )
-
-                detalle = f"{docente} retiró: {items} para {grado_label}. Autorizado por {autorizado}."
-
-                eventos.append({
-                    "id": key,
-                    "tipo": "salida",
-                    "titulo": "Salida — Entrega a docente",
-                    "badge": f"−{self._fmt_qty(total)} ítems",
-                    "badge_class": "o_ram_badge_neg",
-                    "fecha": self._fecha_label(primero.fecha),
-                    "responsable": responsable,
-                    "detalle": detalle,
-                })
-
+            if mov.tipo_movimiento == "salida":
+                tipo_label = "Salida"
+                tipo_class = "salida"
+                tipo_icon = "↑"
+            elif mov.tipo_movimiento == "ajuste":
+                tipo_label = "Ajuste"
+                tipo_class = "ajuste"
+                tipo_icon = "↕"
             else:
-                signo = "+" if total > 0 else "−"
-                detalle = primero.observacion or f"Ajuste manual de inventario: {items}."
+                tipo_label = "Entrada"
+                tipo_class = "entrada"
+                tipo_icon = "↓"
 
-                eventos.append({
-                    "id": key,
-                    "tipo": "ajuste",
-                    "titulo": "Ajuste — Inventario físico",
-                    "badge": f"{signo}{self._fmt_qty(abs(total))} ítems",
-                    "badge_class": "o_ram_badge_adjust",
-                    "fecha": self._fecha_label(primero.fecha),
-                    "responsable": responsable,
-                    "detalle": detalle,
-                })
+            grado_value = mov.grado_escolar
+
+            if not grado_value and mov.recepcion_id:
+                grado_value = mov.recepcion_id.grado_escolar
+
+            eventos.append({
+                "id": mov.id,
+                "fecha": fecha_txt,
+                "hora": hora_txt,
+                "tipo_label": tipo_label,
+                "tipo_class": tipo_class,
+                "tipo_icon": tipo_icon,
+                "motivo": motivo_label(mov),
+                "grado_label": self._grado_label(grado_value),
+                "cantidad": f"{abs(cantidad):.2f}",
+                "unidad": mov.unidad_id.name or mov.product_id.uom_id.name or "",
+                "destino": mov.destino or "Sin destino",
+                "responsable": mov.responsable_id.name or "Sin responsable",
+                "responsable_iniciales": iniciales(mov.responsable_id.name),
+            })
 
         grados = []
         grado_info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
@@ -397,11 +368,11 @@ class AlmacenUtilesMovimiento(models.Model):
             "month_short": f"{meses[month].upper()} {year}",
             "kpis": {
                 "entradas": self._fmt_qty(entradas),
-                "salidas": f"−{self._fmt_qty(salidas)}" if salidas else "0",
+                "salidas": self._fmt_qty(salidas),
                 "ajustes": len(ajustes),
                 "balance": self._fmt_qty(balance),
             },
-            "events": eventos[:50],
+            "events": eventos[:80],
             "grados": grados,
             "responsables": responsables,
         }

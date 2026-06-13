@@ -3,19 +3,17 @@
 
     <t t-name="gestion_utiles_escolares.ReporteAlmacenMovimientos">
         <div class="o_ram_page o_reporte_utiles_scroll">
-
             <div class="o_ram_body">
 
+                <!-- FILTROS -->
                 <div class="o_ram_toolbar">
-                    <!-- Selector de mes -->
                     <div class="o_ram_month_box">
                         <i class="fa fa-calendar"/>
                         <input type="month"
-                                t-att-value="state.selectedMonth"
-                                t-on-change="onChangeMonth"/>
+                               t-att-value="state.selectedMonth"
+                               t-on-change="onChangeMonth"/>
                     </div>
 
-                    <!-- Filtro por grado -->
                     <div class="o_ram_select_box">
                         <i class="fa fa-filter"/>
                         <select t-on-change="onChangeGrado">
@@ -29,7 +27,6 @@
                         </select>
                     </div>
 
-                    <!-- Filtro por responsable -->
                     <div class="o_ram_select_box">
                         <i class="fa fa-user-o"/>
                         <select t-on-change="onChangeResponsable">
@@ -43,72 +40,110 @@
                         </select>
                     </div>
 
-                    <!-- Espaciador -->
                     <div class="o_ram_spacer"></div>
 
-                    <!-- Exportar PDF -->
                     <button type="button" class="o_ram_btn o_ram_btn_pdf" t-on-click="exportPdf">
                         <i class="fa fa-download"/>
                         Exportar PDF
                     </button>
                 </div>
 
+                <!-- TARJETAS RESUMEN -->
                 <div class="o_ram_kpis">
                     <div class="o_ram_card">
-                        <strong t-esc="state.kpis.entradas"/>
-                        <span>Entradas este mes</span>
-                    </div>
-
-                    <div class="o_ram_card">
-                        <strong t-esc="state.kpis.salidas"/>
-                        <span>Salidas este mes</span>
-                    </div>
-
-                    <div class="o_ram_card">
-                        <strong t-esc="state.kpis.ajustes"/>
-                        <span>Ajustes realizados</span>
-                    </div>
-
-                    <div class="o_ram_card">
-                        <strong t-esc="state.kpis.balance"/>
-                        <span>Balance neto</span>
-                    </div>
-                </div>
-
-                <div class="o_ram_info">
-                    <i class="fa fa-info-circle"/>
-                    <span>
-                        Este reporte combina entradas por matrícula, salidas a docentes y ajustes de inventario
-                        en una sola vista. Pensado para que la directora vea el movimiento completo del mes de un vistazo.
-                    </span>
-                </div>
-
-                <h3 class="o_ram_title">
-                    LÍNEA DE TIEMPO — <t t-esc="state.monthShort"/>
-                </h3>
-
-                <div class="o_ram_timeline">
-                    <t t-if="state.events.length">
-                        <div t-foreach="state.events" t-as="event" t-key="event.id" class="o_ram_event">
-                            <span t-att-class="'o_ram_dot o_ram_dot_' + event.tipo"/>
-
-                            <div class="o_ram_event_content">
-                                <div class="o_ram_event_top">
-                                    <strong t-esc="event.titulo"/>
-                                    <span t-att-class="'o_ram_badge ' + event.badge_class" t-esc="event.badge"/>
-                                    <small>
-                                        <t t-esc="event.fecha"/> · <t t-esc="event.responsable"/>
-                                    </small>
-                                </div>
-
-                                <p t-esc="event.detalle"/>
-                            </div>
+                        <div class="o_ram_card_label">
+                            <span>↧</span>
+                            Entradas este mes
                         </div>
-                    </t>
-
-                    <div t-else="" class="o_ram_empty">
-                        Todavía no hay movimientos registrados para este mes. Cuando valides recepciones o entregas, aparecerán aquí automáticamente.
+                        <strong class="o_ram_green" t-esc="state.kpis.entradas"/>
                     </div>
+
+                    <div class="o_ram_card">
+                        <div class="o_ram_card_label">
+                            <span>↥</span>
+                            Salidas este mes
+                        </div>
+                        <strong class="o_ram_red" t-esc="state.kpis.salidas"/>
+                    </div>
+
+                    <div class="o_ram_card">
+                        <div class="o_ram_card_label">
+                            <span>⚙</span>
+                            Ajustes realizados
+                        </div>
+                        <strong class="o_ram_blue" t-esc="state.kpis.ajustes"/>
+                    </div>
+
+                    <div class="o_ram_card">
+                        <div class="o_ram_card_label">
+                            <span>⚖</span>
+                            Balance neto
+                        </div>
+                        <strong t-esc="state.kpis.balance"/>
+                    </div>
+                </div>
+
+                <!-- TABLA MODERNA -->
+                <div class="o_ram_table_card">
+                    <table class="o_ram_table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Motivo</th>
+                                <th>Grado</th>
+                                <th>Cant.</th>
+                                <th>Unidad</th>
+                                <th>Destino</th>
+                                <th>Responsable</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-if="state.events.length">
+                                <tr t-foreach="state.events" t-as="event" t-key="event.id">
+                                    <td class="o_ram_fecha">
+                                        <div t-esc="event.fecha"/>
+                                        <small t-esc="event.hora"/>
+                                    </td>
+
+                                    <td>
+                                        <span t-att-class="'o_ram_tipo_badge o_ram_tipo_' + event.tipo_class">
+                                            <t t-esc="event.tipo_icon"/>
+                                            <t t-esc="event.tipo_label"/>
+                                        </span>
+                                    </td>
+
+                                    <td class="o_ram_motivo" t-att-title="event.motivo">
+                                        <t t-esc="event.motivo"/>
+                                    </td>
+
+                                    <td>
+                                        <span class="o_ram_grado_badge" t-esc="event.grado_label"/>
+                                    </td>
+
+                                    <td class="o_ram_cantidad" t-esc="event.cantidad"/>
+                                    <td class="o_ram_unidad" t-esc="event.unidad"/>
+
+                                    <td class="o_ram_destino" t-att-title="event.destino">
+                                        <i class="fa fa-home"/>
+                                        <span t-esc="event.destino"/>
+                                    </td>
+
+                                    <td class="o_ram_responsable" t-att-title="event.responsable">
+                                        <span class="o_ram_avatar" t-esc="event.responsable_iniciales"/>
+                                        <span class="o_ram_responsable_text" t-esc="event.responsable"/>
+                                    </td>
+                                </tr>
+                            </t>
+
+                            <tr t-else="">
+                                <td colspan="8" class="o_ram_empty">
+                                    Todavía no hay movimientos registrados para este mes.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
             </div>
