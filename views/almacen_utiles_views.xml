@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
+    <!-- Vista técnica de movimientos, no se mostrará como menú separado -->
     <record id="view_almacen_utiles_movimiento_list" model="ir.ui.view">
         <field name="name">almacen.utiles.movimiento.list</field>
         <field name="model">almacen.utiles.movimiento</field>
         <field name="arch" type="xml">
-            <list string="Historial de movimientos" create="0" edit="0" delete="0">
+            <list string="Movimientos de almacén">
                 <field name="fecha"/>
                 <field name="anio_escolar_id"/>
                 <field name="tipo_movimiento"/>
@@ -24,19 +25,28 @@
         </field>
     </record>
 
+    <!-- Acción del dashboard de recepción -->
     <record id="action_recepcion_utiles_almacen_dashboard" model="ir.actions.client">
         <field name="name">↧ Recepción</field>
         <field name="tag">gestion_utiles_escolares.recepcion_almacen_dashboard</field>
     </record>
 
-    <menuitem id="menu_almacen_utiles_root" name="📦 Almacén de útiles" parent="stock.menu_stock_root" sequence="95"/>
+    <!-- Menú principal de almacén -->
+    <menuitem id="menu_almacen_utiles_root"
+              name="📦 Almacén de útiles"
+              parent="stock.menu_stock_root"
+              sequence="95"/>
 
-    <menuitem id="menu_recepcion_almacen_utiles" name=" Recepción" parent="menu_almacen_utiles_root" action="action_recepcion_utiles_almacen_dashboard" sequence="10"/>
+    <!-- Menú recepción -->
+    <menuitem id="menu_recepcion_almacen_utiles"
+              name="↧  Recepción"
+              parent="menu_almacen_utiles_root"
+              action="action_recepcion_utiles_almacen_dashboard"
+              sequence="10"/>
 
-    <menuitem id="menu_almacen_utiles_movimiento"
-            name="⧗ Historial de movimientos"
-            parent="menu_almacen_utiles_root"
-            action="action_almacen_utiles_movimiento"
-            sequence="30"/>
+    <!-- Ocultar historial dentro de Almacén para no duplicar el de Reportes -->
+    <record id="menu_almacen_utiles_movimiento" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
 
 </odoo>
