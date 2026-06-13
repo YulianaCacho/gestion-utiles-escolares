@@ -478,14 +478,17 @@ class RecepcionUtilesEscolar(models.Model):
 
                 valores_movimiento = {
                     "tipo_movimiento": "entrada",
+                    "motivo_movimiento": "entrada_padres",
                     "recepcion_id": rec.id,
+                    "anio_escolar_id": rec.anio_escolar_id.id if rec.anio_escolar_id else False,
+                    "grado_escolar": rec.grado_escolar,
                     "product_id": linea.product_id.id,
                     "cantidad": cantidad_a_enviar,
                     "unidad_id": linea.unidad_id.id if linea.unidad_id else False,
                     "categoria_id": linea.categoria_id.id if linea.categoria_id else False,
                     "responsable_id": self.env.user.id,
-                    "destino": "Almacén general",
-                    "observacion": f"Producto enviado a almacén desde la recepción {rec.name}",
+                    "destino": "Almacén del grado",
+                    "observacion": f"Ingreso por padres de familia desde la recepción {rec.name}",
                 }
 
                 if "recepcion_linea_id" in Movimiento._fields:
