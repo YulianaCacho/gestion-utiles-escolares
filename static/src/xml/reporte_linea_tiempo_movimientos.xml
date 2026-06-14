@@ -4,20 +4,21 @@
     <t t-name="gestion_utiles_escolares.ReporteLineaTiempoMovimientos">
         <div class="o_ltm_page o_reporte_utiles_scroll">
 
+            <!-- BUSCADOR Y FILTROS PRINCIPALES -->
             <div class="o_ltm_toolbar">
                 <div class="o_ltm_search">
                     <i class="fa fa-search"/>
                     <input type="text"
-                            placeholder="Buscar producto, responsable..."
-                            t-att-value="state.search"
-                            t-on-input="onInputSearch"/>
+                           placeholder="Buscar producto, responsable..."
+                           t-att-value="state.search"
+                           t-on-input="onInputSearch"/>
                 </div>
 
                 <div class="o_ltm_month">
                     <i class="fa fa-calendar"/>
                     <input type="month"
-                            t-att-value="state.selectedMonth"
-                            t-on-change="onChangeMonth"/>
+                           t-att-value="state.selectedMonth"
+                           t-on-change="onChangeMonth"/>
                 </div>
 
                 <div class="o_ltm_type">
@@ -36,6 +37,83 @@
                 </button>
             </div>
 
+            <!-- FILTROS SECUNDARIOS -->
+            <div class="o_ltm_filter_row">
+                <div class="o_ltm_filter_box">
+                    <i class="fa fa-calendar"/>
+                    <span t-esc="state.monthLabel"/>
+                </div>
+
+                <div class="o_ltm_filter_box">
+                    <i class="fa fa-filter"/>
+                    <select t-on-change="onChangeGrado">
+                        <option value="">Por grado</option>
+                        <t t-foreach="state.grados" t-as="grado" t-key="grado.value">
+                            <option t-att-value="grado.value"
+                                    t-att-selected="state.gradoSeleccionado === grado.value ? true : undefined">
+                                <t t-esc="grado.label"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <div class="o_ltm_filter_box">
+                    <i class="fa fa-user-o"/>
+                    <select t-on-change="onChangeResponsable">
+                        <option value="">Por responsable</option>
+                        <t t-foreach="state.responsables" t-as="responsable" t-key="responsable.id">
+                            <option t-att-value="responsable.id"
+                                    t-att-selected="state.responsableSeleccionado == responsable.id ? true : undefined">
+                                <t t-esc="responsable.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <div class="o_ltm_filter_spacer"></div>
+
+                <button type="button" class="o_ltm_export_pdf" t-on-click="exportPdf">
+                    <i class="fa fa-download"/>
+                    Exportar PDF
+                </button>
+            </div>
+
+            <!-- TARJETAS DE RESUMEN -->
+            <div class="o_ltm_kpis">
+                <div class="o_ltm_kpi_card">
+                    <div class="o_ltm_kpi_label">
+                        <span>↧</span>
+                        Entradas este mes
+                    </div>
+                    <strong class="o_ltm_green" t-esc="state.kpis.entradas"/>
+                </div>
+
+                <div class="o_ltm_kpi_card">
+                    <div class="o_ltm_kpi_label">
+                        <span>↥</span>
+                        Salidas este mes
+                    </div>
+                    <strong class="o_ltm_red" t-esc="state.kpis.salidas"/>
+                </div>
+
+                <div class="o_ltm_kpi_card">
+                    <div class="o_ltm_kpi_label">
+                        <span>⚙</span>
+                        Ajustes realizados
+                    </div>
+                    <strong class="o_ltm_blue" t-esc="state.kpis.ajustes"/>
+                </div>
+
+                <div class="o_ltm_kpi_card">
+                    <div class="o_ltm_kpi_label">
+                        <span>⚖</span>
+                        Balance neto
+                    </div>
+                    <strong t-esc="state.kpis.balance"/>
+                </div>
+            </div>
+
+            <!-- CABECERA DE TABLA -->
             <div class="o_ltm_header">
                 <h2>Todos los movimientos</h2>
                 <span>
@@ -72,6 +150,7 @@
                 </button>
             </div>
 
+            <!-- TABLA -->
             <table class="o_ltm_table">
                 <thead>
                     <tr>

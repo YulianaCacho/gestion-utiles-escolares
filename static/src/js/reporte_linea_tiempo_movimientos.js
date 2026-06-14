@@ -20,8 +20,18 @@ class ReporteLineaTiempoMovimientos extends Component {
             monthLabel: "",
             search: "",
             tipoSeleccionado: "",
+            gradoSeleccionado: "",
+            responsableSeleccionado: "",
             total: 0,
             rows: [],
+            grados: [],
+            responsables: [],
+            kpis: {
+                entradas: "0",
+                salidas: "0",
+                ajustes: 0,
+                balance: "0",
+            },
             anioEscolarId: false,
         });
 
@@ -57,6 +67,8 @@ class ReporteLineaTiempoMovimientos extends Component {
                 year: year,
                 tipo: this.state.tipoSeleccionado || false,
                 search: this.state.search || false,
+                grado: this.state.gradoSeleccionado || false,
+                responsable_id: this.state.responsableSeleccionado || false,
                 anio_escolar_id: this.state.anioEscolarId || false,
             }
         );
@@ -64,6 +76,14 @@ class ReporteLineaTiempoMovimientos extends Component {
         this.state.monthLabel = data.month_label || "";
         this.state.total = data.total || 0;
         this.state.rows = data.rows || [];
+        this.state.kpis = data.kpis || {
+            entradas: "0",
+            salidas: "0",
+            ajustes: 0,
+            balance: "0",
+        };
+        this.state.grados = data.grados || [];
+        this.state.responsables = data.responsables || [];
     }
 
     async onChangeMonth(ev) {
@@ -73,6 +93,16 @@ class ReporteLineaTiempoMovimientos extends Component {
 
     async onChangeTipo(ev) {
         this.state.tipoSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeGrado(ev) {
+        this.state.gradoSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeResponsable(ev) {
+        this.state.responsableSeleccionado = ev.target.value;
         await this.loadData();
     }
 

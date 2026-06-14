@@ -384,6 +384,8 @@ class AlmacenUtilesMovimiento(models.Model):
         year=False,
         tipo=False,
         search=False,
+        grado=False,
+        responsable_id=False,
         anio_escolar_id=False
     ):
         today = fields.Date.context_today(self)
@@ -403,6 +405,12 @@ class AlmacenUtilesMovimiento(models.Model):
         if tipo:
             domain.append(("tipo_movimiento", "=", tipo))
 
+        if grado:
+            domain.append(("grado_escolar", "=", grado))
+
+        if responsable_id:
+            domain.append(("responsable_id", "=", int(responsable_id)))
+
         movimientos = self.search(domain, order="fecha desc, id desc")
 
         if search:
@@ -415,6 +423,22 @@ class AlmacenUtilesMovimiento(models.Model):
                     or texto in (m.destino or "").lower()
                     or texto in (m.estudiante_id.name or "").lower()
             )
+
+        entradas = sum(
+            movimientos.filtered(
+                lambda m: m.tipo_movimiento == "entrada"
+            ).mapped("cantidad")
+        )
+
+        salidas = sum(
+            movimientos.filtered(
+                lambda m: m.tipo_movimiento == "salida"
+            ).mapped("cantidad")
+        )
+
+        ajustes = movimientos.filtered(lambda m: m.tipo_movimiento == "ajuste")
+        ajuste_neto = sum(ajustes.mapped("cantidad"))
+        balance = entradas - salidas + ajuste_neto
 
         meses = [
             "",
@@ -444,6 +468,25 @@ class AlmacenUtilesMovimiento(models.Model):
 
             local = fields.Datetime.context_timestamp(self, fecha)
             return local.strftime("%d/%m/%Y"), local.strftime("%H:%M")
+
+        def motivo_label(mov):
+            if "motivo_movimiento" in self._fields:
+                selection = dict(self._fields["motivo_movimiento"].selection)
+                motivo = selection.get(mov.motivo_movimiento)
+                if motivo:
+                    return motivo
+
+            if mov.tipo_movimiento == "entrada" and mov.recepcion_id:
+                estudiante = mov.estudiante_id.name or "Estudiante"
+                return f"Recep. matrícula — {estudiante}"
+
+            if mov.tipo_movimiento == "salida":
+                return mov.destino or mov.observacion or "Entrega docente"
+
+            if mov.tipo_movimiento == "ajuste":
+                return mov.observacion or "Ajuste inventario físico"
+
+            return mov.observacion or "Movimiento registrado"
 
         rows = []
 
@@ -475,16 +518,6 @@ class AlmacenUtilesMovimiento(models.Model):
             else:
                 cantidad_text = "0"
 
-            motivo = mov.observacion or ""
-
-            if mov.tipo_movimiento == "entrada" and mov.recepcion_id:
-                estudiante = mov.estudiante_id.name or "Estudiante"
-                motivo = f"Recep. matrícula — {estudiante}"
-            elif mov.tipo_movimiento == "salida":
-                motivo = mov.destino or mov.observacion or "Entrega docente"
-            elif mov.tipo_movimiento == "ajuste":
-                motivo = mov.observacion or "Ajuste inventario físico"
-
             rows.append({
                 "id": mov.id,
                 "fecha": fecha_txt,
@@ -496,12 +529,38 @@ class AlmacenUtilesMovimiento(models.Model):
                 "cantidad_class": cantidad_class,
                 "responsable": mov.responsable_id.name or "",
                 "responsable_iniciales": iniciales(mov.responsable_id.name),
-                "motivo": motivo,
+                "motivo": motivo_label(mov),
             })
+
+        grados = []
+        grado_info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
+        for value, label in grado_info.get("selection", []):
+            grados.append({
+                "value": value,
+                "label": label,
+            })
+
+        responsables = []
+        responsables_domain = self._build_domain_periodo(start, end, anio_escolar_id)
+
+        for user in self.search(responsables_domain).mapped("responsable_id"):
+            if user:
+                responsables.append({
+                    "id": user.id,
+                    "name": user.name,
+                })
 
         return {
             "month_label": f"{meses[month]} {year}",
             "month_short": f"{meses[month]} {year}",
             "total": len(rows),
             "rows": rows,
+            "grados": grados,
+            "responsables": responsables,
+            "kpis": {
+                "entradas": self._fmt_qty(entradas),
+                "salidas": self._fmt_qty(salidas),
+                "ajustes": len(ajustes),
+                "balance": self._fmt_qty(balance),
+            },
         }
