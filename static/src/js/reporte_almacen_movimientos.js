@@ -25,11 +25,12 @@ class ReporteAlmacenMovimientos extends Component {
                 ajustes: 0,
                 balance: "0",
             },
-            events: [],
             grados: [],
             responsables: [],
+            productos: [],
             gradoSeleccionado: "",
             responsableSeleccionado: "",
+            productoSeleccionado: "",
             anioEscolarId: false,
         });
 
@@ -67,6 +68,7 @@ class ReporteAlmacenMovimientos extends Component {
                 year: year,
                 grado: this.state.gradoSeleccionado || false,
                 responsable_id: this.state.responsableSeleccionado || false,
+                product_id: this.state.productoSeleccionado || false,
                 anio_escolar_id: this.state.anioEscolarId || false,
             }
         );
@@ -77,6 +79,7 @@ class ReporteAlmacenMovimientos extends Component {
         this.state.events = data.events;
         this.state.grados = data.grados || [];
         this.state.responsables = data.responsables || [];
+        this.state.productos = data.productos || [];
         this.state.loading = false;
     }
 
@@ -92,6 +95,11 @@ class ReporteAlmacenMovimientos extends Component {
 
     async onChangeResponsable(ev) {
         this.state.responsableSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeProducto(ev) {
+        this.state.productoSeleccionado = ev.target.value;
         await this.loadData();
     }
 

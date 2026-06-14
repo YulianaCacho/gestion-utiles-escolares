@@ -17,6 +17,7 @@
                        string="Miss / docente que recibe"
                        widget="many2one_avatar"/>
                 <field name="grado_escolar"/>
+                <field name="motivo_salida"/>
                 <field name="total_productos"/>
                 <field name="total_cantidad"/>
                 <field name="estado"
@@ -63,6 +64,7 @@
                         <group>
                             <field name="miss_id"/>
                             <field name="grado_escolar"/>
+                            <field name="motivo_salida"/>
                             <field name="total_productos"/>
                             <field name="total_cantidad"/>
                         </group>
@@ -100,6 +102,7 @@
                 <field name="responsable_id"/>
                 <field name="miss_id"/>
                 <field name="grado_escolar"/>
+                <field name="motivo_salida"/>
                 <field name="estado"/>
 
                 <filter name="filtro_borrador"
@@ -111,6 +114,14 @@
                         domain="[('estado','=','validado')]"/>
 
                 <separator/>
+
+                <filter name="filtro_salida_uso"
+                        string="Uso"
+                        domain="[('motivo_salida','=','salida_uso')]"/>
+
+                <filter name="filtro_salida_traslado"
+                        string="Traslado"
+                        domain="[('motivo_salida','=','salida_traslado_seccion')]"/>
 
                 <filter name="grupo_grado"
                         string="Agrupar por grado"

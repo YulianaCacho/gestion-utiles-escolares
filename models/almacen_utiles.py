@@ -208,6 +208,7 @@ class AlmacenUtilesMovimiento(models.Model):
         year=None,
         grado=False,
         responsable_id=False,
+        product_id=False,
         anio_escolar_id=False
     ):
         today = fields.Date.context_today(self)
@@ -229,6 +230,9 @@ class AlmacenUtilesMovimiento(models.Model):
 
         if responsable_id:
             domain.append(("responsable_id", "=", int(responsable_id)))
+
+        if product_id:
+            domain.append(("product_id", "=", int(product_id)))
 
         movimientos = self.search(domain, order="fecha desc, id desc")
 
@@ -330,6 +334,7 @@ class AlmacenUtilesMovimiento(models.Model):
                 "tipo_class": tipo_class,
                 "tipo_icon": tipo_icon,
                 "motivo": motivo_label(mov),
+                "producto": mov.product_id.display_name or "",
                 "grado_label": self._grado_label(grado_value),
                 "cantidad": f"{abs(cantidad):.2f}",
                 "unidad": mov.unidad_id.name or mov.product_id.uom_id.name or "",
@@ -362,6 +367,21 @@ class AlmacenUtilesMovimiento(models.Model):
                     "id": user.id,
                     "name": user.name,
                 })
+                
+        productos = []
+
+        productos_domain = self._build_domain_periodo(
+            start,
+            end,
+            anio_escolar_id
+        )
+
+        for product in self.search(productos_domain).mapped("product_id"):
+            if product:
+                productos.append({
+                    "id": product.id,
+                    "name": product.display_name,
+                })
 
         return {
             "month_label": f"{meses[month]} {year}",
@@ -375,6 +395,7 @@ class AlmacenUtilesMovimiento(models.Model):
             "events": eventos[:80],
             "grados": grados,
             "responsables": responsables,
+            "productos": productos,
         }
 
     @api.model
@@ -386,6 +407,7 @@ class AlmacenUtilesMovimiento(models.Model):
         search=False,
         grado=False,
         responsable_id=False,
+        product_id=False,
         anio_escolar_id=False
     ):
         today = fields.Date.context_today(self)
@@ -410,6 +432,9 @@ class AlmacenUtilesMovimiento(models.Model):
 
         if responsable_id:
             domain.append(("responsable_id", "=", int(responsable_id)))
+
+        if product_id:
+            domain.append(("product_id", "=", int(product_id)))
 
         movimientos = self.search(domain, order="fecha desc, id desc")
 

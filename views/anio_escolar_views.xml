@@ -51,10 +51,10 @@
 
                     <button name="action_generar_sobrantes_desde_anio_anterior"
                             type="object"
-                            string="Generar sobrantes del año anterior"
+                            string="Cerrar año anterior y trasladar sobrantes"
                             class="btn-secondary"
                             invisible="not id"
-                            confirm="Se calcularán los sobrantes del año anterior para usarlos en este año escolar. ¿Deseas continuar?"/>
+                            confirm="Se registrará una salida de fin de año en el año anterior y un nuevo ingreso en este año escolar. No se duplicarán productos, solo movimientos. ¿Deseas continuar?"/>
 
                     <button name="action_pasar_a_borrador_prueba"
                             type="object"

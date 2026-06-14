@@ -36,13 +36,26 @@
                         </select>
                     </div>
 
+                    <div class="o_ram_select_box">
+                        <i class="fa fa-cube"/>
+                        <select t-on-change="onChangeProducto">
+                            <option value="">Por producto</option>
+                            <t t-foreach="state.productos" t-as="producto" t-key="producto.id">
+                                <option t-att-value="producto.id"
+                                        t-att-selected="state.productoSeleccionado == producto.id ? true : undefined">
+                                    <t t-esc="producto.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
                     <div class="o_ram_spacer"></div>
 
                     <button type="button" class="o_ram_btn o_ram_btn_pdf" t-on-click="exportPdf">
                         <i class="fa fa-download"/>
                         Exportar PDF
                     </button>
-                </div>´
+                </div>
 
                                 <!-- BLOQUE RESUMEN SUPERIOR -->
                 <div class="o_ram_resumen_superior">
@@ -150,6 +163,7 @@
                                 <th>Fecha</th>
                                 <th>Tipo</th>
                                 <th>Motivo</th>
+                                <th>Producto</th>
                                 <th>Grado</th>
                                 <th>Cant.</th>
                                 <th>Unidad</th>
@@ -177,6 +191,10 @@
                                         <t t-esc="event.motivo"/>
                                     </td>
 
+                                    <td class="o_ram_producto" t-att-title="event.producto">
+                                        <t t-esc="event.producto"/>
+                                    </td>
+
                                     <td>
                                         <span class="o_ram_grado_badge" t-esc="event.grado_label"/>
                                     </td>
@@ -197,7 +215,7 @@
                             </t>
 
                             <tr t-else="">
-                                <td colspan="8" class="o_ram_empty">
+                                <td colspan="9" class="o_ram_empty">
                                     Todavía no hay movimientos registrados para este mes.
                                 </td>
                             </tr>

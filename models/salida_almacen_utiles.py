@@ -44,6 +44,18 @@ class SalidaAlmacenUtiles(models.Model):
         ("5to_grado", "5to grado"),
         ("6to_grado", "6to grado"),
     ], string="Grado escolar", required=True)
+    
+    motivo_salida = fields.Selection(
+        [
+            ("salida_uso", "Uso en aula"),
+            ("salida_traslado_seccion", "Traslado a otra sección"),
+            ("salida_entrega_estudiante", "Entrega a estudiante"),
+            ("salida_otro", "Otro motivo"),
+        ],
+        string="Motivo de salida",
+        default="salida_uso",
+        required=True
+    )
 
     linea_ids = fields.One2many(
         "salida.almacen.utiles.linea",
@@ -91,15 +103,52 @@ class SalidaAlmacenUtiles(models.Model):
         return super().create(vals_list)
 
     def _stock_disponible_producto(self, product_id):
-        movimientos = self.env["almacen.utiles.movimiento"].search([
-            ("product_id", "=", product_id.id)
-        ])
+        self.ensure_one()
+
+        domain = [
+            ("product_id", "=", product_id.id),
+        ]
+
+        if "anio_escolar_id" in self._fields and self.anio_escolar_id:
+            domain.append(("anio_escolar_id", "=", self.anio_escolar_id.id))
+
+        if self.grado_escolar:
+            domain.append(("grado_escolar", "=", self.grado_escolar))
+
+        movimientos = self.env["almacen.utiles.movimiento"].search(domain)
 
         entradas = sum(movimientos.filtered(lambda m: m.tipo_movimiento == "entrada").mapped("cantidad"))
         salidas = sum(movimientos.filtered(lambda m: m.tipo_movimiento == "salida").mapped("cantidad"))
+        ajustes = sum(movimientos.filtered(lambda m: m.tipo_movimiento == "ajuste").mapped("cantidad"))
 
-        return entradas - salidas
+        return entradas - salidas + ajustes
+    
+    def _descontar_sobrante_si_aplica(self, product_id, cantidad):
+        self.ensure_one()
 
+        if not product_id or cantidad <= 0 or "anio_escolar_id" not in self._fields or not self.anio_escolar_id:
+            return
+
+        domain = [
+            ("anio_destino_id", "=", self.anio_escolar_id.id),
+            ("product_id", "=", product_id.id),
+            ("cantidad_disponible", ">", 0),
+        ]
+
+        if self.grado_escolar:
+            domain.append(("grado_escolar", "=", self.grado_escolar))
+
+        sobrantes = self.env["sobrante.utiles.anio"].search(domain, order="id asc")
+        pendiente = float(cantidad or 0)
+
+        for sobrante in sobrantes:
+            if pendiente <= 0:
+                break
+
+            usar = min(pendiente, sobrante.cantidad_disponible)
+            sobrante.cantidad_usada += usar
+            pendiente -= usar
+    
     def action_validar_salida(self):
         for rec in self:
             if rec.estado == "validado":
@@ -108,6 +157,11 @@ class SalidaAlmacenUtiles(models.Model):
             if not rec.linea_ids:
                 raise UserError("Debes agregar al menos un producto para registrar la entrega.")
 
+            motivo_texto = dict(rec._fields["motivo_salida"].selection).get(
+                rec.motivo_salida,
+                rec.motivo_salida
+            )
+                    
             for linea in rec.linea_ids:
                 if linea.cantidad <= 0:
                     raise ValidationError("La cantidad entregada debe ser mayor a 0.")
@@ -128,17 +182,23 @@ class SalidaAlmacenUtiles(models.Model):
             for linea in rec.linea_ids:
                 self.env["almacen.utiles.movimiento"].create({
                     "tipo_movimiento": "salida",
+                    "motivo_movimiento": rec.motivo_salida,
                     "salida_almacen_id": rec.id,
+                    "anio_escolar_id": rec.anio_escolar_id.id if "anio_escolar_id" in rec._fields and rec.anio_escolar_id else False,
+                    "grado_escolar": rec.grado_escolar,
                     "product_id": linea.product_id.id,
                     "cantidad": linea.cantidad,
                     "unidad_id": linea.unidad_id.id if linea.unidad_id else False,
                     "categoria_id": linea.categoria_id.id if linea.categoria_id else False,
                     "responsable_id": self.env.user.id,
                     "destino": f"{rec.miss_id.name} - {grado_texto}",
-                    "observacion": f"Entrega registrada en {rec.name}. Entrega: {rec.responsable_id.name}. Recibe: {rec.miss_id.name}.",
+                    "observacion": (
+                        f"{motivo_texto}. Entrega registrada en {rec.name}. "
+                        f"Entrega: {rec.responsable_id.name}. Recibe: {rec.miss_id.name}."
+                    ),
                 })
 
-            rec.estado = "validado"
+                rec._descontar_sobrante_si_aplica(linea.product_id, linea.cantidad)
 
 
 class SalidaAlmacenUtilesLinea(models.Model):

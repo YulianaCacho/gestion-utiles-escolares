@@ -8,6 +8,7 @@
             <list string="Sobrantes del año anterior">
                 <field name="anio_origen_id"/>
                 <field name="anio_destino_id"/>
+                <field name="grado_escolar"/>
                 <field name="product_id"/>
                 <field name="cantidad_inicial"/>
                 <field name="cantidad_usada"/>
@@ -28,6 +29,7 @@
                         <group>
                             <field name="anio_origen_id"/>
                             <field name="anio_destino_id"/>
+                            <field name="grado_escolar"/>
                             <field name="product_id"/>
                             <field name="uom_id"/>
                         </group>

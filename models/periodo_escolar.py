@@ -745,7 +745,10 @@ class SalidaAlmacenUtiles(models.Model):
 
         if self.anio_escolar_id:
             domain.append(("anio_escolar_id", "=", self.anio_escolar_id.id))
-
+        
+        if self.grado_escolar:
+            domain.append(("grado_escolar", "=", self.grado_escolar))
+        
         movimientos = self.env["almacen.utiles.movimiento"].search(domain)
 
         entradas = sum(movimientos.filtered(lambda m: m.tipo_movimiento == "entrada").mapped("cantidad"))

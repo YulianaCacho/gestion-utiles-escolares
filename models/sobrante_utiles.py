@@ -26,6 +26,23 @@ class SobranteUtilesAnio(models.Model):
         required=True,
         readonly=True
     )
+    
+    grado_escolar = fields.Selection(
+        [
+            ("inicial_3", "Inicial 3 años"),
+            ("inicial_4", "Inicial 4 años"),
+            ("inicial_5", "Inicial 5 años"),
+            ("1er_grado", "1er grado"),
+            ("2do_grado", "2do grado"),
+            ("3er_grado", "3er grado"),
+            ("4to_grado", "4to grado"),
+            ("5to_grado", "5to grado"),
+            ("6to_grado", "6to grado"),
+        ],
+        string="Grado / sección",
+        readonly=True,
+        index=True
+    )
 
     product_id = fields.Many2one(
         "product.product",
@@ -244,111 +261,143 @@ class AnioEscolarSobrantes(models.Model):
 
     def action_generar_sobrantes_desde_anio_anterior(self):
         Movimiento = self.env["almacen.utiles.movimiento"]
-        Sobrante = self.env["sobrante.utiles.anio"].with_context(default_estado=False)
+        Sobrante = self.env["sobrante.utiles.anio"]
         Producto = self.env["product.product"]
         Quant = self.env["stock.quant"].sudo()
 
         total_creados = 0
         total_actualizados = 0
+        total_salidas = 0
+        total_entradas = 0
 
         for rec in self:
             if not rec.anio_anterior_id:
                 raise UserError("Primero debes seleccionar el año anterior.")
 
-            sobrantes_calculados = {}
+            saldos = {}
 
-            # 1. Intentar calcular desde movimientos escolares del año anterior
             movimientos_anio_anterior = Movimiento.search([
                 ("anio_escolar_id", "=", rec.anio_anterior_id.id),
                 ("product_id", "!=", False),
+                ("motivo_movimiento", "not in", ["salida_fin_anio", "entrada_traslado_anio"]),
             ])
 
-            productos_mov = movimientos_anio_anterior.mapped("product_id")
+            for mov in movimientos_anio_anterior:
+                key = (mov.product_id.id, mov.grado_escolar or False)
+                saldos.setdefault(key, 0.0)
 
-            for producto in productos_mov:
-                movimientos_producto = movimientos_anio_anterior.filtered(
-                    lambda m: m.product_id.id == producto.id
+                if mov.tipo_movimiento == "entrada":
+                    saldos[key] += mov.cantidad or 0
+                elif mov.tipo_movimiento == "salida":
+                    saldos[key] -= mov.cantidad or 0
+                elif mov.tipo_movimiento == "ajuste":
+                    saldos[key] += mov.cantidad or 0
+
+            if not saldos:
+                grupos = Quant.read_group(
+                    domain=[
+                        ("location_id.usage", "=", "internal"),
+                        ("product_id", "!=", False),
+                        ("quantity", ">", 0),
+                    ],
+                    fields=["product_id", "quantity:sum"],
+                    groupby=["product_id"],
                 )
 
-                entradas = sum(
-                    movimientos_producto.filtered(
-                        lambda m: m.tipo_movimiento == "entrada"
-                    ).mapped("cantidad")
-                )
-
-                salidas = sum(
-                    movimientos_producto.filtered(
-                        lambda m: m.tipo_movimiento == "salida"
-                    ).mapped("cantidad")
-                )
-
-                ajustes = sum(
-                    movimientos_producto.filtered(
-                        lambda m: m.tipo_movimiento == "ajuste"
-                    ).mapped("cantidad")
-                )
-
-                cantidad_sobrante = entradas - salidas + ajustes
-
-                if cantidad_sobrante > 0:
-                    sobrantes_calculados[producto.id] = cantidad_sobrante
-
-                # 2. Si no hay movimientos positivos, usar stock interno real de Odoo
-                if not sobrantes_calculados:
-                    grupos = Quant.read_group(
-                        domain=[
-                            ("location_id.usage", "=", "internal"),
-                            ("product_id", "!=", False),
-                            ("quantity", ">", 0),
-                        ],
-                        fields=["product_id", "quantity:sum"],
-                        groupby=["product_id"],
-                    )
-
-                    for grupo in grupos:
-                        product_data = grupo.get("product_id")
-                        cantidad = grupo.get("quantity", 0)
-
+                for grupo in grupos:
+                    product_data = grupo.get("product_id")
+                    cantidad = grupo.get("quantity", 0)
                     if product_data and cantidad > 0:
-                        producto_id = product_data[0]
-                        sobrantes_calculados[producto_id] = cantidad
+                        saldos[(product_data[0], False)] = cantidad
 
-                # 3. Crear o actualizar sobrantes
-                for producto_id, cantidad_sobrante in sobrantes_calculados.items():
-                    producto = Producto.browse(producto_id)
+            for (producto_id, grado), cantidad_sobrante in saldos.items():
+                cantidad_sobrante = float(cantidad_sobrante or 0)
 
-                    sobrante_existente = Sobrante.search([
-                        ("anio_origen_id", "=", rec.anio_anterior_id.id),
-                        ("anio_destino_id", "=", rec.id),
-                        ("product_id", "=", producto.id),
-                    ], limit=1)
+                if cantidad_sobrante <= 0:
+                    continue
 
-                    if sobrante_existente:
-                        sobrante_existente.write({
-                            "cantidad_inicial": cantidad_sobrante,
-                        })
-                        total_actualizados += 1
-                    else:
-                        Sobrante.with_context(default_estado=False).create({
-                            "anio_origen_id": rec.anio_anterior_id.id,
-                            "anio_destino_id": rec.id,
-                            "product_id": producto.id,
-                            "cantidad_inicial": cantidad_sobrante,
-                            "cantidad_usada": 0,
-                            "observacion": "Sobrante generado desde stock interno disponible del año anterior.",
-                        })
-                        total_creados += 1
+                producto = Producto.browse(producto_id)
 
-            return {
-                "type": "ir.actions.client",
-                "tag": "display_notification",
-                "params": {
-                    "title": "Sobrantes generados",
-                    "message": (
-                        f"Sobrantes creados: {total_creados}. "
-                        f"Sobrantes actualizados: {total_actualizados}."
+                sobrante_existente = Sobrante.search([
+                    ("anio_origen_id", "=", rec.anio_anterior_id.id),
+                    ("anio_destino_id", "=", rec.id),
+                    ("product_id", "=", producto.id),
+                    ("grado_escolar", "=", grado),
+                ], limit=1)
+
+                valores_sobrante = {
+                    "anio_origen_id": rec.anio_anterior_id.id,
+                    "anio_destino_id": rec.id,
+                    "grado_escolar": grado,
+                    "product_id": producto.id,
+                    "cantidad_inicial": cantidad_sobrante,
+                    "cantidad_usada": 0,
+                    "observacion": (
+                        "Sobrante trasladado mediante salida de fin de año "
+                        "y nuevo ingreso al siguiente periodo."
                     ),
-                    "type": "success",
-                    "sticky": False,
+                }
+
+                if sobrante_existente:
+                    sobrante_existente.write({
+                        "cantidad_inicial": cantidad_sobrante,
+                        "observacion": valores_sobrante["observacion"],
+                    })
+                    total_actualizados += 1
+                else:
+                    Sobrante.create(valores_sobrante)
+                    total_creados += 1
+
+                base_mov = {
+                    "product_id": producto.id,
+                    "cantidad": cantidad_sobrante,
+                    "unidad_id": producto.uom_id.id if producto.uom_id else False,
+                    "categoria_id": producto.categ_id.id if producto.categ_id else False,
+                    "grado_escolar": grado,
+                    "responsable_id": self.env.user.id,
+                    "anio_origen_id": rec.anio_anterior_id.id,
+                    "anio_destino_id": rec.id,
+                }
+
+                Movimiento.create({
+                    **base_mov,
+                    "anio_escolar_id": rec.anio_anterior_id.id,
+                    "tipo_movimiento": "salida",
+                    "motivo_movimiento": "salida_fin_anio",
+                    "destino": rec.name,
+                    "observacion": (
+                        f"Cierre de {rec.anio_anterior_id.name}: sobrante trasladado a {rec.name}."
+                    ),
+                })
+                total_salidas += 1
+
+                Movimiento.create({
+                    **base_mov,
+                    "anio_escolar_id": rec.id,
+                    "tipo_movimiento": "entrada",
+                    "motivo_movimiento": "entrada_traslado_anio",
+                    "destino": "Almacén del nuevo periodo",
+                    "observacion": (
+                        f"Ingreso a {rec.name} desde sobrante de {rec.anio_anterior_id.name}."
+                    ),
+                })
+                total_entradas += 1
+
+            if rec.anio_anterior_id.estado != "cerrado":
+                rec.anio_anterior_id.estado = "cerrado"
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Sobrantes trasladados",
+                "message": (
+                    f"Sobrantes creados: {total_creados}. "
+                    f"Sobrantes actualizados: {total_actualizados}. "
+                    f"Salidas de fin de año: {total_salidas}. "
+                    f"Ingresos al nuevo periodo: {total_entradas}."
+                ),
+                "type": "success",
+                "sticky": False,
             }
-        }  
+        }
