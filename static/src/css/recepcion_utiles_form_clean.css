@@ -400,3 +400,16 @@ body:has(.o_recepcion_clean_form) {
     background: #9e9e9e;
     border-radius: 10px;
 }
+
+<!-- Cuadrados para compra directa / traslado interno / otro ingreso -->
+<div class="o_recepcion_cards_grid o_recepcion_cards_manual"
+     invisible="tipo_entrada == 'recepcion_utiles'">
+
+    <div class="o_recepcion_card">
+        <span class="o_form_label">TOTAL DE PRODUCTOS</span>
+        <field name="total_productos" readonly="1" nolabel="1"/>
+    </div>
+
+    <div class="o_recepcion_card">
+        <span class="o_form_label">ESTADO</span>
+        <field name="estado_visual" readonly="1" nolabel="1" widget="badge"/>
