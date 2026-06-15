@@ -369,7 +369,7 @@ body:has(.o_recepcion_clean_form) .o_recepcion_clean_form {
     justify-content: center !important;
     align-content: start !important;
     max-width: 500px !important;
-    margin: 125px auto 0 auto !important;
+    margin: 100px auto 0 auto !important;
 }
 
 /* Cards pequeñas */
