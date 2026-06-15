@@ -436,3 +436,39 @@ body:has(.o_recepcion_clean_form) {
     padding: 16px 18px !important;
     border-radius: 12px !important;
 }
+
+/* =====================================================
+   POSICIÓN FINAL DE CUADRADOS POR TIPO DE ENTRADA
+===================================================== */
+
+/* Regla base para ambos grupos */
+.o_recepcion_clean_form .o_recepcion_cards_grid.o_recepcion_cards_escolar,
+.o_recepcion_clean_form .o_recepcion_cards_grid.o_recepcion_cards_manual {
+    display: grid !important;
+    grid-template-columns: repeat(2, 230px) !important;
+    gap: 14px !important;
+    justify-content: center !important;
+    align-content: start !important;
+    max-width: 500px !important;
+}
+
+/* RECEPCIÓN DE ÚTILES ESCOLARES:
+   subir más los 6 cuadrados */
+.o_recepcion_clean_form .o_recepcion_cards_grid.o_recepcion_cards_escolar {
+    margin: -25px auto 0 auto !important;
+}
+
+/* COMPRA DIRECTA / TRASLADO INTERNO / OTRO:
+   bajar un poco los 2 cuadrados */
+.o_recepcion_clean_form .o_recepcion_cards_grid.o_recepcion_cards_manual {
+    margin: 120px auto 0 auto !important;
+}
+
+/* Tamaño uniforme de los cuadrados */
+.o_recepcion_clean_form .o_recepcion_card {
+    width: 230px !important;
+    min-height: 118px !important;
+    max-height: 125px !important;
+    padding: 16px 18px !important;
+    border-radius: 12px !important;
+}
