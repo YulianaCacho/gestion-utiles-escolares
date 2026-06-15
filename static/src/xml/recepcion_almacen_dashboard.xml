@@ -7,7 +7,7 @@
             <t t-if="state.modo === 'lista'">
 
                 <div class="o_rad_toolbar">
-                   <div class="o_rad_actions_left">
+                    <div class="o_rad_actions_left">
                         <button type="button" class="o_rad_btn" t-on-click="nuevaRecepcion">
                             <i class="fa fa-plus"/>
                              Nueva recepción
@@ -21,10 +21,7 @@
 
                     <div class="o_rad_search">
                         <i class="fa fa-search"/>
-                        <input type="text"
-                               placeholder="Buscar por alumno, grado..."
-                               t-att-value="state.search"
-                               t-on-input="onInputSearch"/>
+                        <input type="text" placeholder="Buscar por alumno, origen, grado..." t-att-value="state.search" t-on-input="onInputSearch"/>
                     </div>
 
                     <button type="button" class="o_rad_btn">
@@ -35,31 +32,25 @@
 
                 <div class="o_rad_list_header">
                     <h2>Recepciones</h2>
-                    <span><t t-esc="state.total"/> registros</span>
+                    <span>
+                        <t t-esc="state.total"/>
+ registros</span>
                 </div>
 
                 <div class="o_rad_chips">
-                    <button type="button"
-                            t-att-class="state.filtroEstado === 'todos' ? 'active' : ''"
-                            t-on-click="() => this.setFiltro('todos')">
+                    <button type="button" t-att-class="state.filtroEstado === 'todos' ? 'active' : ''" t-on-click="() => this.setFiltro('todos')">
                         Todos
                     </button>
 
-                    <button type="button"
-                            t-att-class="state.filtroEstado === 'listo' ? 'active' : ''"
-                            t-on-click="() => this.setFiltro('listo')">
+                    <button type="button" t-att-class="state.filtroEstado === 'listo' ? 'active' : ''" t-on-click="() => this.setFiltro('listo')">
                         Listo para almacén
                     </button>
 
-                    <button type="button"
-                            t-att-class="state.filtroEstado === 'incompleto' ? 'active' : ''"
-                            t-on-click="() => this.setFiltro('incompleto')">
+                    <button type="button" t-att-class="state.filtroEstado === 'incompleto' ? 'active' : ''" t-on-click="() => this.setFiltro('incompleto')">
                         En espera
                     </button>
 
-                    <button type="button"
-                            t-att-class="state.filtroEstado === 'pendiente' ? 'active' : ''"
-                            t-on-click="() => this.setFiltro('pendiente')">
+                    <button type="button" t-att-class="state.filtroEstado === 'pendiente' ? 'active' : ''" t-on-click="() => this.setFiltro('pendiente')">
                         Borrador
                     </button>
                 </div>
@@ -67,13 +58,13 @@
                 <table class="o_rad_table">
                     <thead>
                         <tr>
-                            <th>Alumno</th>
+                            <th>Origen / referencia</th>
                             <th>Grado / sección</th>
                             <th>Fecha</th>
                             <th>Recibido por</th>
                             <th>Ítems</th>
                             <th>Estado</th>
-                            <th>Acciones</th>  
+                            <th>Acciones</th>
                         </tr>
                     </thead>
 
@@ -81,11 +72,9 @@
                         <t t-if="state.rows.length">
                             <tr t-foreach="state.rows" t-as="row" t-key="row.id">
                                 <td>
-                                    <button type="button"
-                                            class="o_rad_student"
-                                            t-on-click="() => this.openDetalle(row.id)">
+                                    <button type="button" class="o_rad_student" t-on-click="() => this.openDetalle(row.id)">
                                         <span class="o_rad_avatar" t-esc="row.iniciales"/>
-                                        <strong t-esc="row.alumno"/>
+                                        <strong t-esc="row.referencia"/>
                                     </button>
                                 </td>
 
@@ -97,20 +86,16 @@
                                 </td>
 
                                 <td>
-                                    <span t-att-class="'o_rad_status ' + row.estado_class" 
-                                        t-esc="row.estado"/>
-                                           
+                                    <span t-att-class="'o_rad_status ' + row.estado_class" t-esc="row.estado"/>
+
                                 </td>
-                        
-                        <td>
-                            <button type="button"
-                                    class="o_rad_icon_edit"
-                                    t-on-click="(ev) => this.editarRecepcion(row, ev)"
-                                    title="Editar recepción">
-                                    <i class="fa fa-pencil"/>
+
+                                <td>
+                                    <button type="button" class="o_rad_icon_edit" t-on-click="(ev) => this.editarRecepcion(row, ev)" title="Editar recepción">
+                                        <i class="fa fa-pencil"/>
                                     Editar
-                            </button>
-                        </td>
+                                    </button>
+                                </td>
                             </tr>
                         </t>
 
@@ -132,10 +117,7 @@
                         Validar recepción
                     </button>
 
-                    <button t-if="state.detalle.puede_enviar_almacen"
-                            type="button"
-                            class="o_rad_btn o_rad_btn_send"
-                            t-on-click="enviarAlmacen">
+                    <button t-if="state.detalle.puede_enviar_almacen" type="button" class="o_rad_btn o_rad_btn_send" t-on-click="enviarAlmacen">
                         <i class="fa fa-truck"/>
                         Enviar a almacén
                     </button>
@@ -165,9 +147,14 @@
                     <h3>DATOS DE LA RECEPCIÓN</h3>
 
                     <div class="o_rad_form_grid">
-                        <div>
+                        <div t-if="state.detalle.tipo_entrada === 'recepcion_utiles'">
                             <label>Alumno</label>
                             <div class="o_rad_input active" t-esc="state.detalle.alumno"/>
+                        </div>
+
+                        <div t-else="">
+                            <label>Tipo de entrada</label>
+                            <div class="o_rad_input active" t-esc="state.detalle.tipo_label"/>
                         </div>
 
                         <div>
@@ -176,14 +163,26 @@
                         </div>
 
                         <div>
-                            <label>Fecha de recepción</label>
+                            <label>
+                                <t t-if="state.detalle.tipo_entrada === 'recepcion_utiles'">Fecha de recepción</t>
+                                <t t-else="">Fecha y hora de ingreso</t>
+                            </label>
                             <div class="o_rad_input" t-esc="state.detalle.fecha_label"/>
                         </div>
 
                         <div>
-                            <label>Recibido por</label>
+                            <label>
+                                <t t-if="state.detalle.tipo_entrada === 'recepcion_utiles'">Recibido por</t>
+                                <t t-else="">Ingresado por</t>
+                            </label>
                             <div class="o_rad_input" t-esc="state.detalle.recibido_por"/>
                         </div>
+
+                        <div t-if="state.detalle.tipo_entrada === 'traslado_interno'">
+                            <label>Profesora</label>
+                            <div class="o_rad_input" t-esc="state.detalle.docente"/>
+                        </div>
+
                     </div>
                 </section>
 
@@ -214,11 +213,7 @@
                                 <td class="center" t-esc="linea.cantidad_requerida"/>
 
                                 <td>
-                                    <input class="o_rad_qty"
-                                           type="number"
-                                           min="0"
-                                           t-att-value="linea.cantidad_recibida"
-                                           t-on-input="(ev) => this.onChangeCantidad(linea.id, ev)"/>
+                                    <input class="o_rad_qty" type="number" min="0" t-att-value="linea.cantidad_recibida" t-on-input="(ev) => this.onChangeCantidad(linea.id, ev)"/>
                                 </td>
 
                                 <td>

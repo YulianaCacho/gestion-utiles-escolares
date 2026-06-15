@@ -744,13 +744,38 @@ class RecepcionUtilesEscolar(models.Model):
                 estado_label = "Incompleto"
                 estado_class = "incompleto"
 
+            tipo_label = dict(rec._fields["tipo_entrada"].selection).get(
+                rec.tipo_entrada,
+                "Recepción"
+            )
+
+            if rec.tipo_entrada == "recepcion_utiles":
+                referencia = rec.estudiante_id.name or "Sin alumno"
+                iniciales = rec._iniciales_dashboard(rec.estudiante_id.name)
+                grado_label = rec._grado_label_dashboard(rec.grado_escolar)
+                responsable_label = rec.recibido_por_id.name or ""
+                fecha_label = rec.fecha.strftime("%d/%m/%Y") if rec.fecha else ""
+            else:
+                if rec.tipo_entrada == "traslado_interno" and rec.docente_origen_id:
+                    referencia = f"Traslado interno - {rec.docente_origen_id.name}"
+                else:
+                    referencia = tipo_label
+
+                iniciales = "IN"
+                grado_label = rec._grado_label_dashboard(rec.grado_destino)
+                responsable_label = rec.ingresado_por_id.name or ""
+                fecha_label = rec.fecha_hora_ingreso.strftime("%d/%m/%Y") if rec.fecha_hora_ingreso else ""
+
             rows.append({
                 "id": rec.id,
-                "alumno": rec.estudiante_id.name or "",
-                "iniciales": rec._iniciales_dashboard(rec.estudiante_id.name),
-                "grado": rec._grado_label_dashboard(rec.grado_escolar),
-                "fecha": rec.fecha.strftime("%d/%m/%Y") if rec.fecha else "",
-                "recibido_por": rec.recibido_por_id.name or "",
+                "tipo_entrada": rec.tipo_entrada,
+                "tipo_label": tipo_label,
+                "referencia": referencia,
+                "alumno": referencia,
+                "iniciales": iniciales,
+                "grado": grado_label,
+                "fecha": fecha_label,
+                "recibido_por": responsable_label,
                 "items": rec.items_resumen or "0/0",
                 "estado": estado_label,
                 "estado_class": estado_class,
@@ -791,13 +816,40 @@ class RecepcionUtilesEscolar(models.Model):
                 "completo": linea.estado_linea == "completo",
             })
 
+        tipo_label = dict(rec._fields["tipo_entrada"].selection).get(
+            rec.tipo_entrada,
+            "Recepción"
+        )
+
+        if rec.tipo_entrada == "recepcion_utiles":
+            referencia_label = rec.estudiante_id.name or "Sin alumno"
+            grado_label = rec._grado_label_dashboard(rec.grado_escolar)
+            fecha_label = rec.fecha.strftime("%d/%m/%Y") if rec.fecha else ""
+            responsable_label = rec.recibido_por_id.name or ""
+            docente_label = ""
+        else:
+            if rec.tipo_entrada == "traslado_interno" and rec.docente_origen_id:
+                referencia_label = f"Traslado interno - {rec.docente_origen_id.name}"
+                docente_label = rec.docente_origen_id.name
+            else:
+                referencia_label = tipo_label
+                docente_label = ""
+
+            grado_label = rec._grado_label_dashboard(rec.grado_destino)
+            fecha_label = rec.fecha_hora_ingreso.strftime("%d/%m/%Y %H:%M") if rec.fecha_hora_ingreso else ""
+            responsable_label = rec.ingresado_por_id.name or ""
+
         return {
             "id": rec.id,
             "name": rec.name,
+            "tipo_entrada": rec.tipo_entrada,
+            "tipo_label": tipo_label,
+            "referencia": referencia_label,
             "alumno": rec.estudiante_id.name or "",
-            "grado": rec._grado_label_dashboard(rec.grado_escolar),
-            "fecha_label": rec.fecha.strftime("%d/%m/%Y") if rec.fecha else "",
-            "recibido_por": rec.recibido_por_id.name or "",
+            "grado": grado_label,
+            "fecha_label": fecha_label,
+            "recibido_por": responsable_label,
+            "docente": docente_label,
             "estado": rec.estado,
             "estado_almacen": rec.estado_almacen,
             "etapa": rec.etapa_recepcion,
@@ -809,6 +861,7 @@ class RecepcionUtilesEscolar(models.Model):
                 "faltantes": rec.total_faltantes,
                 "porcentaje": f"{rec._fmt_qty_dashboard(rec.porcentaje_avance)}%",
             }
+        
         }
 
     @api.model
