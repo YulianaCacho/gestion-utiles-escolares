@@ -37,6 +37,62 @@ class RecepcionUtilesEscolar(models.Model):
         default=fields.Date.context_today,
         required=True
     )
+    
+    tipo_entrada = fields.Selection(
+        [
+            ("recepcion_utiles", "Recepción de útiles escolares"),
+            ("compra_directa", "Compra directa"),
+            ("traslado_interno", "Traslado interno"),
+            ("otro_ingreso", "Otro ingreso"),
+        ],
+        string="Tipo de entrada",
+        default="recepcion_utiles",
+        required=True,
+        index=True
+    )
+
+    anio_ingreso_id = fields.Many2one(
+        "anio.escolar",
+        string="Año escolar del ingreso",
+        default=lambda self: self.env.user.anio_escolar_actual_id.id if self.env.user.anio_escolar_actual_id else False
+    )
+
+    fecha_hora_ingreso = fields.Datetime(
+        string="Fecha y hora de ingreso",
+        default=fields.Datetime.now,
+        required=True
+    )
+
+    ingresado_por_id = fields.Many2one(
+        "res.users",
+        string="Ingresado por",
+        default=lambda self: self.env.user,
+        required=True
+    )
+
+    grado_destino = fields.Selection(
+        [
+            ("inicial_3", "Inicial 3 años"),
+            ("inicial_4", "Inicial 4 años"),
+            ("inicial_5", "Inicial 5 años"),
+            ("1er_grado", "1er grado"),
+            ("2do_grado", "2do grado"),
+            ("3er_grado", "3er grado"),
+            ("4to_grado", "4to grado"),
+            ("5to_grado", "5to grado"),
+            ("6to_grado", "6to grado"),
+        ],
+        string="Grado / sección destino"
+    )
+
+    proveedor_origen_id = fields.Many2one(
+        "res.partner",
+        string="Proveedor u origen"
+    )
+
+    documento_referencia = fields.Char(
+        string="Documento o referencia"
+    )
 
     matricula_id = fields.Many2one(
         "matricula.escolar",
@@ -206,11 +262,21 @@ class RecepcionUtilesEscolar(models.Model):
         store=True
     )
 
-    @api.depends("matricula_id", "matricula_id.anio_escolar")
+    @api.depends(
+        "tipo_entrada",
+        "matricula_id",
+        "matricula_id.anio_escolar",
+        "matricula_id.anio_escolar_id",
+        "anio_ingreso_id"
+    )
     def _compute_datos_matricula(self):
         for rec in self:
-            rec.anio = str(rec.matricula_id.anio_escolar or "") if rec.matricula_id else ""
-
+            if rec.tipo_entrada == "recepcion_utiles" and rec.matricula_id:
+                rec.anio = str(rec.matricula_id.anio_escolar or "")
+            elif rec.anio_ingreso_id:
+                rec.anio = str(rec.anio_ingreso_id.anio or rec.anio_ingreso_id.name or "")
+            else:
+                rec.anio = ""
     @api.depends(
         "linea_ids.estado_linea",
         "linea_ids.cantidad_faltante",
@@ -350,11 +416,28 @@ class RecepcionUtilesEscolar(models.Model):
 
                 linea.write(valores)
 
+    @api.onchange("tipo_entrada")
+    def _onchange_tipo_entrada(self):
+        for rec in self:
+            if rec.tipo_entrada != "recepcion_utiles":
+                rec.matricula_id = False
+                rec.linea_ids = [(5, 0, 0)]
+
+                if not rec.anio_ingreso_id and self.env.user.anio_escolar_actual_id:
+                    rec.anio_ingreso_id = self.env.user.anio_escolar_actual_id.id
+
+            else:
+                rec.grado_destino = False
+                rec.proveedor_origen_id = False
+                rec.documento_referencia = False
+    
     def action_cargar_lista(self):
         for rec in self:
+            if rec.tipo_entrada != "recepcion_utiles":
+                raise UserError("Solo puedes cargar lista cuando el tipo de entrada es Recepción de útiles escolares.")
+
             if not rec.matricula_id:
                 raise UserError("Primero debes seleccionar una matrícula.")
-
             if not rec.lista_id:
                 raise UserError("La matrícula seleccionada no tiene una lista de útiles asociada.")
 
@@ -449,7 +532,36 @@ class RecepcionUtilesEscolar(models.Model):
 
     def action_validar(self):
         for rec in self:
-            rec.action_calcular_faltantes()
+            if rec.tipo_entrada == "recepcion_utiles":
+                rec.action_calcular_faltantes()
+                rec.estado = "validado"
+                continue
+
+            if not rec.anio_ingreso_id:
+                raise UserError("Selecciona el año escolar del ingreso.")
+
+            if not rec.grado_destino:
+                raise UserError("Selecciona el grado o sección destino.")
+
+            if not rec.linea_ids:
+                raise UserError("Agrega al menos un producto para ingresar al almacén.")
+
+            for linea in rec.linea_ids:
+                cantidad = linea.cantidad_entregada or linea.cantidad_esperada
+
+                if not linea.product_id:
+                    raise UserError("Todas las líneas deben tener un producto.")
+
+                if cantidad <= 0:
+                    raise UserError("Todas las líneas deben tener una cantidad mayor a cero.")
+
+                linea.write({
+                    "cantidad_esperada": cantidad,
+                    "cantidad_entregada": cantidad,
+                    "destino_recepcion": "almacen",
+                    "cantidad_enviada_almacen": 0,
+                })
+
             rec.estado = "validado"
 
     def action_enviar_productos_almacen(self):
@@ -476,19 +588,51 @@ class RecepcionUtilesEscolar(models.Model):
             for linea in productos_almacen:
                 cantidad_a_enviar = linea.cantidad_pendiente_almacen
 
+                motivo_por_tipo = {
+                    "recepcion_utiles": "entrada_padres",
+                    "compra_directa": "entrada_compra",
+                    "traslado_interno": "entrada_traslado_interno",
+                    "otro_ingreso": "entrada_otro",
+                }
+
+                texto_por_tipo = {
+                    "recepcion_utiles": "Ingreso por padres de familia",
+                    "compra_directa": "Ingreso por compra directa",
+                    "traslado_interno": "Ingreso por traslado interno",
+                    "otro_ingreso": "Otro ingreso",
+                }
+
+                anio_movimiento = rec.anio_escolar_id if rec.tipo_entrada == "recepcion_utiles" else rec.anio_ingreso_id
+                grado_movimiento = rec.grado_escolar if rec.tipo_entrada == "recepcion_utiles" else rec.grado_destino
+                responsable_movimiento = rec.ingresado_por_id or self.env.user
+                motivo_movimiento = motivo_por_tipo.get(rec.tipo_entrada, "entrada_otro")
+                texto_motivo = texto_por_tipo.get(rec.tipo_entrada, "Otro ingreso")
+
+                referencia_extra = []
+                if rec.proveedor_origen_id:
+                    referencia_extra.append(f"Proveedor/origen: {rec.proveedor_origen_id.name}")
+                if rec.documento_referencia:
+                    referencia_extra.append(f"Referencia: {rec.documento_referencia}")
+
+                observacion_extra = ". ".join(referencia_extra)
+
                 valores_movimiento = {
+                    "fecha": rec.fecha_hora_ingreso or fields.Datetime.now(),
                     "tipo_movimiento": "entrada",
-                    "motivo_movimiento": "entrada_padres",
+                    "motivo_movimiento": motivo_movimiento,
                     "recepcion_id": rec.id,
-                    "anio_escolar_id": rec.anio_escolar_id.id if rec.anio_escolar_id else False,
-                    "grado_escolar": rec.grado_escolar,
+                    "anio_escolar_id": anio_movimiento.id if anio_movimiento else False,
+                    "grado_escolar": grado_movimiento,
                     "product_id": linea.product_id.id,
                     "cantidad": cantidad_a_enviar,
                     "unidad_id": linea.unidad_id.id if linea.unidad_id else False,
                     "categoria_id": linea.categoria_id.id if linea.categoria_id else False,
-                    "responsable_id": self.env.user.id,
+                    "responsable_id": responsable_movimiento.id,
                     "destino": "Almacén del grado",
-                    "observacion": f"Ingreso por padres de familia desde la recepción {rec.name}",
+                    "observacion": (
+                        f"{texto_motivo} desde {rec.name}"
+                        + (f". {observacion_extra}" if observacion_extra else "")
+                    ),
                 }
 
                 if "recepcion_linea_id" in Movimiento._fields:
@@ -768,6 +912,13 @@ class RecepcionUtilesLinea(models.Model):
         required=True,
         ondelete="cascade"
     )
+    
+    tipo_entrada = fields.Selection(
+        related="recepcion_id.tipo_entrada",
+        string="Tipo de entrada",
+        store=True,
+        readonly=True
+    )
 
     product_id = fields.Many2one(
         "product.product",
@@ -852,9 +1003,21 @@ class RecepcionUtilesLinea(models.Model):
 
     observacion = fields.Char(string="Observación")
 
-    @api.depends("cantidad_esperada", "cantidad_entregada")
+    @api.depends("cantidad_esperada", "cantidad_entregada", "tipo_entrada", "product_id")
     def _compute_cantidad_faltante(self):
         for linea in self:
+            if linea.tipo_entrada != "recepcion_utiles":
+                cantidad = linea.cantidad_entregada or linea.cantidad_esperada
+
+                linea.cantidad_faltante = 0
+
+                if linea.product_id and cantidad > 0:
+                    linea.estado_linea = "completo"
+                else:
+                    linea.estado_linea = "pendiente"
+
+                continue
+
             faltante = linea.cantidad_esperada - linea.cantidad_entregada
 
             linea.cantidad_faltante = faltante if faltante > 0 else 0
@@ -865,7 +1028,7 @@ class RecepcionUtilesLinea(models.Model):
                 linea.estado_linea = "faltante"
             else:
                 linea.estado_linea = "completo"
-
+    
     @api.depends("destino_recepcion", "cantidad_entregada", "cantidad_enviada_almacen")
     def _compute_cantidad_pendiente_almacen(self):
         for rec in self:
@@ -901,3 +1064,23 @@ class RecepcionUtilesLinea(models.Model):
                 rec.destino_recepcion = "estudiante"
             else:
                 rec.destino_recepcion = "almacen"
+                
+    @api.onchange("product_id")
+    def _onchange_product_id_datos(self):
+        for rec in self:
+            if rec.product_id:
+                rec.unidad_id = rec.product_id.uom_id.id if rec.product_id.uom_id else False
+                rec.categoria_id = rec.product_id.categ_id.id if rec.product_id.categ_id else False
+
+            if rec.tipo_entrada != "recepcion_utiles":
+                rec.destino_recepcion = "almacen"
+                if not rec.tipo_uso_escolar:
+                    rec.tipo_uso_escolar = "Ingreso a almacén"
+
+    @api.onchange("cantidad_esperada", "tipo_entrada")
+    def _onchange_cantidad_ingreso_manual(self):
+        for rec in self:
+            if rec.tipo_entrada != "recepcion_utiles" and rec.cantidad_esperada:
+                rec.cantidad_entregada = rec.cantidad_esperada
+                rec.destino_recepcion = "almacen"
+                
