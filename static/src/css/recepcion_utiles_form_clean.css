@@ -401,15 +401,38 @@ body:has(.o_recepcion_clean_form) {
     border-radius: 10px;
 }
 
-<!-- Cuadrados para compra directa / traslado interno / otro ingreso -->
-<div class="o_recepcion_cards_grid o_recepcion_cards_manual"
-     invisible="tipo_entrada == 'recepcion_utiles'">
+/* =====================================================
+   POSICIÓN DIFERENTE SEGÚN TIPO DE ENTRADA
+===================================================== */
 
-    <div class="o_recepcion_card">
-        <span class="o_form_label">TOTAL DE PRODUCTOS</span>
-        <field name="total_productos" readonly="1" nolabel="1"/>
-    </div>
+/* Recepción de útiles escolares:
+   los 6 cuadros empiezan desde arriba, alineados con Tipo de entrada */
+.o_recepcion_clean_form .o_recepcion_cards_escolar {
+    margin-top: 22px !important;
+}
 
-    <div class="o_recepcion_card">
-        <span class="o_form_label">ESTADO</span>
-        <field name="estado_visual" readonly="1" nolabel="1" widget="badge"/>
+/* Compra directa / traslado interno / otro ingreso:
+   mantiene los 2 cuadros más abajo */
+.o_recepcion_clean_form .o_recepcion_cards_manual {
+    margin-top: 70px !important;
+}
+
+/* Ambos grupos conservan el mismo tamaño bonito */
+.o_recepcion_clean_form .o_recepcion_cards_escolar,
+.o_recepcion_clean_form .o_recepcion_cards_manual {
+    display: grid !important;
+    grid-template-columns: repeat(2, 230px) !important;
+    gap: 14px !important;
+    justify-content: center !important;
+    align-content: start !important;
+    max-width: 500px !important;
+}
+
+/* Cards pequeñas */
+.o_recepcion_clean_form .o_recepcion_card {
+    width: 230px !important;
+    min-height: 118px !important;
+    max-height: 125px !important;
+    padding: 16px 18px !important;
+    border-radius: 12px !important;
+}
