@@ -4,18 +4,21 @@
     <t t-name="gestion_utiles_escolares.DashboardUtilesEscolares">
         <div class="o_utiles_dashboard">
 
+            <!-- Barra superior -->
             <div class="o_utiles_toolbar">
                 <div class="o_utiles_search_box">
                     <i class="fa fa-search"/>
-                    <input type="text" placeholder="Buscar producto, categoría..." t-model="state.search"/>
+                    <input type="text"
+                           placeholder="Buscar producto, categoría..."
+                           t-model="state.search"/>
                 </div>
 
                 <button type="button" class="o_utiles_button" t-on-click="exportCsv">
-                    <i class="fa fa-download"/>
- Exportar
+                    <i class="fa fa-download"/> Exportar
                 </button>
             </div>
 
+            <!-- KPIs -->
             <div class="o_utiles_summary_grid">
                 <div class="o_utiles_summary_card">
                     <span class="o_utiles_summary_number" t-esc="state.totalItems"/>
@@ -38,30 +41,35 @@
                 </div>
             </div>
 
+            <!-- Panel de stock -->
             <div class="o_utiles_stock_panel">
 
                 <div class="o_utiles_panel_header">
                     <div>
                         <h2>
-                            <t t-if="state.selectedGrade === 'Todos'">
-                                Stock en almacén general
-                            </t>
-                            <t t-else="">
-                                Stock en almacén - <t t-esc="selectedGradeLabel"/>
-                            </t>
+                            <t t-esc="state.selectedGrade === 'Todos' ? 'Stock en almacén general' : 'Stock en almacén - ' + selectedGradeLabel"/>
                         </h2>
+
                         <small>
-                            Año actual:
-                            <strong t-esc="state.currentYearLabel"/>
-                            · Sobrante:
-                            <strong t-esc="state.previousYearLabel"/>
+                            <t t-if="state.selectedGrade === 'Todos'">
+                                Año actual:
+                                <strong t-esc="state.currentYearLabel"/>
+                                · Sobrante:
+                                <strong t-esc="state.previousYearLabel"/>
+                            </t>
+
+                            <t t-if="state.selectedGrade !== 'Todos'">
+                                Año actual:
+                                <strong t-esc="state.currentYearLabel"/>
+                                · Inventario filtrado por grado/sección
+                            </t>
                         </small>
                     </div>
 
-                    <span>Actualizado: <t t-esc="state.updatedAt"/>
-                    </span>
+                    <span>Actualizado: <t t-esc="state.updatedAt"/></span>
                 </div>
 
+                <!-- Filtro por grado -->
                 <div class="o_utiles_filter_group">
                     <div class="o_utiles_filter_label">
                         Grado / sección:
@@ -69,86 +77,96 @@
                     </div>
 
                     <div class="o_utiles_categories o_utiles_grades">
-                        <t t-foreach="state.grades" t-as="grade" t-key="grade.value">
-                            <button type="button" t-att-class="grade.value === state.selectedGrade ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.selectGrade(grade.value)">
+                        <t t-foreach="state.grades || []" t-as="grade" t-key="grade.value">
+                            <button type="button"
+                                    t-att-class="grade.value === state.selectedGrade ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                    t-on-click="() => this.selectGrade(grade.value)">
                                 <t t-esc="grade.label"/>
                             </button>
                         </t>
                     </div>
                 </div>
-                <button type="button" t-att-class="category === state.selectedCategory ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.selectCategory(category)">
-                    <t t-esc="category"/>
-                </button>
-            </t>
-        </div>
 
-        <div class="o_utiles_table_wrap">
-            <table class="o_utiles_table">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Categoría</th>
-                        <th>
-                                    Año actual
-                            <t t-esc="state.currentYearLabel"/>
-                        </th>
-                        <th>
-                                    Sobrante
-                            <t t-esc="state.previousYearLabel"/>
-                        </th>
-                        <th>Total disponible</th>
-                        <th>Retirado</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <t t-if="filteredProducts.length">
-                        <tr t-foreach="filteredProducts" t-as="product" t-key="product.id">
-                            <td class="o_utiles_product_name">
-                                <span class="o_utiles_product_icon">✎</span>
-                                <div>
-                                    <strong t-esc="product.name"/>
-                                    <small t-if="product.code" t-esc="product.code"/>
-                                </div>
-                            </td>
-
-                            <td>
-                                <span class="o_utiles_category_badge" t-esc="product.category"/>
-                            </td>
-
-                            <td t-esc="product.currentQty"/>
-                            <td t-esc="product.previousQty"/>
-
-                            <td>
-                                <div class="o_utiles_availability">
-                                    <span class="o_utiles_bar">
-                                        <span t-att-style="progressWidth(product)"/>
-                                    </span>
-                                    <strong t-esc="product.totalQty"/>
-                                </div>
-                            </td>
-
-                            <td t-esc="product.reserved"/>
-
-                            <td>
-                                <span t-att-class="'o_utiles_status ' + statusClass(product.status)" t-esc="product.status"/>
-                            </td>
-                        </tr>
+                <!-- Filtro por categoría -->
+                <div class="o_utiles_categories">
+                    <t t-foreach="state.categories || []" t-as="category" t-key="category">
+                        <button type="button"
+                                t-att-class="category === state.selectedCategory ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                t-on-click="() => this.selectCategory(category)">
+                            <t t-esc="category"/>
+                        </button>
                     </t>
+                </div>
 
-                    <tr t-else="">
-                        <td colspan="7" class="o_utiles_empty">
+                <!-- Tabla -->
+                <div class="o_utiles_table_wrap">
+                    <table class="o_utiles_table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>
+                                    Año actual
+                                    <t t-esc="state.currentYearLabel"/>
+                                </th>
+                                <th>
+                                    Sobrante
+                                    <t t-esc="state.previousYearLabel"/>
+                                </th>
+                                <th>Total disponible</th>
+                                <th>Retirado</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-if="(filteredProducts || []).length">
+                                <tr t-foreach="filteredProducts" t-as="product" t-key="product.id">
+                                    <td class="o_utiles_product_name">
+                                        <span class="o_utiles_product_icon">✎</span>
+                                        <div>
+                                            <strong t-esc="product.name"/>
+                                            <small t-if="product.code" t-esc="product.code"/>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="o_utiles_category_badge" t-esc="product.category"/>
+                                    </td>
+
+                                    <td t-esc="product.currentQty"/>
+                                    <td t-esc="product.previousQty"/>
+
+                                    <td>
+                                        <div class="o_utiles_availability">
+                                            <span class="o_utiles_bar">
+                                                <span t-att-style="progressWidth(product)"/>
+                                            </span>
+                                            <strong t-esc="product.totalQty"/>
+                                        </div>
+                                    </td>
+
+                                    <td t-esc="product.reserved"/>
+
+                                    <td>
+                                        <span t-att-class="'o_utiles_status ' + statusClass(product.status)"
+                                              t-esc="product.status"/>
+                                    </td>
+                                </tr>
+                            </t>
+
+                            <tr t-if="!(filteredProducts || []).length">
+                                <td colspan="7" class="o_utiles_empty">
                                     No hay productos para mostrar en este grado o categoría.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
         </div>
-
-    </div>
-
-</div>
-</t>
+    </t>
 
 </templates>
