@@ -38,6 +38,7 @@
     "views/reporte_almacen_movimientos_views.xml",
 
     'views/anio_escolar_views.xml',
+    'views/cierre_anio_utiles_views.xml',
     'views/sobrante_utiles_views.xml',
     
 

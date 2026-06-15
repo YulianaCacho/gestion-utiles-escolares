@@ -120,15 +120,9 @@ class DashboardUtilesEscolares extends Component {
     const movimientos = await this.orm.searchRead(
       "almacen.utiles.movimiento",
       movimientosDomain,
-      [
-        "product_id",
-        "cantidad",
-        "tipo_movimiento",
-        "categoria_id",
-        "grado_escolar",
-      ],
-      { limit: 10000, order: "id asc" },
-    );
+       ["product_id", "cantidad", "tipo_movimiento", "motivo_movimiento", "categoria_id", "grado_escolar"],
+    { limit: 10000, order: "id asc" }
+);
 
     const sobranteFieldsInfo = await this.orm.call(
       "sobrante.utiles.anio",
@@ -190,9 +184,12 @@ class DashboardUtilesEscolares extends Component {
         retiradoByProduct[productId] = 0;
       }
 
-      if (mov.tipo_movimiento === "entrada") {
-        stockActualByProduct[productId] += cantidad;
-      } else if (mov.tipo_movimiento === "salida") {
+    if (mov.tipo_movimiento === "entrada") {
+        if (mov.motivo_movimiento !== "entrada_traslado_anio") {
+            stockActualByProduct[productId] += cantidad;
+        }
+    }
+        else if (mov.tipo_movimiento === "salida") {
         stockActualByProduct[productId] -= cantidad;
         retiradoByProduct[productId] += cantidad;
       } else if (mov.tipo_movimiento === "ajuste") {

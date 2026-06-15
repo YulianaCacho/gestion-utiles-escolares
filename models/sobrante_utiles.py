@@ -94,9 +94,9 @@ class SobranteUtilesAnio(models.Model):
 
     _sql_constraints = [
         (
-            "sobrante_unico_por_anio_producto",
-            "unique(anio_origen_id, anio_destino_id, product_id)",
-            "Ya existe un sobrante para este producto entre esos años escolares."
+            "sobrante_unico_por_anio_producto_grado",
+            "unique(anio_origen_id, anio_destino_id, product_id, grado_escolar)",
+            "Ya existe un sobrante para este producto, grado y años escolares."
         )
     ]
 

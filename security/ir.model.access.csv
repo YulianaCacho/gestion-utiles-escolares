@@ -9,3 +9,5 @@ access_salida_almacen_utiles_user,salida.almacen.utiles.user,model_salida_almace
 access_salida_almacen_utiles_linea_user,salida.almacen.utiles.linea.user,model_salida_almacen_utiles_linea,base.group_user,1,1,1,1
 access_anio_escolar_user,anio.escolar.user,model_anio_escolar,base.group_user,1,1,1,1
 access_sobrante_utiles_anio,access.sobrante.utiles.anio,model_sobrante_utiles_anio,base.group_user,1,1,1,1
+access_cierre_anio_utiles_user,cierre.anio.utiles.user,model_cierre_anio_utiles,base.group_user,1,1,1,1
+access_cierre_anio_utiles_linea_user,cierre.anio.utiles.linea.user,model_cierre_anio_utiles_linea,base.group_user,1,1,1,1
