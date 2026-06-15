@@ -158,6 +158,30 @@ class AlmacenUtilesMovimiento(models.Model):
         selection = dict(self._fields["motivo_movimiento"].selection)
         return selection.get(motivo, motivo or "Sin motivo")
 
+    def _motivo_class(self, motivo):
+        if motivo in [
+            "entrada_padres",
+            "entrada_compra",
+            "entrada_traslado_interno",
+            "entrada_traslado_anio",
+            "entrada_otro",
+        ]:
+            return "motivo_entrada"
+
+        if motivo in [
+            "salida_uso",
+            "salida_entrega_estudiante",
+            "salida_traslado_seccion",
+            "salida_fin_anio",
+            "salida_otro",
+        ]:
+            return "motivo_salida"
+
+        if motivo == "ajuste_inventario":
+            return "motivo_ajuste"
+
+        return "motivo_neutro"
+
     def _fmt_qty(self, value):
         value = float(value or 0)
         if value.is_integer():
@@ -408,6 +432,7 @@ class AlmacenUtilesMovimiento(models.Model):
         grado=False,
         responsable_id=False,
         product_id=False,
+        motivo=False,
         anio_escolar_id=False
     ):
         today = fields.Date.context_today(self)
@@ -436,6 +461,9 @@ class AlmacenUtilesMovimiento(models.Model):
         if product_id:
             domain.append(("product_id", "=", int(product_id)))
 
+        if motivo:
+            domain.append(("motivo_movimiento", "=", motivo))
+        
         movimientos = self.search(domain, order="fecha desc, id desc")
 
         if search:
@@ -555,6 +583,7 @@ class AlmacenUtilesMovimiento(models.Model):
                 "responsable": mov.responsable_id.name or "",
                 "responsable_iniciales": iniciales(mov.responsable_id.name),
                 "motivo": motivo_label(mov),
+                "motivo_class": self._motivo_class(mov.motivo_movimiento),
             })
 
         grados = []
@@ -574,6 +603,15 @@ class AlmacenUtilesMovimiento(models.Model):
                     "id": user.id,
                     "name": user.name,
                 })
+                
+        motivos = []
+        motivo_info = self.fields_get(["motivo_movimiento"]).get("motivo_movimiento", {})
+
+        for value, label in motivo_info.get("selection", []):
+            motivos.append({
+                "value": value,
+                "label": label,
+            })
 
         return {
             "month_label": f"{meses[month]} {year}",
@@ -582,6 +620,7 @@ class AlmacenUtilesMovimiento(models.Model):
             "rows": rows,
             "grados": grados,
             "responsables": responsables,
+            "motivos": motivos,
             "kpis": {
                 "entradas": self._fmt_qty(entradas),
                 "salidas": self._fmt_qty(salidas),

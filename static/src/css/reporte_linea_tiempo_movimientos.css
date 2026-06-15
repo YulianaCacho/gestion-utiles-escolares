@@ -365,3 +365,57 @@
     }
 }
 
+.o_ltm_motivo_badge {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 850;
+    line-height: 1.2;
+    white-space: normal;
+    border: 1px solid transparent;
+}
+
+.o_ltm_motivo_badge.motivo_entrada {
+    background: #e4f6ec;
+    color: #16683c;
+    border-color: #9bd8b6;
+}
+
+.o_ltm_motivo_badge.motivo_salida {
+    background: #fde7e7;
+    color: #a4262c;
+    border-color: #f2aaaa;
+}
+
+.o_ltm_motivo_badge.motivo_ajuste {
+    background: #fff2d8;
+    color: #885600;
+    border-color: #e8c16a;
+}
+
+.o_ltm_motivo_badge.motivo_neutro {
+    background: #eeeeee;
+    color: #444444;
+    border-color: #cccccc;
+}
+
+.o_ltm_table tbody tr.o_ltm_row_entrada td:last-child {
+    border-left: 4px solid #5bbf80;
+}
+
+.o_ltm_table tbody tr.o_ltm_row_salida td:last-child {
+    border-left: 4px solid #d94b53;
+}
+
+.o_ltm_table tbody tr.o_ltm_row_ajuste td:last-child {
+    border-left: 4px solid #d79524;
+}
+
+.o_ltm_table th:last-child,
+.o_ltm_table td:last-child {
+    min-width: 260px;
+}
+

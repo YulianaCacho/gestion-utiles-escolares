@@ -22,10 +22,12 @@ class ReporteLineaTiempoMovimientos extends Component {
             tipoSeleccionado: "",
             gradoSeleccionado: "",
             responsableSeleccionado: "",
+            motivoSeleccionado: "",
             total: 0,
             rows: [],
             grados: [],
             responsables: [],
+            motivos: [],
             kpis: {
                 entradas: "0",
                 salidas: "0",
@@ -69,6 +71,7 @@ class ReporteLineaTiempoMovimientos extends Component {
                 search: this.state.search || false,
                 grado: this.state.gradoSeleccionado || false,
                 responsable_id: this.state.responsableSeleccionado || false,
+                motivo: this.state.motivoSeleccionado || false,
                 anio_escolar_id: this.state.anioEscolarId || false,
             }
         );
@@ -84,6 +87,7 @@ class ReporteLineaTiempoMovimientos extends Component {
         };
         this.state.grados = data.grados || [];
         this.state.responsables = data.responsables || [];
+        this.state.motivos = data.motivos || [];
     }
 
     async onChangeMonth(ev) {
@@ -103,6 +107,11 @@ class ReporteLineaTiempoMovimientos extends Component {
 
     async onChangeResponsable(ev) {
         this.state.responsableSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeMotivo(ev) {
+        this.state.motivoSeleccionado = ev.target.value;
         await this.loadData();
     }
 

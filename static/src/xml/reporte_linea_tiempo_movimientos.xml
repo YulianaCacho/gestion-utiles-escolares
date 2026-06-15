@@ -70,7 +70,18 @@
                     </select>
                 </div>
 
-                <div class="o_ltm_filter_spacer"></div>
+                <div class="o_ltm_filter_box">
+                    <i class="fa fa-tags"/>
+                    <select t-on-change="onChangeMotivo">
+                        <option value="">Por motivo / referencia</option>
+                        <t t-foreach="state.motivos" t-as="motivo" t-key="motivo.value">
+                            <option t-att-value="motivo.value"
+                                    t-att-selected="state.motivoSeleccionado === motivo.value ? true : undefined">
+                                <t t-esc="motivo.label"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
 
                 <button type="button" class="o_ltm_export_pdf" t-on-click="exportPdf">
                     <i class="fa fa-download"/>
@@ -166,7 +177,8 @@
 
                 <tbody>
                     <t t-if="state.rows.length">
-                        <tr t-foreach="state.rows" t-as="row" t-key="row.id">
+                        <tr t-foreach="state.rows" t-as="row" t-key="row.id"
+                            t-att-class="'o_ltm_row_' + row.tipo_class">
                             <td t-esc="row.fecha"/>
                             <td t-esc="row.hora"/>
 
@@ -190,7 +202,11 @@
                                 </div>
                             </td>
 
-                            <td t-esc="row.motivo"/>
+                            <td>
+                                <span t-att-class="'o_ltm_motivo_badge ' + row.motivo_class">
+                                    <t t-esc="row.motivo"/>
+                                </span>
+                            </td>
                         </tr>
                     </t>
 
