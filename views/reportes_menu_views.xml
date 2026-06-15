@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
+    <!-- Renombrar menú principal de reportes de Inventario -->
     <record id="stock.menu_warehouse_report" model="ir.ui.menu">
         <field name="name">Reportes</field>
         <field name="active" eval="True"/>
     </record>
 
+    <!-- Ocultar reportes nativos de Odoo para no confundir -->
     <function model="ir.ui.menu" name="write">
         <function model="ir.ui.menu" name="search">
             <value eval="[
@@ -26,6 +28,7 @@
         <value eval="{'active': False}"/>
     </function>
 
+    <!-- Acción antigua de línea de tiempo: queda creada pero NO visible -->
     <record id="action_reporte_linea_tiempo_utiles" model="ir.actions.act_window">
         <field name="name">⇅ Línea de tiempo</field>
         <field name="res_model">stock.move</field>
@@ -34,11 +37,13 @@
         <field name="context">{}</field>
     </record>
 
+    <!-- Acción antigua de historial: queda creada pero NO visible -->
     <record id="action_reporte_historial_movimientos_dashboard" model="ir.actions.client">
         <field name="name">Historial de movimientos</field>
         <field name="tag">gestion_utiles_escolares.reporte_almacen_movimientos</field>
     </record>
 
+    <!-- Acción del reporte de recepción -->
     <record id="action_reporte_recepcion_utiles_menu" model="ir.actions.act_window">
         <field name="name">▦ Reporte de recepción</field>
         <field name="res_model">recepcion.utiles.escolar</field>
@@ -47,14 +52,25 @@
         <field name="context">{}</field>
     </record>
 
+    <!-- OCULTO: línea de tiempo antigua -->
     <record id="menu_reporte_linea_tiempo_utiles" model="ir.ui.menu">
+        <field name="name">⇅ Línea de tiempo</field>
+        <field name="parent_id" ref="stock.menu_warehouse_report"/>
+        <field name="action" eval="'ir.actions.act_window,%d' % ref('action_reporte_linea_tiempo_utiles')"/>
+        <field name="sequence">10</field>
         <field name="active" eval="False"/>
     </record>
 
+    <!-- OCULTO: historial de movimientos -->
     <record id="menu_reporte_historial_movimientos_utiles" model="ir.ui.menu">
+        <field name="name">⧗ Historial de movimientos</field>
+        <field name="parent_id" ref="stock.menu_warehouse_report"/>
+        <field name="action" eval="'ir.actions.client,%d' % ref('action_reporte_historial_movimientos_dashboard')"/>
+        <field name="sequence">20</field>
         <field name="active" eval="False"/>
     </record>
 
+    <!-- Reporte de recepción visible -->
     <record id="menu_reporte_recepcion_utiles" model="ir.ui.menu">
         <field name="name">▦ Reporte de recepción</field>
         <field name="parent_id" ref="stock.menu_warehouse_report"/>

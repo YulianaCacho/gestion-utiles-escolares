@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
+
+    <!-- Esta es la única línea de tiempo que debe quedar visible -->
     <record id="action_reporte_linea_tiempo_movimientos_dashboard" model="ir.actions.client">
         <field name="name">Línea de tiempo</field>
         <field name="tag">gestion_utiles_escolares.reporte_linea_tiempo_movimientos</field>
