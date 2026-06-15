@@ -310,64 +310,93 @@
 }
 
 /* =====================================================
-   AJUSTE FINAL - COMPRA DIRECTA EN RECEPCIÓN
-   Cuadros más abajo y scroll más pegado al borde
+   AJUSTE FINAL DEFINITIVO - RECEPCIÓN
+   Cards más abajo y scroll pegado a la página
 ===================================================== */
 
-/* Baja los cuadros del lado derecho */
+/* Fuerza a Odoo a usar todo el ancho cuando está abierta la recepción */
+body:has(.o_recepcion_clean_form) .o_action_manager,
+body:has(.o_recepcion_clean_form) .o_content,
+body:has(.o_recepcion_clean_form) .o_form_view,
+body:has(.o_recepcion_clean_form) .o_form_renderer,
+body:has(.o_recepcion_clean_form) .o_form_sheet_bg {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Quita el espacio blanco antes del scroll */
+body:has(.o_recepcion_clean_form) .o_form_sheet_bg {
+    padding: 0 0 0 14px !important;
+    margin: 0 !important;
+    overflow-x: hidden !important;
+}
+
+/* La hoja del formulario ocupa todo el espacio disponible */
+body:has(.o_recepcion_clean_form) .o_form_sheet {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Evita que el formulario genere scroll horizontal innecesario */
+body:has(.o_recepcion_clean_form) .o_recepcion_clean_form {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+}
+
+/* Distribución general: campos a la izquierda, cards a la derecha */
+.o_recepcion_clean_form .o_recepcion_main_grid {
+    display: grid !important;
+    grid-template-columns: minmax(560px, 1fr) 560px !important;
+    gap: 18px !important;
+    align-items: start !important;
+    width: 100% !important;
+    margin-bottom: 18px !important;
+}
+
+/* Baja más los cuadrados */
 .o_recepcion_clean_form .o_recepcion_cards_grid {
-    margin-top: 48px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 230px) !important;
+    gap: 14px !important;
     justify-content: center !important;
     align-content: start !important;
+    max-width: 500px !important;
+    margin: 140px auto 0 auto !important;
 }
 
-/* Mantiene los cuadros pequeños */
+/* Cards pequeñas */
 .o_recepcion_clean_form .o_recepcion_card {
     width: 230px !important;
-    min-height: 120px !important;
+    min-height: 118px !important;
     max-height: 125px !important;
     padding: 16px 18px !important;
+    border-radius: 12px !important;
 }
 
-/* Ajusta mejor el espacio entre formulario y cards */
-.o_recepcion_clean_form .o_recepcion_main_grid {
-    grid-template-columns: minmax(560px, 1fr) minmax(500px, 0.75fr) !important;
-    gap: 10px !important;
+/* Evita scroll horizontal inferior de toda la vista */
+body:has(.o_recepcion_clean_form) {
+    overflow-x: hidden !important;
 }
 
-/* Quita espacio extra del lado derecho del formulario */
-.o_recepcion_clean_form .o_form_sheet_bg {
-    padding-right: 0 !important;
-    margin-right: 0 !important;
+/* Scroll visual */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
 }
 
-/* Hace que la hoja use más ancho y el scroll quede más pegado */
-.o_recepcion_clean_form .o_form_sheet {
-    max-width: none !important;
-    width: calc(100vw - 105px) !important;
-    margin-right: 0 !important;
-    padding-right: 0 !important;
-}
-
-/* Quita margen derecho del contenido de Odoo */
-.o_action_manager,
-.o_content,
-.o_form_view,
-.o_form_view .o_form_sheet_bg {
-    margin-right: 0 !important;
-    padding-right: 0 !important;
-}
-
-/* Reduce el espacio muerto antes del scrollbar */
-.o_recepcion_clean_form {
-    padding-right: 0 !important;
-    margin-right: 0 !important;
-}
 ::-webkit-scrollbar-track {
     background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #bcbcbc;
+    background: #9e9e9e;
     border-radius: 10px;
 }
