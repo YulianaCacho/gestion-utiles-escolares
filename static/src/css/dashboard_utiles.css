@@ -287,3 +287,31 @@
         grid-template-columns: repeat(2, minmax(150px, 1fr));
     }
 }
+
+/* =====================================================
+   FILTRO POR GRADO / SECCIÓN EN INVENTARIO
+===================================================== */
+
+.o_utiles_filter_group {
+    margin-bottom: 16px;
+}
+
+.o_utiles_filter_label {
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.o_utiles_grades {
+    margin-bottom: 12px;
+}
+
+.o_utiles_grades .o_utiles_chip {
+    font-size: 14px;
+    padding: 8px 14px;
+}
+
+.o_utiles_panel_header small strong {
+    font-weight: 900;
+}
