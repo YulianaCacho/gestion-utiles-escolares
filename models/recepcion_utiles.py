@@ -84,6 +84,13 @@ class RecepcionUtilesEscolar(models.Model):
         ],
         string="Grado / sección destino"
     )
+    
+    docente_origen_id = fields.Many2one(
+        "res.partner",
+        string="Profesora",
+        domain="[('cargo_institucional', '=', 'docente')]",
+        help="Docente relacionada con el traslado interno de útiles."
+    )
 
     proveedor_origen_id = fields.Many2one(
         "res.partner",
@@ -430,6 +437,10 @@ class RecepcionUtilesEscolar(models.Model):
                 rec.grado_destino = False
                 rec.proveedor_origen_id = False
                 rec.documento_referencia = False
+                rec.docente_origen_id = False
+
+            if rec.tipo_entrada != "traslado_interno":
+                rec.docente_origen_id = False
     
     def action_cargar_lista(self):
         for rec in self:
@@ -543,6 +554,9 @@ class RecepcionUtilesEscolar(models.Model):
             if not rec.grado_destino:
                 raise UserError("Selecciona el grado o sección destino.")
 
+            if rec.tipo_entrada == "traslado_interno" and not rec.docente_origen_id:
+                raise UserError("Selecciona la profesora relacionada con el traslado interno.")
+            
             if not rec.linea_ids:
                 raise UserError("Agrega al menos un producto para ingresar al almacén.")
 
@@ -609,11 +623,16 @@ class RecepcionUtilesEscolar(models.Model):
                 texto_motivo = texto_por_tipo.get(rec.tipo_entrada, "Otro ingreso")
 
                 referencia_extra = []
+
+                if rec.tipo_entrada == "traslado_interno" and rec.docente_origen_id:
+                    referencia_extra.append(f"Profesora: {rec.docente_origen_id.name}")
+
                 if rec.proveedor_origen_id:
                     referencia_extra.append(f"Proveedor/origen: {rec.proveedor_origen_id.name}")
+
                 if rec.documento_referencia:
                     referencia_extra.append(f"Referencia: {rec.documento_referencia}")
-
+                    
                 observacion_extra = ". ".join(referencia_extra)
 
                 valores_movimiento = {

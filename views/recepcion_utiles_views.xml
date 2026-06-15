@@ -100,6 +100,11 @@
                                 <field name="grado_destino" nolabel="1"/>
                             </div>
 
+                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'traslado_interno'">
+                                <label for="docente_origen_id" string="Profesora"/>
+                                <field name="docente_origen_id" nolabel="1" options="{'no_create': True, 'no_open': False}"/>
+                            </div>
+
                             <div class="o_recepcion_field_row" invisible="tipo_entrada == 'recepcion_utiles'">
                                 <label for="ingresado_por_id" string="Ingresado por"/>
                                 <field name="ingresado_por_id" nolabel="1"/>
