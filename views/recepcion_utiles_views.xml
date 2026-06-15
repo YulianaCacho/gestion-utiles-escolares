@@ -80,7 +80,7 @@
                                 <field name="fecha_hora_ingreso" nolabel="1"/>
                             </div>
 
-                            <div class="o_recepcion_field_row">
+                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'recepcion_utiles'">
                                 <label for="fecha" string="Fecha de recepción"/>
                                 <field name="fecha" nolabel="1"/>
                             </div>
@@ -105,12 +105,12 @@
                                 <field name="ingresado_por_id" nolabel="1"/>
                             </div>
 
-                            <div class="o_recepcion_field_row" invisible="tipo_entrada == 'recepcion_utiles'">
+                            <div class="o_recepcion_field_row" invisible="1">
                                 <label for="proveedor_origen_id" string="Proveedor u origen"/>
                                 <field name="proveedor_origen_id" nolabel="1" options="{'no_create': False, 'no_open': False}"/>
                             </div>
 
-                            <div class="o_recepcion_field_row" invisible="tipo_entrada == 'recepcion_utiles'">
+                            <div class="o_recepcion_field_row" invisible="1">
                                 <label for="documento_referencia" string="Documento o referencia"/>
                                 <field name="documento_referencia" nolabel="1" placeholder="Ejemplo: Boleta, factura, acta interna..."/>
                             </div>
@@ -135,7 +135,7 @@
                                 <field name="lista_id" readonly="1" nolabel="1"/>
                             </div>
 
-                            <div class="o_recepcion_field_row">
+                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'recepcion_utiles'">
                                 <label for="recibido_por_id" string="Recibido por"/>
                                 <field name="recibido_por_id" readonly="1" nolabel="1"/>
                             </div>
@@ -149,17 +149,17 @@
                                 <field name="total_productos" readonly="1" nolabel="1"/>
                             </div>
 
-                            <div class="o_recepcion_card">
+                            <div class="o_recepcion_card" invisible="tipo_entrada != 'recepcion_utiles'">
                                 <span class="o_form_label">PRODUCTOS COMPLETOS</span>
                                 <field name="total_completos" readonly="1" nolabel="1"/>
                             </div>
 
-                            <div class="o_recepcion_card">
+                            <div class="o_recepcion_card" invisible="tipo_entrada != 'recepcion_utiles'">
                                 <span class="o_form_label">PRODUCTOS FALTANTES</span>
                                 <field name="total_faltantes" readonly="1" nolabel="1"/>
                             </div>
 
-                            <div class="o_recepcion_card o_recepcion_card_progress">
+                            <div class="o_recepcion_card o_recepcion_card_progress" invisible="tipo_entrada != 'recepcion_utiles'">
                                 <span class="o_form_label">PORCENTAJE DE AVANCE</span>
                                 <div class="o_recepcion_percent">
                                     <field name="porcentaje_avance" readonly="1" nolabel="1"/>
@@ -170,7 +170,7 @@
                                 </div>
                             </div>
 
-                            <div class="o_recepcion_card">
+                            <div class="o_recepcion_card" invisible="tipo_entrada != 'recepcion_utiles'">
                                 <span class="o_form_label">ESTADO DE ENTREGA</span>
                                 <field name="estado_entrega" readonly="1" nolabel="1" widget="badge"/>
                             </div>
@@ -187,10 +187,7 @@
                     <notebook>
                         <page string="Productos recibidos">
                             <field name="linea_ids" nolabel="1">
-                                <list editable="bottom"
-                                    create="1"
-                                    delete="1"
-                                    string="Productos recibidos">
+                                <list editable="bottom" create="1" delete="1" string="Productos recibidos">
 
                                     <field name="tipo_entrada" column_invisible="1"/>
                                     <field name="product_id" string="Producto"/>
