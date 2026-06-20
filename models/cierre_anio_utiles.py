@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 
+
 GRADO_ESCOLAR_SELECTION = [
     ("inicial_3", "Inicial 3 años"),
     ("inicial_4", "Inicial 4 años"),
@@ -22,32 +23,32 @@ class CierreAnioUtiles(models.Model):
     name = fields.Char(
         string="Referencia",
         compute="_compute_name",
-        store=True
+        store=True,
     )
 
     anio_origen_id = fields.Many2one(
         "anio.escolar",
         string="Año a cerrar",
         required=True,
-        readonly=True
+        readonly=True,
     )
 
     anio_destino_id = fields.Many2one(
         "anio.escolar",
         string="Año destino",
         required=True,
-        readonly=True
+        readonly=True,
     )
 
     fecha_revision = fields.Datetime(
         string="Fecha de revisión",
         default=fields.Datetime.now,
-        required=True
+        required=True,
     )
 
     fecha_confirmacion = fields.Datetime(
         string="Fecha de confirmación",
-        readonly=True
+        readonly=True,
     )
 
     responsable_id = fields.Many2one(
@@ -55,7 +56,7 @@ class CierreAnioUtiles(models.Model):
         string="Responsable",
         default=lambda self: self.env.user,
         required=True,
-        readonly=True
+        readonly=True,
     )
 
     estado = fields.Selection(
@@ -66,37 +67,37 @@ class CierreAnioUtiles(models.Model):
         ],
         string="Estado",
         default="borrador",
-        required=True
+        required=True,
     )
 
     linea_ids = fields.One2many(
         "cierre.anio.utiles.linea",
         "cierre_id",
-        string="Útiles sobrantes revisados"
+        string="Útiles sobrantes revisados",
     )
 
     total_productos = fields.Integer(
         string="Productos revisados",
-        compute="_compute_totales"
+        compute="_compute_totales",
     )
 
     total_sistema = fields.Float(
         string="Cantidad según sistema",
-        compute="_compute_totales"
+        compute="_compute_totales",
     )
 
     total_trasladar = fields.Float(
         string="Cantidad a trasladar",
-        compute="_compute_totales"
+        compute="_compute_totales",
     )
 
     total_no_aprovechable = fields.Float(
         string="Cantidad no aprovechable",
-        compute="_compute_totales"
+        compute="_compute_totales",
     )
 
     observacion = fields.Text(
-        string="Observación general"
+        string="Observación general",
     )
 
     @api.depends("anio_origen_id", "anio_destino_id")
@@ -110,7 +111,7 @@ class CierreAnioUtiles(models.Model):
         "linea_ids",
         "linea_ids.cantidad_sistema",
         "linea_ids.cantidad_a_trasladar",
-        "linea_ids.cantidad_no_aprovechable"
+        "linea_ids.cantidad_no_aprovechable",
     )
     def _compute_totales(self):
         for rec in self:
@@ -125,26 +126,66 @@ class CierreAnioUtiles(models.Model):
             return str(int(value))
         return f"{value:.2f}".rstrip("0").rstrip(".")
 
+    def _selection_values(self, Model, field_name):
+        field = Model._fields.get(field_name)
+        if not field or not getattr(field, "selection", None):
+            return []
+
+        selection = field.selection
+
+        if callable(selection):
+            selection = selection(Model)
+
+        return [item[0] for item in selection]
+
+    def _safe_motivo(self, Movimiento, preferred, fallbacks=None):
+        values = self._selection_values(Movimiento, "motivo_movimiento")
+        fallbacks = fallbacks or []
+
+        for value in [preferred] + fallbacks:
+            if value in values:
+                return value
+
+        return values[0] if values else False
+
+    def _safe_vals(self, Model, vals):
+        """
+        Evita errores si un campo aún no existe en el modelo destino.
+        Esto ayuda cuando el código ya llegó, pero el módulo todavía no fue actualizado.
+        """
+        return {
+            key: value
+            for key, value in vals.items()
+            if key in Model._fields
+        }
+
     def _calcular_saldos_por_producto_grado(self):
         self.ensure_one()
 
         Movimiento = self.env["almacen.utiles.movimiento"]
 
-        movimientos = Movimiento.search([
+        domain = [
             ("anio_escolar_id", "=", self.anio_origen_id.id),
             ("product_id", "!=", False),
-            ("motivo_movimiento", "not in", ["salida_fin_anio", "entrada_traslado_anio"]),
-        ])
+        ]
+
+        if "motivo_movimiento" in Movimiento._fields:
+            domain.append(
+                ("motivo_movimiento", "not in", ["salida_fin_anio", "entrada_traslado_anio"])
+            )
+
+        movimientos = Movimiento.search(domain)
 
         saldos = {}
 
         for mov in movimientos:
-            key = (mov.product_id.id, mov.grado_escolar or False)
+            grado = mov.grado_escolar if "grado_escolar" in mov._fields else False
+            key = (mov.product_id.id, grado or False)
 
             if key not in saldos:
                 saldos[key] = {
                     "product_id": mov.product_id.id,
-                    "grado_escolar": mov.grado_escolar or False,
+                    "grado_escolar": grado or False,
                     "cantidad": 0.0,
                 }
 
@@ -191,7 +232,7 @@ class CierreAnioUtiles(models.Model):
             if not lineas:
                 raise UserError(
                     "No se encontraron útiles sobrantes para este año escolar. "
-                    "Verifica que existan movimientos de entrada y salida en ese periodo."
+                    "Verifica que existan movimientos reales de entrada y salida en ese periodo."
                 )
 
             rec.write({
@@ -207,7 +248,7 @@ class CierreAnioUtiles(models.Model):
                 "message": "Se generó el reporte de útiles sobrantes para revisión física.",
                 "type": "success",
                 "sticky": False,
-            }
+            },
         }
 
     def action_confirmar_traslado(self):
@@ -267,14 +308,20 @@ class CierreAnioUtiles(models.Model):
                 if cantidad_no_aprovechable > 0:
                     motivo_label = dict(linea._fields["motivo_ajuste"].selection).get(
                         linea.motivo_ajuste,
-                        "Ajuste por cierre de año"
+                        "Ajuste por cierre de año",
                     )
 
-                    Movimiento.create({
+                    motivo_ajuste = rec._safe_motivo(
+                        Movimiento,
+                        "ajuste_inventario",
+                        ["salida_otro", "entrada_otro"],
+                    )
+
+                    vals_ajuste = {
                         **base_vals,
                         "anio_escolar_id": rec.anio_origen_id.id,
                         "tipo_movimiento": "ajuste",
-                        "motivo_movimiento": "ajuste_inventario",
+                        "motivo_movimiento": motivo_ajuste,
                         "cantidad": -cantidad_no_aprovechable,
                         "destino": "Ajuste de cierre de año",
                         "observacion": (
@@ -282,27 +329,47 @@ class CierreAnioUtiles(models.Model):
                             f"Motivo: {motivo_label}. "
                             f"Cantidad no trasladada: {rec._fmt_qty(cantidad_no_aprovechable)}."
                         ),
-                    })
+                    }
+
+                    Movimiento.create(
+                        rec._safe_vals(Movimiento, vals_ajuste)
+                    )
 
                 if cantidad_trasladar > 0:
-                    Movimiento.create({
+                    motivo_salida = rec._safe_motivo(
+                        Movimiento,
+                        "salida_fin_anio",
+                        ["salida_otro", "ajuste_inventario"],
+                    )
+
+                    vals_salida = {
                         **base_vals,
                         "anio_escolar_id": rec.anio_origen_id.id,
                         "tipo_movimiento": "salida",
-                        "motivo_movimiento": "salida_fin_anio",
+                        "motivo_movimiento": motivo_salida,
                         "cantidad": cantidad_trasladar,
                         "destino": rec.anio_destino_id.name,
                         "observacion": (
                             f"Salida de fin de año desde {rec.anio_origen_id.name} "
                             f"para traslado a {rec.anio_destino_id.name}."
                         ),
-                    })
+                    }
 
-                    Movimiento.create({
+                    Movimiento.create(
+                        rec._safe_vals(Movimiento, vals_salida)
+                    )
+
+                    motivo_entrada = rec._safe_motivo(
+                        Movimiento,
+                        "entrada_traslado_anio",
+                        ["entrada_otro", "entrada_traslado_interno"],
+                    )
+
+                    vals_entrada = {
                         **base_vals,
                         "anio_escolar_id": rec.anio_destino_id.id,
                         "tipo_movimiento": "entrada",
-                        "motivo_movimiento": "entrada_traslado_anio",
+                        "motivo_movimiento": motivo_entrada,
                         "cantidad": cantidad_trasladar,
                         "destino": "Almacén del nuevo periodo",
                         "observacion": (
@@ -310,14 +377,22 @@ class CierreAnioUtiles(models.Model):
                             f"Origen: {rec.anio_origen_id.name}. "
                             f"Destino: {rec.anio_destino_id.name}."
                         ),
-                    })
+                    }
 
-                    sobrante = Sobrante.search([
+                    Movimiento.create(
+                        rec._safe_vals(Movimiento, vals_entrada)
+                    )
+
+                    sobrante_domain = [
                         ("anio_origen_id", "=", rec.anio_origen_id.id),
                         ("anio_destino_id", "=", rec.anio_destino_id.id),
                         ("product_id", "=", producto.id),
-                        ("grado_escolar", "=", grado),
-                    ], limit=1)
+                    ]
+
+                    if "grado_escolar" in Sobrante._fields:
+                        sobrante_domain.append(("grado_escolar", "=", grado))
+
+                    sobrante = Sobrante.search(sobrante_domain, limit=1)
 
                     vals_sobrante = {
                         "anio_origen_id": rec.anio_origen_id.id,
@@ -332,6 +407,8 @@ class CierreAnioUtiles(models.Model):
                             f"Cantidad trasladada: {rec._fmt_qty(cantidad_trasladar)}."
                         ),
                     }
+
+                    vals_sobrante = rec._safe_vals(Sobrante, vals_sobrante)
 
                     if sobrante:
                         sobrante.write(vals_sobrante)
@@ -353,7 +430,7 @@ class CierreAnioUtiles(models.Model):
                 "message": "Se registró el ajuste, la salida de fin de año y el ingreso al nuevo periodo.",
                 "type": "success",
                 "sticky": False,
-            }
+            },
         }
 
 
@@ -366,53 +443,53 @@ class CierreAnioUtilesLinea(models.Model):
         "cierre.anio.utiles",
         string="Cierre de año",
         required=True,
-        ondelete="cascade"
+        ondelete="cascade",
     )
 
     product_id = fields.Many2one(
         "product.product",
         string="Producto",
         required=True,
-        readonly=True
+        readonly=True,
     )
 
     categoria_id = fields.Many2one(
         "product.category",
         string="Categoría",
         related="product_id.categ_id",
-        readonly=True
+        readonly=True,
     )
 
     uom_id = fields.Many2one(
         "uom.uom",
         string="Unidad",
         related="product_id.uom_id",
-        readonly=True
+        readonly=True,
     )
 
     grado_escolar = fields.Selection(
         GRADO_ESCOLAR_SELECTION,
         string="Grado / sección",
-        readonly=True
+        readonly=True,
     )
 
     cantidad_sistema = fields.Float(
         string="Cantidad según sistema",
-        readonly=True
+        readonly=True,
     )
 
     cantidad_revisada = fields.Float(
-        string="Cantidad revisada físicamente"
+        string="Cantidad revisada físicamente",
     )
 
     cantidad_a_trasladar = fields.Float(
-        string="Cantidad a trasladar"
+        string="Cantidad a trasladar",
     )
 
     cantidad_no_aprovechable = fields.Float(
         string="No aprovechable / ajuste",
         compute="_compute_cantidad_no_aprovechable",
-        store=True
+        store=True,
     )
 
     motivo_ajuste = fields.Selection(
@@ -425,11 +502,11 @@ class CierreAnioUtilesLinea(models.Model):
             ("otro", "Otro motivo"),
         ],
         string="Motivo de ajuste",
-        default="no_aplica"
+        default="no_aplica",
     )
 
     observacion = fields.Char(
-        string="Observación"
+        string="Observación",
     )
 
     @api.depends("cantidad_sistema", "cantidad_a_trasladar")
@@ -462,7 +539,7 @@ class AnioEscolarCierreUtiles(models.Model):
     cierre_utiles_ids = fields.One2many(
         "cierre.anio.utiles",
         "anio_origen_id",
-        string="Cierres de útiles"
+        string="Cierres de útiles",
     )
 
     def action_crear_revision_cierre_utiles(self):
@@ -472,12 +549,12 @@ class AnioEscolarCierreUtiles(models.Model):
             raise UserError("Este año escolar ya está cerrado.")
 
         anio_destino = self.env["anio.escolar"].search([
-            ("anio_anterior_id", "=", self.id)
+            ("anio_anterior_id", "=", self.id),
         ], limit=1)
 
         if not anio_destino:
             anio_destino = self.env["anio.escolar"].search([
-                ("anio", "=", self.anio + 1)
+                ("anio", "=", self.anio + 1),
             ], limit=1)
 
         if not anio_destino:
