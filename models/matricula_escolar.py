@@ -136,6 +136,43 @@ class MatriculaEscolar(models.Model):
     # =========================
     # ONCHANGE
     # =========================
+    
+    @api.onchange("estudiante_id")
+    def _onchange_estudiante_id_datos_registrados(self):
+        for rec in self:
+            estudiante = rec.estudiante_id
+
+            if not estudiante:
+                continue
+
+            if estudiante.grado_escolar:
+                rec.grado_escolar = estudiante.grado_escolar
+
+            if "lista_utiles_id" in estudiante._fields and estudiante.lista_utiles_id:
+                rec.lista_utiles_id = estudiante.lista_utiles_id.id
+            elif rec.grado_escolar:
+                rec._onchange_grado_anio()
+
+    def _sync_datos_estudiante_contacto(self):
+        for rec in self:
+            estudiante = rec.estudiante_id
+
+            if not estudiante:
+                continue
+
+            vals = {}
+
+            if estudiante.tipo_contacto_escolar != "estudiante":
+                vals["tipo_contacto_escolar"] = "estudiante"
+
+            if rec.grado_escolar and estudiante.grado_escolar != rec.grado_escolar:
+                vals["grado_escolar"] = rec.grado_escolar
+
+            if "lista_utiles_id" in estudiante._fields and rec.lista_utiles_id and estudiante.lista_utiles_id != rec.lista_utiles_id:
+                vals["lista_utiles_id"] = rec.lista_utiles_id.id
+
+            if vals:
+                estudiante.write(vals)
 
     @api.onchange('grado_escolar', 'anio_escolar')
     def _onchange_grado_anio(self):

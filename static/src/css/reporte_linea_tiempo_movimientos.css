@@ -243,3 +243,18 @@
     }
 }
 
+.o_ltm_detalle {
+    max-width: 320px;
+    color: #4b4b4b;
+    font-size: 13px;
+    line-height: 1.35;
+    font-weight: 650;
+}
+
+.o_ltm_obs {
+    margin-top: 4px;
+    color: #666;
+    font-size: 12px;
+    line-height: 1.3;
+}
+

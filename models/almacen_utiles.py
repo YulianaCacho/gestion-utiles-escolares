@@ -36,6 +36,18 @@ class AlmacenUtilesMovimiento(models.Model):
         default=lambda self: self.env.user.anio_escolar_actual_id,
         index=True
     )
+    
+    anio_origen_id = fields.Many2one(
+        "anio.escolar",
+        string="Año origen",
+        help="Se usa cuando el movimiento corresponde a un traslado o cierre de año."
+    )
+
+    anio_destino_id = fields.Many2one(
+        "anio.escolar",
+        string="Año destino",
+        help="Se usa cuando el movimiento corresponde a un traslado o cierre de año."
+    )
 
     recepcion_id = fields.Many2one(
         "recepcion.utiles.escolar",
@@ -392,6 +404,8 @@ class AlmacenUtilesMovimiento(models.Model):
                     or texto in (m.observacion or "").lower()
                     or texto in (m.destino or "").lower()
                     or texto in (m.estudiante_id.name or "").lower()
+                    or texto in (m._grado_label(m.grado_escolar) or "").lower()
+                    or texto in (m.recepcion_id.name or "").lower()
             )
 
         meses = [
@@ -463,6 +477,32 @@ class AlmacenUtilesMovimiento(models.Model):
             elif mov.tipo_movimiento == "ajuste":
                 motivo = mov.observacion or "Ajuste inventario físico"
 
+            detalle_partes = []
+
+            if mov.estudiante_id:
+                detalle_partes.append(f"Estudiante: {mov.estudiante_id.name}")
+
+            grado_label = self._grado_label(mov.grado_escolar)
+            if grado_label and grado_label != "Sin grado":
+                detalle_partes.append(f"Grado: {grado_label}")
+
+            if mov.destino:
+                detalle_partes.append(f"Destino: {mov.destino}")
+
+            if mov.recepcion_id:
+                detalle_partes.append(f"Recepción: {mov.recepcion_id.name}")
+
+            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
+            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
+
+            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
+            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
+
+            if anio_origen or anio_destino:
+                origen = anio_origen.name if anio_origen else ""
+                destino = anio_destino.name if anio_destino else ""
+                detalle_partes.append(f"Año: {origen} → {destino}" if origen or destino else "")
+            
             rows.append({
                 "id": mov.id,
                 "fecha": fecha_txt,
@@ -474,7 +514,14 @@ class AlmacenUtilesMovimiento(models.Model):
                 "cantidad_class": cantidad_class,
                 "responsable": mov.responsable_id.name or "",
                 "responsable_iniciales": iniciales(mov.responsable_id.name),
-                "motivo": motivo,
+                "motivo": motivo_label(mov),
+                "motivo_class": self._motivo_class(mov.motivo_movimiento),
+                "grado": grado_label,
+                "destino": mov.destino or "",
+                "estudiante": mov.estudiante_id.name or "",
+                "recepcion": mov.recepcion_id.name or "",
+                "observacion": mov.observacion or "",
+                "detalle": " · ".join([p for p in detalle_partes if p]),
             })
 
         return {

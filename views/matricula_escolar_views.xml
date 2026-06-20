@@ -63,7 +63,7 @@
 
                                 <div class="o_ge_field_block o_ge_full">
                                     <label for="estudiante_id"/>
-                                    <field name="estudiante_id" nolabel="1" placeholder="Seleccionar estudiante" options="{'no_create': True}"/>
+                                    <field name="estudiante_id" nolabel="1" placeholder="Seleccionar estudiante o crear nuevo" context="{'default_tipo_contacto_escolar': 'estudiante'}" options="{'no_create': False, 'no_open': False}"/>
                                 </div>
 
                                 <div class="o_ge_two_cols">
@@ -90,26 +90,9 @@
                                     </div>
                                 </div>
 
-                                <div class="o_ge_two_cols">
-                                    <div class="o_ge_field_block">
-                                        <label for="situacion_siguiente_anio"/>
-                                        <field name="situacion_siguiente_anio" nolabel="1" widget="badge"/>
-                                    </div>
-
-                                    <div class="o_ge_field_block">
-                                        <label for="matricula_anterior_id"/>
-                                        <field name="matricula_anterior_id" nolabel="1" readonly="1" placeholder="No registrada" options="{'no_open': True, 'no_create': True}"/>
-                                    </div>
-                                </div>
-
-                                <div class="o_ge_two_cols">
-                                    <div class="o_ge_field_block">
-                                        <label for="matricula_siguiente_id"/>
-                                        <field name="matricula_siguiente_id" nolabel="1" readonly="1" placeholder="No registrada" options="{'no_open': True, 'no_create': True}"/>
-                                    </div>
-
-                                    <div></div>
-                                </div>
+                                <field name="situacion_siguiente_anio" invisible="1"/>
+                                <field name="matricula_anterior_id" invisible="1"/>
+                                <field name="matricula_siguiente_id" invisible="1"/>
 
                             </div>
                         </div>
@@ -230,7 +213,7 @@
     <!-- ========================= -->
     <!-- MENÚ: ESTADO POR ALUMNO -->
     <!-- ========================= -->
-    
+
     <!-- Acción cliente moderna para Estado por alumno -->
     <record id="action_estado_alumno_dashboard" model="ir.actions.client">
         <field name="name">Estado por alumno</field>

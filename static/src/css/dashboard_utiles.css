@@ -287,3 +287,17 @@
         grid-template-columns: repeat(2, minmax(150px, 1fr));
     }
 }
+
+.o_utiles_subgrades {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: -4px;
+    margin-bottom: 14px;
+    padding-left: 12px;
+}
+
+.o_utiles_subgrades .o_utiles_chip {
+    font-size: 13px;
+    padding: 7px 13px;
+}

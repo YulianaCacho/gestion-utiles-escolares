@@ -49,6 +49,13 @@ class ResPartner(models.Model):
         ],
         string="Grado escolar"
     )
+    
+    lista_utiles_id = fields.Many2one(
+        "lista.utiles.grado",
+        string="Lista de útiles",
+        domain="[('grado_escolar', '=', grado_escolar)]",
+        help="Lista asociada al grado actual del estudiante."
+    )
 
     apoderado_principal_id = fields.Many2one(
         "res.partner",
@@ -79,6 +86,29 @@ class ResPartner(models.Model):
         compute="_compute_cantidad_estudiantes_relacionados",
         store=False
     )
+    
+    @api.onchange("grado_escolar")
+    def _onchange_grado_escolar_lista(self):
+        for partner in self:
+            if partner.tipo_contacto_escolar != "estudiante" or not partner.grado_escolar:
+                partner.lista_utiles_id = False
+                continue
+
+            anio_actual = self.env.user.anio_escolar_actual_id
+            domain = [("grado_escolar", "=", partner.grado_escolar)]
+
+            if anio_actual:
+                domain.append(("anio_escolar_id", "=", anio_actual.id))
+
+            lista = self.env["lista.utiles.grado"].search(domain, limit=1)
+
+            if not lista and anio_actual:
+                lista = self.env["lista.utiles.grado"].search([
+                    ("grado_escolar", "=", partner.grado_escolar),
+                    ("anio", "=", str(anio_actual.anio)),
+                ], limit=1)
+
+            partner.lista_utiles_id = lista.id if lista else False
 
     @api.depends("estudiante_principal_ids", "estudiante_secundario_ids")
     def _compute_cantidad_estudiantes_relacionados(self):

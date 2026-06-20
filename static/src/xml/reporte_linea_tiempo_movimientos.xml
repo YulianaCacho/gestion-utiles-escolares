@@ -7,17 +7,12 @@
             <div class="o_ltm_toolbar">
                 <div class="o_ltm_search">
                     <i class="fa fa-search"/>
-                    <input type="text"
-                            placeholder="Buscar producto, responsable..."
-                            t-att-value="state.search"
-                            t-on-input="onInputSearch"/>
+                    <input type="text" placeholder="Buscar producto, responsable..." t-att-value="state.search" t-on-input="onInputSearch"/>
                 </div>
 
                 <div class="o_ltm_month">
                     <i class="fa fa-calendar"/>
-                    <input type="month"
-                            t-att-value="state.selectedMonth"
-                            t-on-change="onChangeMonth"/>
+                    <input type="month" t-att-value="state.selectedMonth" t-on-change="onChangeMonth"/>
                 </div>
 
                 <div class="o_ltm_type">
@@ -39,34 +34,27 @@
             <div class="o_ltm_header">
                 <h2>Todos los movimientos</h2>
                 <span>
-                    <t t-esc="state.total"/> movimientos · <t t-esc="state.monthLabel"/>
+                    <t t-esc="state.total"/>
+ movimientos · <t t-esc="state.monthLabel"/>
                 </span>
             </div>
 
             <div class="o_ltm_chips">
-                <button type="button"
-                        t-att-class="state.tipoSeleccionado === '' ? 'active' : ''"
-                        t-on-click="clearTipo">
+                <button type="button" t-att-class="state.tipoSeleccionado === '' ? 'active' : ''" t-on-click="clearTipo">
                     Todos
                 </button>
 
-                <button type="button"
-                        t-att-class="state.tipoSeleccionado === 'entrada' ? 'active entrada' : 'entrada'"
-                        t-on-click="() => this.setTipo('entrada')">
+                <button type="button" t-att-class="state.tipoSeleccionado === 'entrada' ? 'active entrada' : 'entrada'" t-on-click="() => this.setTipo('entrada')">
                     <span class="dot entrada"></span>
                     Entradas
                 </button>
 
-                <button type="button"
-                        t-att-class="state.tipoSeleccionado === 'salida' ? 'active salida' : 'salida'"
-                        t-on-click="() => this.setTipo('salida')">
+                <button type="button" t-att-class="state.tipoSeleccionado === 'salida' ? 'active salida' : 'salida'" t-on-click="() => this.setTipo('salida')">
                     <span class="dot salida"></span>
                     Salidas
                 </button>
 
-                <button type="button"
-                        t-att-class="state.tipoSeleccionado === 'ajuste' ? 'active ajuste' : 'ajuste'"
-                        t-on-click="() => this.setTipo('ajuste')">
+                <button type="button" t-att-class="state.tipoSeleccionado === 'ajuste' ? 'active ajuste' : 'ajuste'" t-on-click="() => this.setTipo('ajuste')">
                     <span class="dot ajuste"></span>
                     Ajustes
                 </button>
@@ -82,6 +70,7 @@
                         <th>Cantidad</th>
                         <th>Responsable</th>
                         <th>Motivo / referencia</th>
+                        <th>Detalle</th>
                     </tr>
                 </thead>
 
@@ -92,10 +81,14 @@
                             <td t-esc="row.hora"/>
 
                             <td>
-                                <span t-att-class="'o_ltm_badge ' + row.tipo_class">
-                                    <span t-att-class="'dot ' + row.tipo_class"></span>
-                                    <t t-esc="row.tipo"/>
+                                <span t-att-class="'o_ltm_motivo_badge ' + row.motivo_class">
+                                    <t t-esc="row.motivo"/>
                                 </span>
+                                <div class="o_ltm_obs" t-if="row.observacion" t-esc="row.observacion"/>
+                            </td>
+
+                            <td>
+                                <div class="o_ltm_detalle" t-esc="row.detalle || 'Sin detalle adicional'"/>
                             </td>
 
                             <td t-esc="row.producto"/>
@@ -110,13 +103,11 @@
                                     <strong t-esc="row.responsable"/>
                                 </div>
                             </td>
-
-                            <td t-esc="row.motivo"/>
                         </tr>
                     </t>
 
                     <tr t-else="">
-                        <td colspan="7" class="o_ltm_empty">
+                        <td colspan="8" class="o_ltm_empty">
                             Todavía no hay movimientos registrados para este mes.
                         </td>
                     </tr>

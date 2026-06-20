@@ -209,3 +209,10 @@
         gap: 6px;
     }
 }
+
+.o_rr_grade_filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -4px 0 12px 0;
+}

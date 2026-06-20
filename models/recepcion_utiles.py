@@ -349,6 +349,91 @@ class RecepcionUtilesEscolar(models.Model):
                     valores["cantidad_enviada_almacen"] = 0
 
                 linea.write(valores)
+                
+    @api.onchange("matricula_id")
+    def _onchange_matricula_id_cargar_lista(self):
+        for rec in self:
+            if rec.tipo_entrada != "recepcion_utiles":
+                continue
+
+            rec.linea_ids = [(5, 0, 0)]
+            rec.estado = "borrador"
+            rec.fecha_envio_almacen = False
+            rec.usuario_envio_almacen_id = False
+
+            if not rec.matricula_id or not rec.lista_id:
+                continue
+
+            comandos = [(5, 0, 0)]
+
+            for linea in rec.lista_id.linea_ids:
+                producto = rec._obtener_valor_linea(
+                    linea,
+                    ["product_id", "producto_id"]
+                )
+
+                cantidad = rec._obtener_valor_linea(
+                    linea,
+                    ["cantidad_esperada", "cantidad", "product_qty"],
+                    0
+                )
+
+                unidad = rec._obtener_valor_linea(
+                    linea,
+                    ["unidad_id", "uom_id"]
+                )
+
+                categoria = rec._obtener_valor_linea(
+                    linea,
+                    ["categoria_id", "categ_id"]
+                )
+
+                tipo_uso = rec._obtener_valor_linea(
+                    linea,
+                    ["tipo_uso_escolar"],
+                    ""
+                )
+
+                observacion = rec._obtener_valor_linea(
+                    linea,
+                    ["observacion", "note"],
+                    ""
+                )
+
+                if not producto:
+                    continue
+
+                producto_recepcion = producto.product_variant_id if producto._name == "product.template" else producto
+
+                if not categoria and producto:
+                    categoria = producto.categ_id
+
+                tipo_uso_texto = tipo_uso
+
+                if "tipo_uso_escolar" in linea._fields:
+                    field_tipo = linea._fields["tipo_uso_escolar"]
+                    if field_tipo.type == "selection":
+                        try:
+                            seleccion = dict(field_tipo._description_selection(self.env))
+                            tipo_uso_texto = seleccion.get(tipo_uso, tipo_uso)
+                        except Exception:
+                            tipo_uso_texto = tipo_uso
+
+                destino = rec._calcular_destino_recepcion(tipo_uso_texto)
+
+                comandos.append((0, 0, {
+                    "product_id": producto_recepcion.id,
+                    "cantidad_esperada": cantidad,
+                    "cantidad_entregada": 0,
+                    "unidad_id": unidad.id if unidad else False,
+                    "categoria_id": categoria.id if categoria else False,
+                    "tipo_uso_escolar": tipo_uso_texto,
+                    "destino_recepcion": destino,
+                    "cantidad_enviada_almacen": 0,
+                    "observacion": observacion,
+                }))
+
+            rec.linea_ids = comandos
 
     def action_cargar_lista(self):
         for rec in self:
@@ -403,6 +488,8 @@ class RecepcionUtilesEscolar(models.Model):
                 if not producto:
                     continue
 
+                producto_recepcion = producto.product_variant_id if producto._name == "product.template" else producto
+
                 if not categoria and producto:
                     categoria = producto.categ_id
 
@@ -420,7 +507,7 @@ class RecepcionUtilesEscolar(models.Model):
                 destino = rec._calcular_destino_recepcion(tipo_uso_texto)
 
                 comandos.append((0, 0, {
-                    "product_id": producto.id,
+                    "product_id": producto_recepcion.id,
                     "cantidad_esperada": cantidad,
                     "cantidad_entregada": 0,
                     "unidad_id": unidad.id if unidad else False,

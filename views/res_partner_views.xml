@@ -8,69 +8,70 @@
             <data>
 
                 <xpath expr="//sheet/notebook" position="inside">
-    <page string="Datos escolares">
+                    <page string="Datos escolares">
 
-        <group string="Datos de identificación">
-            <field name="dni_escolar"/>
-        </group>
+                        <group string="Datos de identificación">
+                            <field name="dni_escolar"/>
+                        </group>
 
-        <group string="Clasificación escolar">
-            <field name="tipo_contacto_escolar"/>
-            <field name="cargo_institucional"/>
-        </group>
+                        <group string="Clasificación escolar">
+                            <field name="tipo_contacto_escolar"/>
+                            <field name="cargo_institucional"/>
+                        </group>
 
-        <group string="Datos del estudiante" invisible="tipo_contacto_escolar != 'estudiante'">
-            <field name="grado_escolar"/>
-            <field name="apoderado_principal_id"/>
-            <field name="apoderado_secundario_id"/>
-        </group>
+                        <group string="Datos del estudiante" invisible="tipo_contacto_escolar != 'estudiante'">
+                            <field name="grado_escolar"/>
+                            <field name="lista_utiles_id" options="{'no_create': True}"/>
+                            <field name="apoderado_principal_id"/>
+                            <field name="apoderado_secundario_id"/>
+                        </group>
 
-        <group string="Relación con estudiantes" invisible="tipo_contacto_escolar != 'apoderado'">
-            <field name="cantidad_estudiantes_relacionados" readonly="1"/>
+                        <group string="Relación con estudiantes" invisible="tipo_contacto_escolar != 'apoderado'">
+                            <field name="cantidad_estudiantes_relacionados" readonly="1"/>
 
-            <field name="estudiante_principal_ids" readonly="1" nolabel="1">
-                <kanban>
-                    <templates>
-                        <t t-name="card">
-                            <div class="oe_kanban_card">
-                                <strong>
-                                    <field name="name"/>
-                                </strong>
-                                <br/>
-                                <span>Grado: </span>
-                                <field name="grado_escolar"/>
-                                <br/>
-                                <span>Tipo de apoderado: </span>
-                                <strong>Apoderado principal</strong>
-                            </div>
-                        </t>
-                    </templates>
-                </kanban>
-            </field>
+                            <field name="estudiante_principal_ids" readonly="1" nolabel="1">
+                                <kanban>
+                                    <templates>
+                                        <t t-name="card">
+                                            <div class="oe_kanban_card">
+                                                <strong>
+                                                    <field name="name"/>
+                                                </strong>
+                                                <br/>
+                                                <span>Grado: </span>
+                                                <field name="grado_escolar"/>
+                                                <br/>
+                                                <span>Tipo de apoderado: </span>
+                                                <strong>Apoderado principal</strong>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
 
-            <field name="estudiante_secundario_ids" readonly="1" nolabel="1">
-                <kanban>
-                    <templates>
-                        <t t-name="card">
-                            <div class="oe_kanban_card">
-                                <strong>
-                                    <field name="name"/>
-                                </strong>
-                                <br/>
-                                <span>Grado: </span>
-                                <field name="grado_escolar"/>
-                                <br/>
-                                <span>Tipo de apoderado: </span>
-                                <strong>Apoderado secundario</strong>
-                            </div>
-                        </t>
-                    </templates>
-                </kanban>
-            </field>
-        </group>
+                            <field name="estudiante_secundario_ids" readonly="1" nolabel="1">
+                                <kanban>
+                                    <templates>
+                                        <t t-name="card">
+                                            <div class="oe_kanban_card">
+                                                <strong>
+                                                    <field name="name"/>
+                                                </strong>
+                                                <br/>
+                                                <span>Grado: </span>
+                                                <field name="grado_escolar"/>
+                                                <br/>
+                                                <span>Tipo de apoderado: </span>
+                                                <strong>Apoderado secundario</strong>
+                                            </div>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
+                        </group>
 
-    </page>
-</xpath>
+                    </page>
+                </xpath>
 
                 <xpath expr="//field[@name='company_type']" position="attributes">
                     <attribute name="invisible">1</attribute>
