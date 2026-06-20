@@ -9,6 +9,32 @@ const EXCLUDED_CATEGORIES = [
     "material personal",
 ];
 
+const GRADOS_INICIAL = [
+    { value: "inicial_3", label: "Inicial 3 años" },
+    { value: "inicial_4", label: "Inicial 4 años" },
+    { value: "inicial_5", label: "Inicial 5 años" },
+];
+
+const GRADOS_PRIMARIA = [
+    { value: "1er_grado", label: "1er grado" },
+    { value: "2do_grado", label: "2do grado" },
+    { value: "3er_grado", label: "3er grado" },
+    { value: "4to_grado", label: "4to grado" },
+    { value: "5to_grado", label: "5to grado" },
+    { value: "6to_grado", label: "6to grado" },
+];
+
+const GRADOS_ESCOLARES = [
+    { value: "Todos", label: "Todos los grados" },
+    ...GRADOS_INICIAL,
+    ...GRADOS_PRIMARIA,
+];
+
+const GRADOS_BY_NIVEL = {
+    Inicial: GRADOS_INICIAL.map((item) => item.value),
+    Primaria: GRADOS_PRIMARIA.map((item) => item.value),
+};
+
 function normalizeText(value) {
     return String(value || "")
         .toLowerCase()
@@ -26,10 +52,16 @@ class DashboardUtilesEscolares extends Component {
 
         this.state = useState({
             search: "",
+
             selectedCategory: "Todos",
+            selectedGrade: "Todos",
+            selectedNivel: "",
+            showGradeGroup: "",
+
             updatedAt: "",
             products: [],
             categories: ["Todos"],
+            grades: GRADOS_ESCOLARES,
 
             currentYearId: false,
             currentYearLabel: "Año actual",
@@ -82,6 +114,22 @@ class DashboardUtilesEscolares extends Component {
         }
     }
 
+    _matchesSelectedScope(gradoEscolar) {
+        const selectedGrade = this.state.selectedGrade || "Todos";
+        const selectedNivel = this.state.selectedNivel || "";
+
+        if (selectedGrade !== "Todos") {
+            return gradoEscolar === selectedGrade;
+        }
+
+        if (selectedNivel) {
+            const gradosNivel = GRADOS_BY_NIVEL[selectedNivel] || [];
+            return gradosNivel.includes(gradoEscolar);
+        }
+
+        return true;
+    }
+
     async loadDashboardData() {
         await this.loadCurrentYear();
 
@@ -99,7 +147,7 @@ class DashboardUtilesEscolares extends Component {
         const movimientos = await this.orm.searchRead(
             "almacen.utiles.movimiento",
             movimientosDomain,
-            ["product_id", "cantidad", "tipo_movimiento", "categoria_id"],
+            ["product_id", "cantidad", "tipo_movimiento", "categoria_id", "grado_escolar"],
             { limit: 10000, order: "id asc" }
         );
 
@@ -117,10 +165,12 @@ class DashboardUtilesEscolares extends Component {
             "cantidad_disponible",
             "anio_origen_id",
             "anio_destino_id",
+            "grado_escolar",
             "estado",
         ];
 
         const sobranteFields = possibleSobranteFields.filter((field) => sobranteFieldsInfo[field]);
+        const sobranteHasGrade = sobranteFields.includes("grado_escolar");
 
         const sobrantesDomain = this.state.currentYearId
             ? [["anio_destino_id", "=", this.state.currentYearId]]
@@ -138,6 +188,10 @@ class DashboardUtilesEscolares extends Component {
         const sobranteByProduct = {};
 
         for (const mov of movimientos) {
+            if (!this._matchesSelectedScope(mov.grado_escolar)) {
+                continue;
+            }
+
             if (!mov.product_id || !mov.product_id[0]) {
                 continue;
             }
@@ -164,6 +218,10 @@ class DashboardUtilesEscolares extends Component {
         }
 
         for (const sobrante of sobrantes) {
+            if (sobranteHasGrade && !this._matchesSelectedScope(sobrante.grado_escolar)) {
+                continue;
+            }
+
             if (!sobrante.product_id || !sobrante.product_id[0]) {
                 continue;
             }
@@ -263,8 +321,55 @@ class DashboardUtilesEscolares extends Component {
         });
     }
 
+    get selectedGradeLabel() {
+        if (this.state.selectedGrade !== "Todos") {
+            const grado = this.state.grades.find(
+                (item) => item.value === this.state.selectedGrade
+            );
+            return grado ? grado.label : "Todos los grados";
+        }
+
+        if (this.state.selectedNivel) {
+            return this.state.selectedNivel;
+        }
+
+        return "Todos los grados";
+    }
+
+    get inicialGrades() {
+        return GRADOS_INICIAL;
+    }
+
+    get primariaGrades() {
+        return GRADOS_PRIMARIA;
+    }
+
     selectCategory(category) {
         this.state.selectedCategory = category;
+    }
+
+    async selectGrade(grade) {
+        this.state.selectedGrade = grade;
+
+        if (grade === "Todos") {
+            this.state.selectedNivel = "";
+            this.state.showGradeGroup = "";
+        }
+
+        await this.loadDashboardData();
+    }
+
+    async toggleGradeGroup(nivel) {
+        this.state.showGradeGroup = this.state.showGradeGroup === nivel ? "" : nivel;
+        this.state.selectedNivel = nivel;
+        this.state.selectedGrade = "Todos";
+
+        await this.loadDashboardData();
+    }
+
+    async setGradeFilter(grade) {
+        this.state.selectedGrade = grade;
+        await this.loadDashboardData();
     }
 
     progressWidth(product) {
