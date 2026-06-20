@@ -36,6 +36,18 @@ class AlmacenUtilesMovimiento(models.Model):
         default=lambda self: self.env.user.anio_escolar_actual_id,
         index=True
     )
+    
+    anio_origen_id = fields.Many2one(
+        "anio.escolar",
+        string="Año origen",
+        help="Se usa cuando el movimiento corresponde a un traslado o cierre de año."
+    )
+
+    anio_destino_id = fields.Many2one(
+        "anio.escolar",
+        string="Año destino",
+        help="Se usa cuando el movimiento corresponde a un traslado o cierre de año."
+    )
 
     recepcion_id = fields.Many2one(
         "recepcion.utiles.escolar",
@@ -480,11 +492,14 @@ class AlmacenUtilesMovimiento(models.Model):
             if mov.recepcion_id:
                 detalle_partes.append(f"Recepción: {mov.recepcion_id.name}")
 
-            if mov.anio_origen_id or mov.anio_destino_id:
-                origen = mov.anio_origen_id.name or ""
-                destino = mov.anio_destino_id.name or ""
-                detalle_partes.append(f"Año: {origen} → {destino}" if origen or destino else "")
+            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
+            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
 
+            if anio_origen or anio_destino:
+                origen = anio_origen.name if anio_origen else ""
+                destino = anio_destino.name if anio_destino else ""
+                detalle_partes.append(f"Año: {origen} → {destino}" if origen or destino else "")
+            
             rows.append({
                 "id": mov.id,
                 "fecha": fecha_txt,
