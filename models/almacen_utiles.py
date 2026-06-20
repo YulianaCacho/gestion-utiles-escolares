@@ -495,6 +495,9 @@ class AlmacenUtilesMovimiento(models.Model):
             anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
             anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
 
+            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
+            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
+
             if anio_origen or anio_destino:
                 origen = anio_origen.name if anio_origen else ""
                 destino = anio_destino.name if anio_destino else ""
