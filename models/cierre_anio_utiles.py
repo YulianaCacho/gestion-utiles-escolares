@@ -1,7 +1,17 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 
-from .almacen_utiles import GRADO_ESCOLAR_SELECTION
+GRADO_ESCOLAR_SELECTION = [
+    ("inicial_3", "Inicial 3 años"),
+    ("inicial_4", "Inicial 4 años"),
+    ("inicial_5", "Inicial 5 años"),
+    ("1er_grado", "1er grado"),
+    ("2do_grado", "2do grado"),
+    ("3er_grado", "3er grado"),
+    ("4to_grado", "4to grado"),
+    ("5to_grado", "5to grado"),
+    ("6to_grado", "6to grado"),
+]
 
 
 class CierreAnioUtiles(models.Model):
