@@ -495,14 +495,20 @@ class AlmacenUtilesMovimiento(models.Model):
             anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
             anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
 
-            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
-            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
-
             if anio_origen or anio_destino:
                 origen = anio_origen.name if anio_origen else ""
                 destino = anio_destino.name if anio_destino else ""
                 detalle_partes.append(f"Año: {origen} → {destino}" if origen or destino else "")
             
+            motivo_class = "default"
+
+            if mov.tipo_movimiento == "entrada":
+                motivo_class = "entrada"
+            elif mov.tipo_movimiento == "salida":
+                motivo_class = "salida"
+            elif mov.tipo_movimiento == "ajuste":
+                motivo_class = "ajuste"
+
             rows.append({
                 "id": mov.id,
                 "fecha": fecha_txt,
@@ -514,8 +520,8 @@ class AlmacenUtilesMovimiento(models.Model):
                 "cantidad_class": cantidad_class,
                 "responsable": mov.responsable_id.name or "",
                 "responsable_iniciales": iniciales(mov.responsable_id.name),
-                "motivo": motivo_label(mov),
-                "motivo_class": self._motivo_class(mov.motivo_movimiento),
+                "motivo": motivo,
+                "motivo_class": motivo_class,
                 "grado": grado_label,
                 "destino": mov.destino or "",
                 "estudiante": mov.estudiante_id.name or "",
