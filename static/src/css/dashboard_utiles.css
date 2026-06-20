@@ -288,6 +288,21 @@
     }
 }
 
+.o_utiles_filter_group {
+    margin-bottom: 14px;
+}
+
+.o_utiles_filter_label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.o_utiles_grades {
+    margin-top: 0;
+}
+
 .o_utiles_subgrades {
     display: flex;
     flex-wrap: wrap;

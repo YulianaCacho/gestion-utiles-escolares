@@ -7,12 +7,16 @@
             <div class="o_utiles_toolbar">
                 <div class="o_utiles_search_box">
                     <i class="fa fa-search"/>
-                    <input type="text" placeholder="Buscar producto, categoría..." t-model="state.search"/>
+                    <input type="text"
+                           placeholder="Buscar producto, categoría..."
+                           t-model="state.search"/>
                 </div>
 
-                <button type="button" class="o_utiles_button" t-on-click="exportCsv">
+                <button type="button"
+                        class="o_utiles_button"
+                        t-on-click="exportCsv">
                     <i class="fa fa-download"/>
- Exportar
+                    Exportar
                 </button>
             </div>
 
@@ -51,50 +55,80 @@
                         </small>
                     </div>
 
-                    <span>Actualizado: <t t-esc="state.updatedAt"/>
+                    <span>
+                        Actualizado:
+                        <t t-esc="state.updatedAt"/>
                     </span>
                 </div>
 
-                <div class="o_utiles_categories">
-                    <t t-foreach="state.categories" t-as="category" t-key="category">
-                        <button type="button" t-att-class="category === state.selectedCategory ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.selectCategory(category)">
-                            <t t-esc="category"/>
-                        </button>
-                    </t>
+                <!-- Filtro por categoría -->
+                <div class="o_utiles_filter_group">
+                    <div class="o_utiles_filter_label">
+                        Categoría:
+                        <strong t-esc="state.selectedCategory"/>
+                    </div>
+
+                    <div class="o_utiles_categories">
+                        <t t-foreach="state.categories"
+                           t-as="category"
+                           t-key="category">
+                            <button type="button"
+                                    t-att-class="category === state.selectedCategory ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                    t-on-click="() => this.selectCategory(category)">
+                                <t t-esc="category"/>
+                            </button>
+                        </t>
+                    </div>
                 </div>
 
                 <!-- Filtro por nivel y grado -->
                 <div class="o_utiles_filter_group">
                     <div class="o_utiles_filter_label">
-        Nivel / grado:
+                        Nivel / grado:
                         <strong t-esc="selectedGradeLabel"/>
                     </div>
 
                     <div class="o_utiles_categories o_utiles_grades">
-                        <button type="button" t-att-class="state.selectedGrade === 'Todos' &amp;&amp; !state.selectedNivel ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.selectGrade('Todos')">
-            Todos los grados
+                        <button type="button"
+                                t-att-class="state.selectedGrade === 'Todos' &amp;&amp; !state.selectedNivel ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                t-on-click="() => this.selectGrade('Todos')">
+                            Todos los grados
                         </button>
 
-                        <button type="button" t-att-class="state.showGradeGroup === 'Inicial' || state.selectedNivel === 'Inicial' ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.toggleGradeGroup('Inicial')">
-            Inicial ▾
+                        <button type="button"
+                                t-att-class="state.showGradeGroup === 'Inicial' || state.selectedNivel === 'Inicial' ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                t-on-click="() => this.toggleGradeGroup('Inicial')">
+                            Inicial ▾
                         </button>
 
-                        <button type="button" t-att-class="state.showGradeGroup === 'Primaria' || state.selectedNivel === 'Primaria' ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.toggleGradeGroup('Primaria')">
-            Primaria ▾
+                        <button type="button"
+                                t-att-class="state.showGradeGroup === 'Primaria' || state.selectedNivel === 'Primaria' ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                t-on-click="() => this.toggleGradeGroup('Primaria')">
+                            Primaria ▾
                         </button>
                     </div>
 
-                    <div class="o_utiles_subgrades" t-if="state.showGradeGroup === 'Inicial'">
-                        <t t-foreach="inicialGrades" t-as="grade" t-key="grade.value">
-                            <button type="button" t-att-class="grade.value === state.selectedGrade ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.setGradeFilter(grade.value)">
+                    <div class="o_utiles_subgrades"
+                         t-if="state.showGradeGroup === 'Inicial'">
+                        <t t-foreach="inicialGrades"
+                           t-as="grade"
+                           t-key="grade.value">
+                            <button type="button"
+                                    t-att-class="grade.value === state.selectedGrade ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                    t-on-click="() => this.setGradeFilter(grade.value)">
                                 <t t-esc="grade.label"/>
                             </button>
                         </t>
                     </div>
 
-                    <div class="o_utiles_subgrades" t-if="state.showGradeGroup === 'Primaria'">
-                        <t t-foreach="primariaGrades" t-as="grade" t-key="grade.value">
-                            <button type="button" t-att-class="grade.value === state.selectedGrade ? 'o_utiles_chip active' : 'o_utiles_chip'" t-on-click="() => this.setGradeFilter(grade.value)">
+                    <div class="o_utiles_subgrades"
+                         t-if="state.showGradeGroup === 'Primaria'">
+                        <t t-foreach="primariaGrades"
+                           t-as="grade"
+                           t-key="grade.value">
+                            <button type="button"
+                                    t-att-class="grade.value === state.selectedGrade ? 'o_utiles_chip active' : 'o_utiles_chip'"
+                                    t-on-click="() => this.setGradeFilter(grade.value)">
                                 <t t-esc="grade.label"/>
                             </button>
                         </t>
@@ -123,7 +157,10 @@
 
                         <tbody>
                             <t t-if="filteredProducts.length">
-                                <tr t-foreach="filteredProducts" t-as="product" t-key="product.id">
+                                <tr t-foreach="filteredProducts"
+                                    t-as="product"
+                                    t-key="product.id">
+
                                     <td class="o_utiles_product_name">
                                         <span class="o_utiles_product_icon">✎</span>
                                         <div>
@@ -133,7 +170,8 @@
                                     </td>
 
                                     <td>
-                                        <span class="o_utiles_category_badge" t-esc="product.category"/>
+                                        <span class="o_utiles_category_badge"
+                                              t-esc="product.category"/>
                                     </td>
 
                                     <td t-esc="product.currentQty"/>
@@ -151,7 +189,8 @@
                                     <td t-esc="product.reserved"/>
 
                                     <td>
-                                        <span t-att-class="'o_utiles_status ' + statusClass(product.status)" t-esc="product.status"/>
+                                        <span t-att-class="'o_utiles_status ' + statusClass(product.status)"
+                                              t-esc="product.status"/>
                                     </td>
                                 </tr>
                             </t>
