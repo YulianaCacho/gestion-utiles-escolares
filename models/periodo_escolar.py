@@ -591,6 +591,24 @@ class MatriculaEscolar(models.Model):
 
         return [("anio_escolar_id", "=", anio_actual.id)]
 
+    def _check_anio_abierto(self):
+        for rec in self:
+            if rec.anio_escolar_id and rec.anio_escolar_id.estado == "cerrado":
+                raise UserError(
+                    "No se puede modificar esta matrícula porque el año escolar %s ya está cerrado."
+                    % rec.anio_escolar_id.name
+                )
+
+    def _check_vals_anio_abierto(self, vals):
+        anio_id = vals.get("anio_escolar_id")
+        if anio_id:
+            anio = self.env["anio.escolar"].browse(anio_id)
+            if anio.estado == "cerrado":
+                raise UserError(
+                    "No se puede crear o mover una matrícula al año escolar %s porque ya está cerrado."
+                    % anio.name
+                )
+
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
@@ -647,13 +665,18 @@ class MatriculaEscolar(models.Model):
             if not vals.get("anio_escolar_id") and self.env.user.anio_escolar_actual_id:
                 vals["anio_escolar_id"] = self.env.user.anio_escolar_actual_id.id
 
+            self._check_vals_anio_abierto(vals)
+
             if vals.get("anio_escolar_id"):
                 anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
                 vals["anio_escolar"] = anio.anio
 
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        records._sync_datos_estudiante_contacto()
+        return records
 
     def write(self, vals):
+        self._check_anio_abierto()
         if "anio_escolar_id" in vals and vals.get("anio_escolar_id"):
             nuevo_anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
 
@@ -666,8 +689,16 @@ class MatriculaEscolar(models.Model):
 
             vals["anio_escolar"] = nuevo_anio.anio
 
-        return super().write(vals)
+        result = super().write(vals)
 
+        if {"estudiante_id", "grado_escolar", "lista_utiles_id"}.intersection(vals):
+            self._sync_datos_estudiante_contacto()
+
+        return result
+    
+    def unlink(self):
+        self._check_anio_abierto()
+        return super().unlink()
 
 class ListaUtilesGrado(models.Model):
     _inherit = "lista.utiles.grado"
@@ -725,6 +756,55 @@ class RecepcionUtilesEscolar(models.Model):
         store=True,
         readonly=True
     )
+    
+    def _anio_control_cierre(self):
+        self.ensure_one()
+        return self.anio_escolar_id or self.anio_ingreso_id
+
+    def _check_anio_abierto(self):
+        for rec in self:
+            anio = rec._anio_control_cierre()
+            if anio and anio.estado == "cerrado":
+                raise UserError(
+                    "No se puede modificar esta recepción porque el año escolar %s ya está cerrado."
+                    % anio.name
+                )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            anio_id = vals.get("anio_ingreso_id")
+            matricula_id = vals.get("matricula_id")
+
+            if matricula_id:
+                matricula = self.env["matricula.escolar"].browse(matricula_id)
+                anio_id = matricula.anio_escolar_id.id if matricula.anio_escolar_id else anio_id
+
+            if anio_id:
+                anio = self.env["anio.escolar"].browse(anio_id)
+                if anio.estado == "cerrado":
+                    raise UserError("No se puede registrar una recepción en un año escolar cerrado.")
+
+        return super().create(vals_list)
+
+    def write(self, vals):
+        self._check_anio_abierto()
+
+        if vals.get("anio_ingreso_id"):
+            anio = self.env["anio.escolar"].browse(vals["anio_ingreso_id"])
+            if anio.estado == "cerrado":
+                raise UserError("No se puede mover la recepción a un año escolar cerrado.")
+
+        if vals.get("matricula_id"):
+            matricula = self.env["matricula.escolar"].browse(vals["matricula_id"])
+            if matricula.anio_escolar_id and matricula.anio_escolar_id.estado == "cerrado":
+                raise UserError("No se puede asignar una matrícula de un año escolar cerrado.")
+
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_anio_abierto()
+        return super().unlink()
 
 
 class SalidaAlmacenUtiles(models.Model):
@@ -763,11 +843,36 @@ class AlmacenUtilesMovimiento(models.Model):
         string="Año escolar",
         default=lambda self: self.env.user.anio_escolar_actual_id.id if self.env.user.anio_escolar_actual_id else False
     )
+    
+    def _check_anio_abierto(self):
+        for rec in self:
+            if rec.anio_escolar_id and rec.anio_escolar_id.estado == "cerrado":
+                raise UserError(
+                    "No se puede modificar este movimiento porque el año escolar %s ya está cerrado."
+                    % rec.anio_escolar_id.name
+                )
 
     @api.model_create_multi
+    def write(self, vals):
+        self._check_anio_abierto()
+
+        if vals.get("anio_escolar_id"):
+            anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
+            if anio.estado == "cerrado":
+                raise UserError("No se puede mover un movimiento a un año escolar cerrado.")
+
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_anio_abierto()
+        return super().unlink()
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get("anio_escolar_id"):
+            anio_forzado = vals.get("anio_escolar_id")
+            if anio_forzado:
+                anio = self.env["anio.escolar"].browse(anio_forzado)
+                if anio.estado == "cerrado":
+                    raise UserError("No se puede crear un movimiento en un año escolar cerrado.")
                 continue
 
             anio_id = False

@@ -56,12 +56,32 @@
                         t-on-click="() => this.setFilter('Incompletos')">Incompletos</button>
 
                 <button type="button"
-                        t-att-class="state.filterMode === 'Inicial' ? 'o_rr_chip active' : 'o_rr_chip'"
-                        t-on-click="() => this.setFilter('Inicial')">Inicial</button>
+                        t-att-class="state.showGradeGroup === 'Inicial' || state.filterMode === 'Inicial' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.toggleGradeGroup('Inicial')">Inicial ▾</button>
 
                 <button type="button"
-                        t-att-class="state.filterMode === 'Primaria' ? 'o_rr_chip active' : 'o_rr_chip'"
-                        t-on-click="() => this.setFilter('Primaria')">Primaria</button>
+                        t-att-class="state.showGradeGroup === 'Primaria' || state.filterMode === 'Primaria' ? 'o_rr_chip active' : 'o_rr_chip'"
+                        t-on-click="() => this.toggleGradeGroup('Primaria')">Primaria ▾</button>
+                </div>
+
+                <div class="o_rr_grade_filters" t-if="state.showGradeGroup === 'Inicial'">
+                    <t t-foreach="inicialGrades" t-as="grado" t-key="grado[0]">
+                        <button type="button"
+                                t-att-class="state.filterMode === 'grado:' + grado[0] ? 'o_rr_chip active' : 'o_rr_chip'"
+                                t-on-click="() => this.setGradeFilter(grado[0])">
+                            <t t-esc="grado[1]"/>
+                        </button>
+                    </t>
+                </div>
+
+                <div class="o_rr_grade_filters" t-if="state.showGradeGroup === 'Primaria'">
+                    <t t-foreach="primariaGrades" t-as="grado" t-key="grado[0]">
+                        <button type="button"
+                                t-att-class="state.filterMode === 'grado:' + grado[0] ? 'o_rr_chip active' : 'o_rr_chip'"
+                                t-on-click="() => this.setGradeFilter(grado[0])">
+                            <t t-esc="grado[1]"/>
+                        </button>
+                    </t>
             </div>
 
             <!-- Tabla -->
