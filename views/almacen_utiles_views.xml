@@ -6,17 +6,17 @@
         <field name="model">almacen.utiles.movimiento</field>
         <field name="arch" type="xml">
             <list string="Movimientos de almacén">
-                <field name="fecha"/>
-                <field name="anio_escolar_id"/>
-                <field name="tipo_movimiento"/>
-                <field name="recepcion_id"/>
-                <field name="estudiante_id"/>
-                <field name="grado_escolar"/>
-                <field name="product_id"/>
-                <field name="cantidad"/>
-                <field name="unidad_id"/>
-                <field name="destino"/>
-                <field name="responsable_id"/>
+                <field name="fecha" />
+                <field name="anio_escolar_id" />
+                <field name="tipo_movimiento" />
+                <field name="recepcion_id" />
+                <field name="estudiante_id" />
+                <field name="grado_escolar" />
+                <field name="product_id" />
+                <field name="cantidad" />
+                <field name="unidad_id" />
+                <field name="destino" />
+                <field name="responsable_id" />
             </list>
         </field>
     </record>
@@ -27,18 +27,14 @@
     </record>
 
     <menuitem id="menu_almacen_utiles_root"
-              name="📦 Almacén de útiles"
-              parent="stock.menu_stock_root"
-              sequence="95"/>
+        name="📦 Almacén de útiles"
+        parent="stock.menu_stock_root"
+        sequence="95" />
 
     <menuitem id="menu_recepcion_almacen_utiles"
-              name=" Recepción"
-              parent="menu_almacen_utiles_root"
-              action="action_recepcion_utiles_almacen_dashboard"
-              sequence="10"/>
-
-    <record id="menu_almacen_utiles_movimiento" model="ir.ui.menu">
-        <field name="active" eval="False"/>
-    </record>
+        name=" Recepción"
+        parent="menu_almacen_utiles_root"
+        action="action_recepcion_utiles_almacen_dashboard"
+        sequence="10" />
 
 </odoo>

@@ -187,6 +187,7 @@
     <!-- REORDENAR MENÚ PRINCIPAL MATRÍCULAS -->
     <!-- ========================= -->
     <record id="menu_utiles_escolares_root" model="ir.ui.menu">
+        <field name="name">🎓 Matrículas</field>
         <field name="sequence">30</field>
     </record>
 
