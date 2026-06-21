@@ -10,9 +10,9 @@
         <field name="model">matricula.escolar</field>
         <field name="arch" type="xml">
             <list string="Lista de matrícula">
-                <field name="estudiante_id" string="Estudiante"/>
-                <field name="grado_escolar" string="Grado escolar"/>
-                <field name="apoderado_principal_id" string="Apoderado principal"/>
+                <field name="estudiante_id" string="Estudiante" />
+                <field name="grado_escolar" string="Grado escolar" />
+                <field name="apoderado_principal_id" string="Apoderado principal" />
             </list>
         </field>
     </record>
@@ -27,11 +27,13 @@
         <field name="model">matricula.escolar</field>
         <field name="arch" type="xml">
             <list string="Estado por alumno">
-                <field name="estudiante_id" string="Estudiante"/>
-                <field name="grado_escolar" string="Grado escolar"/>
-                <field name="estado" string="Estado del estudiante" widget="badge" decoration-success="estado == 'activo'" decoration-danger="estado == 'retirado'" decoration-muted="estado == 'finalizado'"/>
-                <field name="situacion_siguiente_anio" string="Situación para el siguiente año"/>
-                <field name="apoderado_principal_id" string="Apoderado principal"/>
+                <field name="estudiante_id" string="Estudiante" />
+                <field name="grado_escolar" string="Grado escolar" />
+                <field name="estado" string="Estado del estudiante" widget="badge"
+                    decoration-success="estado == 'activo'" decoration-danger="estado == 'retirado'"
+                    decoration-muted="estado == 'finalizado'" />
+                <field name="situacion_siguiente_anio" string="Situación para el siguiente año" />
+                <field name="apoderado_principal_id" string="Apoderado principal" />
             </list>
         </field>
     </record>
@@ -46,7 +48,7 @@
         <field name="arch" type="xml">
             <form string="Matrícula escolar" class="o_ge_matricula_form_view">
                 <sheet>
-                    <field name="anio_escolar" invisible="1"/>
+                    <field name="anio_escolar" invisible="1" />
 
                     <div class="o_ge_matricula_page">
 
@@ -54,7 +56,7 @@
                         <div class="o_ge_matricula_card">
                             <div class="o_ge_card_header">
                                 <span class="o_ge_card_icon">
-                                    <i class="fa fa-id-card-o" title="Datos de matrícula"/>
+                                    <i class="fa fa-id-card-o" title="Datos de matrícula" />
                                 </span>
                                 <span>DATOS DE MATRÍCULA</span>
                             </div>
@@ -62,37 +64,44 @@
                             <div class="o_ge_card_body">
 
                                 <div class="o_ge_field_block o_ge_full">
-                                    <label for="estudiante_id"/>
-                                    <field name="estudiante_id" nolabel="1" placeholder="Seleccionar estudiante o crear nuevo" context="{'default_tipo_contacto_escolar': 'estudiante'}" options="{'no_create': False, 'no_open': False}"/>
+                                    <label for="estudiante_id" />
+                                    <field name="estudiante_id" nolabel="1"
+                                        placeholder="Seleccionar estudiante o crear nuevo"
+                                        context="{'default_tipo_contacto_escolar': 'estudiante'}"
+                                        options="{'no_create': False, 'no_open': False}" />
                                 </div>
 
                                 <div class="o_ge_two_cols">
                                     <div class="o_ge_field_block">
-                                        <label for="anio_escolar_id"/>
-                                        <field name="anio_escolar_id" nolabel="1" readonly="1" force_save="1" options="{'no_open': True, 'no_create': True}"/>
+                                        <label for="anio_escolar_id" />
+                                        <field name="anio_escolar_id" nolabel="1" readonly="1"
+                                            force_save="1"
+                                            options="{'no_open': True, 'no_create': True}" />
                                     </div>
 
                                     <div class="o_ge_field_block">
-                                        <label for="grado_escolar"/>
-                                        <field name="grado_escolar" nolabel="1" placeholder="Sin asignar"/>
+                                        <label for="grado_escolar" />
+                                        <field name="grado_escolar" nolabel="1"
+                                            placeholder="Sin asignar" />
                                     </div>
                                 </div>
 
                                 <div class="o_ge_two_cols">
                                     <div class="o_ge_field_block">
-                                        <label for="lista_utiles_id"/>
-                                        <field name="lista_utiles_id" nolabel="1" placeholder="Sin asignar" options="{'no_create': True}"/>
+                                        <label for="lista_utiles_id" />
+                                        <field name="lista_utiles_id" nolabel="1"
+                                            placeholder="Sin asignar" options="{'no_create': True}" />
                                     </div>
 
                                     <div class="o_ge_field_block">
-                                        <label for="estado"/>
-                                        <field name="estado" nolabel="1" widget="badge"/>
+                                        <label for="estado" />
+                                        <field name="estado" nolabel="1" widget="badge" />
                                     </div>
                                 </div>
 
-                                <field name="situacion_siguiente_anio" invisible="1"/>
-                                <field name="matricula_anterior_id" invisible="1"/>
-                                <field name="matricula_siguiente_id" invisible="1"/>
+                                <field name="situacion_siguiente_anio" invisible="1" />
+                                <field name="matricula_anterior_id" invisible="1" />
+                                <field name="matricula_siguiente_id" invisible="1" />
 
                             </div>
                         </div>
@@ -101,7 +110,7 @@
                         <div class="o_ge_matricula_card">
                             <div class="o_ge_card_header">
                                 <span class="o_ge_card_icon">
-                                    <i class="fa fa-users" title="Relación familiar"/>
+                                    <i class="fa fa-users" title="Relación familiar" />
                                 </span>
                                 <span>RELACIÓN FAMILIAR</span>
                             </div>
@@ -109,13 +118,17 @@
                             <div class="o_ge_card_body">
                                 <div class="o_ge_two_cols">
                                     <div class="o_ge_field_block">
-                                        <label for="apoderado_principal_id"/>
-                                        <field name="apoderado_principal_id" nolabel="1" readonly="1" placeholder="No registrado" options="{'no_open': True, 'no_create': True}"/>
+                                        <label for="apoderado_principal_id" />
+                                        <field name="apoderado_principal_id" nolabel="1"
+                                            readonly="1" placeholder="No registrado"
+                                            options="{'no_open': True, 'no_create': True}" />
                                     </div>
 
                                     <div class="o_ge_field_block">
-                                        <label for="apoderado_secundario_id"/>
-                                        <field name="apoderado_secundario_id" nolabel="1" readonly="1" placeholder="No registrado" options="{'no_open': True, 'no_create': True}"/>
+                                        <label for="apoderado_secundario_id" />
+                                        <field name="apoderado_secundario_id" nolabel="1"
+                                            readonly="1" placeholder="No registrado"
+                                            options="{'no_open': True, 'no_create': True}" />
                                     </div>
                                 </div>
                             </div>
@@ -125,15 +138,16 @@
                         <div class="o_ge_matricula_card">
                             <div class="o_ge_card_header">
                                 <span class="o_ge_card_icon">
-                                    <i class="fa fa-sticky-note-o" title="Observación"/>
+                                    <i class="fa fa-sticky-note-o" title="Observación" />
                                 </span>
                                 <span>OBSERVACIÓN</span>
                             </div>
 
                             <div class="o_ge_card_body">
                                 <div class="o_ge_field_block o_ge_full">
-                                    <label for="observacion"/>
-                                    <field name="observacion" nolabel="1" placeholder="Sin observaciones"/>
+                                    <label for="observacion" />
+                                    <field name="observacion" nolabel="1"
+                                        placeholder="Sin observaciones" />
                                 </div>
                             </div>
                         </div>
@@ -152,7 +166,7 @@
         <field name="name">Registrar matrícula</field>
         <field name="res_model">matricula.escolar</field>
         <field name="view_mode">form,list</field>
-        <field name="view_id" ref="view_matricula_escolar_form"/>
+        <field name="view_id" ref="view_matricula_escolar_form" />
         <field name="context">{'default_estado': 'activo'}</field>
     </record>
 
@@ -165,7 +179,7 @@
         <field name="name">Lista de matrícula</field>
         <field name="res_model">matricula.escolar</field>
         <field name="view_mode">list,form</field>
-        <field name="view_id" ref="view_matricula_escolar_list"/>
+        <field name="view_id" ref="view_matricula_escolar_list" />
         <field name="domain">[('es_anio_actual', '=', True)]</field>
     </record>
 
@@ -178,7 +192,7 @@
         <field name="name">Estado por alumno</field>
         <field name="res_model">matricula.escolar</field>
         <field name="view_mode">list,form</field>
-        <field name="view_id" ref="view_matricula_estado_alumno_list"/>
+        <field name="view_id" ref="view_matricula_estado_alumno_list" />
         <field name="domain">[('es_anio_actual', '=', True)]</field>
     </record>
 
@@ -187,6 +201,8 @@
     <!-- REORDENAR MENÚ PRINCIPAL MATRÍCULAS -->
     <!-- ========================= -->
     <record id="menu_utiles_escolares_root" model="ir.ui.menu">
+        <field name="name">🎓 Matrículas</field>
+        <field name="parent_id" ref="stock.menu_stock_root" />
         <field name="sequence">30</field>
     </record>
 
@@ -194,7 +210,8 @@
     <!-- ========================= -->
     <!-- MENÚ: REGISTRAR MATRÍCULA -->
     <!-- ========================= -->
-    <menuitem id="menu_registrar_matricula" name="✚ Registrar matrícula" parent="menu_utiles_escolares_root" action="action_registrar_matricula" sequence="10"/>
+    <menuitem id="menu_registrar_matricula" name="✚ Registrar matrícula"
+        parent="menu_utiles_escolares_root" action="action_registrar_matricula" sequence="10" />
 
     <!-- ========================= -->
     <!-- ACCIÓN: DASHBOARD MODERNO DE MATRÍCULA -->
@@ -208,7 +225,8 @@
     <!-- ========================= -->
     <!-- MENÚ: LISTA DE MATRÍCULA -->
     <!-- ========================= -->
-    <menuitem id="menu_lista_matricula" name="▤ Lista de matrícula" parent="menu_utiles_escolares_root" action="action_matricula_dashboard_client" sequence="20"/>
+    <menuitem id="menu_lista_matricula" name="▤ Lista de matrícula"
+        parent="menu_utiles_escolares_root" action="action_matricula_dashboard_client" sequence="20" />
 
     <!-- ========================= -->
     <!-- MENÚ: ESTADO POR ALUMNO -->
@@ -220,6 +238,7 @@
         <field name="tag">estado_alumno_dashboard</field>
     </record>
 
-    <menuitem id="menu_estado_por_alumno" name="⊙ Estado por alumno" parent="menu_utiles_escolares_root" action="action_estado_alumno_dashboard" sequence="40"/>
+    <menuitem id="menu_estado_por_alumno" name="⊙ Estado por alumno"
+        parent="menu_utiles_escolares_root" action="action_estado_alumno_dashboard" sequence="40" />
 
 </odoo>
