@@ -365,7 +365,7 @@ class ReporteRecepcionDashboard extends Component {
       return;
     }
 
-    const url = `/report/pdf/gestion_utiles_escolares.report_recepciones_pdf_template/${ids.join(",")}`;
+    const url = `/report/pdf/gestion_utiles_escolares.report_recepcion_utiles_document/${ids.join(",")}`;
     window.open(url, "_blank");
   }
 }
