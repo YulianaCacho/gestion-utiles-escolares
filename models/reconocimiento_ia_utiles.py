@@ -4,7 +4,6 @@ import tempfile
 
 from odoo import api, models, _
 from odoo.exceptions import UserError
-from odoo.modules.module import get_module_resource
 
 
 class ReconocimientoIAUtiles(models.Model):
@@ -13,6 +12,11 @@ class ReconocimientoIAUtiles(models.Model):
 
     _MODEL_CACHE = None
     _MODEL_CACHE_PATH = None
+    
+    @api.model
+    def _get_local_model_path(self):
+        module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        return os.path.join(module_path, "ai_models", "utiles_escolares_best.pt")
 
     @api.model
     def _get_model_path(self):
@@ -30,11 +34,7 @@ class ReconocimientoIAUtiles(models.Model):
             configured_path,
             os.getenv("ODOO_IA_MODEL_PATH"),
             "/opt/odoo-genios/ia_models/utiles_escolares_best.pt",
-            get_module_resource(
-                "gestion_utiles_escolares",
-                "ai_models",
-                "utiles_escolares_best.pt",
-            ),
+            self._get_local_model_path(),
         ]
 
         for path in possible_paths:
