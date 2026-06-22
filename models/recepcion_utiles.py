@@ -417,6 +417,14 @@ class RecepcionUtilesEscolar(models.Model):
 
                 producto_recepcion = producto.product_variant_id if producto._name == "product.template" else producto
 
+                import logging
+                _logger = logging.getLogger(__name__)
+                _logger.warning("DEBUG producto: %s | nombre: %s | producto_recepcion: %s | id: %s", 
+                    producto, producto._name, producto_recepcion, producto_recepcion.id if producto_recepcion else 'VACIO')
+
+                if not producto_recepcion:
+                    continue
+
                 if not categoria and producto:
                     categoria = producto.categ_id
 
@@ -502,6 +510,14 @@ class RecepcionUtilesEscolar(models.Model):
 
                 producto_recepcion = producto.product_variant_id if producto._name == "product.template" else producto
 
+                import logging
+                _logger = logging.getLogger(__name__)
+                _logger.warning("DEBUG producto: %s | nombre: %s | producto_recepcion: %s | id: %s", 
+                    producto, producto._name, producto_recepcion, producto_recepcion.id if producto_recepcion else 'VACIO')
+
+                if not producto_recepcion:
+                    continue
+                
                 if not categoria and producto:
                     categoria = producto.categ_id
 
