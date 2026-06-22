@@ -10,3 +10,4 @@ from . import anio_escolar
 from . import periodo_escolar
 from . import sobrante_utiles
 from . import cierre_anio_utiles
+from . import reconocimiento_ia_utiles
