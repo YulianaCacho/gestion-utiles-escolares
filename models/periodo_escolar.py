@@ -852,7 +852,6 @@ class AlmacenUtilesMovimiento(models.Model):
                     % rec.anio_escolar_id.name
                 )
 
-    @api.model_create_multi
     def write(self, vals):
         self._check_anio_abierto()
 
@@ -866,6 +865,8 @@ class AlmacenUtilesMovimiento(models.Model):
     def unlink(self):
         self._check_anio_abierto()
         return super().unlink()
+    
+    @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
             anio_forzado = vals.get("anio_escolar_id")
