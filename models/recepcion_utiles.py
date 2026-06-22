@@ -37,6 +37,18 @@ class RecepcionUtilesEscolar(models.Model):
         default=fields.Date.context_today,
         required=True
     )
+    
+    tipo_entrada = fields.Selection(
+    [
+        ("recepcion_utiles", "Recepción de útiles escolares"),
+        ("compra_directa", "Compra directa"),
+        ("traslado_interno", "Traslado interno"),
+        ("otro", "Otro"),
+    ],
+    string="Tipo de entrada",
+    default="recepcion_utiles",
+    required=True
+)
 
     matricula_id = fields.Many2one(
         "matricula.escolar",
