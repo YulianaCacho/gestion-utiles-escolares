@@ -24,7 +24,7 @@
     </record>
 
 
-<!-- ===================================================== -->
+    <!-- ===================================================== -->
     <!-- FORMULARIO LIMPIO DE RECEPCIÓN DE ÚTILES -->
     <!-- ===================================================== -->
 
@@ -179,19 +179,17 @@
                                     delete="0"
                                     string="Productos recibidos">
 
-                                    <field name="product_id" string="Producto" readonly="1" />
-                                    <field name="categoria_id" string="Categoría" readonly="1" />
-                                    <field name="cantidad_esperada" string="Cantidad esperada"
-                                        readonly="1" />
+                                    <field name="product_id" string="Producto" readonly="1" force_save="1"/>
+                                    <field name="categoria_id" string="Categoría" readonly="1" force_save="1"/>
+                                    <field name="cantidad_esperada" string="Cantidad esperada" readonly="1" force_save="1"/>
                                     <field name="cantidad_entregada" string="Cantidad entregada" />
-                                    <field name="cantidad_faltante" string="Cantidad faltante"
-                                        readonly="1" />
-                                    <field name="unidad_id" string="Unidad" readonly="1" />
-                                    <field name="tipo_uso_escolar" string="Tipo de uso escolar"
-                                        readonly="1" />
+                                    <field name="cantidad_faltante" string="Cantidad faltante" readonly="1" force_save="1"/>
+                                    <field name="unidad_id" string="Unidad" readonly="1" force_save="1"/>
+                                    <field name="tipo_uso_escolar" string="Tipo de uso escolar" readonly="1" force_save="1"/>
                                     <field name="estado_linea"
                                         string="Estado"
                                         readonly="1"
+                                        force_save="1"
                                         widget="badge"
                                         decoration-success="estado_linea == 'completo'"
                                         decoration-danger="estado_linea == 'faltante'"

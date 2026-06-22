@@ -759,7 +759,7 @@ class RecepcionUtilesEscolar(models.Model):
     
     def _anio_control_cierre(self):
         self.ensure_one()
-        return self.anio_escolar_id or self.anio_ingreso_id
+        return self.anio_escolar_id
 
     def _check_anio_abierto(self):
         for rec in self:
