@@ -44,7 +44,6 @@ class ProductTemplateIAUtiles(models.Model):
         help="Clase del modelo YOLO usada para relacionar este producto con el reconocimiento inteligente.",
     )
 
-
 class ProductProductIAUtiles(models.Model):
     _inherit = "product.product"
 

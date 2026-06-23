@@ -24,7 +24,6 @@
         <field name="context">{}</field>
     </record>
 
-    <!-- Menú oculto para evitar duplicidad. La Clase IA se verá en Productos > Útiles escolares -->
     <record id="menu_product_template_ia_clases" model="ir.ui.menu">
         <field name="name">Clases IA de productos</field>
         <field name="parent_id" ref="stock.menu_stock_root"/>

@@ -6,7 +6,6 @@
         <field name="tag">gestion_utiles_escolares.reconocimiento_ia_dashboard</field>
     </record>
 
-    <!-- Menú oculto: la acción se seguirá usando desde Recepción -->
     <record id="menu_reconocimiento_ia_utiles" model="ir.ui.menu">
         <field name="name">Reconocimiento IA</field>
         <field name="parent_id" ref="stock.menu_stock_root"/>
