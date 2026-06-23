@@ -30,6 +30,7 @@
 
     'reports/reporte_recepcion_utiles.xml',
     'reports/reporte_linea_tiempo_movimientos.xml',
+    'reports/reporte_almacen_movimientos_pdf.xml',
     'views/favicon_views.xml',
 
     "views/dashboard_utiles_views.xml",
@@ -44,17 +45,17 @@
     
 
 ],
-   'assets': {
+    'assets': {
         'web.assets_backend': [
             'gestion_utiles_escolares/static/src/css/backend_theme.css',
             "gestion_utiles_escolares/static/src/css/dashboard_utiles.css",
             "gestion_utiles_escolares/static/src/js/dashboard_utiles.js",
             "gestion_utiles_escolares/static/src/xml/dashboard_utiles.xml",
-           
+
             "gestion_utiles_escolares/static/src/css/reporte_recepcion_dashboard.css",
             "gestion_utiles_escolares/static/src/js/reporte_recepcion_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/reporte_recepcion_dashboard.xml",
-       
+
             "gestion_utiles_escolares/static/src/css/reporte_almacen_movimientos.css",
             "gestion_utiles_escolares/static/src/js/reporte_almacen_movimientos.js",
             "gestion_utiles_escolares/static/src/xml/reporte_almacen_movimientos.xml",
@@ -67,14 +68,12 @@
             "gestion_utiles_escolares/static/src/js/recepcion_almacen_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/recepcion_almacen_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/recepcion_utiles_form_clean.css",
-        
-       
+
             "gestion_utiles_escolares/static/src/css/entregas_list_clean.css",
             "gestion_utiles_escolares/static/src/css/anio_escolar_systray.css",
             "gestion_utiles_escolares/static/src/js/anio_escolar_systray.js",
             "gestion_utiles_escolares/static/src/xml/anio_escolar_systray.xml", 
-           
-           
+
             "gestion_utiles_escolares/static/src/js/matricula_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/matricula_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/matricula_dashboard.css",
