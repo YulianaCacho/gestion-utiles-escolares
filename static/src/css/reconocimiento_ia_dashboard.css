@@ -337,3 +337,27 @@
         min-width: auto;
     }
 }
+
+.o_ia_utiles_apply_result {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: #f4fff8;
+    border: 1px solid #ccefd9;
+    color: #254732;
+}
+
+.o_ia_utiles_apply_result h3 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    color: #1f6f43;
+}
+
+.o_ia_utiles_apply_result ul {
+    margin: 8px 0 0 18px;
+    padding: 0;
+}
+
+.o_ia_utiles_apply_result li {
+    margin-bottom: 5px;
+}

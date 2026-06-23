@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_recepcion_utiles_form_ia_inherit" model="ir.ui.view">
+        <field name="name">recepcion.utiles.escolar.form.ia.inherit</field>
+        <field name="model">recepcion.utiles.escolar</field>
+        <field name="inherit_id" ref="view_recepcion_utiles_escolar_form_limpio_almacen"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/button[@name='action_calcular_faltantes']" position="after">
+                <button name="action_abrir_reconocimiento_ia"
+                    string="Reconocer con IA"
+                    type="object"
+                    icon="fa-camera"
+                    class="btn-secondary"
+                    invisible="not id"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -4,6 +4,7 @@
     <t t-name="gestion_utiles_escolares.ReconocimientoIADashboard">
         <div class="o_ia_utiles_dashboard">
 
+            <!-- ENCABEZADO -->
             <div class="o_ia_utiles_hero">
                 <div>
                     <span class="o_ia_utiles_badge">Modelo YOLO entrenado</span>
@@ -44,8 +45,10 @@
                 </div>
             </div>
 
+            <!-- CONTENIDO PRINCIPAL -->
             <div class="o_ia_utiles_grid">
 
+                <!-- PANEL IZQUIERDO: IMAGEN -->
                 <div class="o_ia_utiles_upload_panel">
                     <div class="o_ia_utiles_panel_header">
                         <div>
@@ -56,13 +59,16 @@
 
                     <label class="o_ia_utiles_dropzone">
                         <input type="file" accept="image/*" t-on-change="onFileChange"/>
+
                         <div t-if="!state.preview" class="o_ia_utiles_drop_content">
                             <i class="fa fa-cloud-upload"/>
                             <strong>Seleccionar imagen</strong>
                             <span>JPG, PNG o JPEG</span>
                         </div>
 
-                        <img t-if="state.preview" t-att-src="state.preview" class="o_ia_utiles_preview"/>
+                        <img t-if="state.preview"
+                             t-att-src="state.preview"
+                             class="o_ia_utiles_preview"/>
                     </label>
 
                     <div t-if="state.filename" class="o_ia_utiles_filename">
@@ -71,13 +77,28 @@
                     </div>
 
                     <div class="o_ia_utiles_actions">
-                        <button type="button" class="o_ia_utiles_btn primary" t-on-click="analyzeImage" t-att-disabled="state.loading">
+                        <button type="button"
+                                class="o_ia_utiles_btn primary"
+                                t-on-click="analyzeImage"
+                                t-att-disabled="state.loading">
                             <i class="fa fa-magic"/>
                             <span t-if="!state.loading">Analizar imagen</span>
                             <span t-if="state.loading">Analizando...</span>
                         </button>
 
-                        <button type="button" class="o_ia_utiles_btn secondary" t-on-click="clearImage">
+                        <button t-if="state.recepcionId &amp;&amp; state.detections.length"
+                                type="button"
+                                class="o_ia_utiles_btn primary"
+                                t-on-click="applyToReception"
+                                t-att-disabled="state.applyLoading">
+                            <i class="fa fa-check"/>
+                            <span t-if="!state.applyLoading">Marcar en recepción</span>
+                            <span t-if="state.applyLoading">Marcando...</span>
+                        </button>
+
+                        <button type="button"
+                                class="o_ia_utiles_btn secondary"
+                                t-on-click="clearImage">
                             Limpiar
                         </button>
                     </div>
@@ -88,6 +109,7 @@
                     </div>
                 </div>
 
+                <!-- PANEL DERECHO: RESULTADOS -->
                 <div class="o_ia_utiles_result_panel">
                     <div class="o_ia_utiles_panel_header">
                         <div>
@@ -96,16 +118,21 @@
                         </div>
                     </div>
 
+                    <!-- SIN RESULTADO -->
                     <div t-if="!state.result" class="o_ia_utiles_empty_result">
                         <i class="fa fa-search"/>
                         <h3>Aún no hay análisis</h3>
                         <p>Selecciona una imagen y presiona “Analizar imagen”.</p>
                     </div>
 
+                    <!-- CON RESULTADO -->
                     <div t-if="state.result">
+
+                        <!-- MEJOR RESULTADO -->
                         <div t-if="topDetection" class="o_ia_utiles_best_result">
                             <span>Producto más probable</span>
                             <h3 t-esc="topDetection.label"/>
+
                             <div class="o_ia_utiles_confidence">
                                 Confianza:
                                 <strong t-esc="confidenceText"/>
@@ -121,12 +148,14 @@
                             </div>
                         </div>
 
+                        <!-- NO DETECTÓ -->
                         <div t-if="!topDetection" class="o_ia_utiles_empty_result">
                             <i class="fa fa-exclamation-circle"/>
                             <h3>No se detectaron productos</h3>
                             <p>Prueba con una imagen más clara o con el útil más cerca.</p>
                         </div>
 
+                        <!-- TABLA DE DETECCIONES -->
                         <div t-if="state.detections.length" class="o_ia_utiles_table_wrap">
                             <table class="o_ia_utiles_table">
                                 <thead>
@@ -137,20 +166,29 @@
                                         <th>Producto en Odoo</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
-                                    <t t-foreach="state.detections" t-as="detection" t-key="detection_index">
+                                    <t t-foreach="state.detections"
+                                       t-as="detection"
+                                       t-key="detection_index">
                                         <tr>
                                             <td t-esc="detection_index + 1"/>
+
                                             <td>
                                                 <strong t-esc="detection.label"/>
                                             </td>
+
                                             <td>
-                                                <t t-esc="Number(detection.confidence || 0).toFixed(2)"/>
+                                                <t t-esc="detection.confidence"/>
                                                 %
                                             </td>
+
                                             <td>
-                                                <span t-if="detection.product_name" t-esc="detection.product_name"/>
-                                                <span t-if="!detection.product_name" class="o_ia_utiles_muted">
+                                                <span t-if="detection.product_name"
+                                                      t-esc="detection.product_name"/>
+
+                                                <span t-if="!detection.product_name"
+                                                      class="o_ia_utiles_muted">
                                                     Sin coincidencia
                                                 </span>
                                             </td>
@@ -159,15 +197,70 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- RESULTADO APLICADO A RECEPCIÓN -->
+                        <div t-if="state.applyResult" class="o_ia_utiles_apply_result">
+                            <h3>Resultado aplicado a recepción</h3>
+
+                            <div t-if="state.applyResult.aplicadas.length">
+                                <strong>Productos marcados:</strong>
+                                <ul>
+                                    <t t-foreach="state.applyResult.aplicadas"
+                                       t-as="item"
+                                       t-key="item.linea_id">
+                                        <li>
+                                            <t t-esc="item.producto"/>
+                                            —
+                                            Entregado:
+                                            <t t-esc="item.cantidad_entregada"/>
+                                            /
+                                            <t t-esc="item.cantidad_esperada"/>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+
+                            <div t-if="state.applyResult.no_encontradas.length">
+                                <strong>No encontrados en la lista:</strong>
+                                <ul>
+                                    <t t-foreach="state.applyResult.no_encontradas"
+                                       t-as="item"
+                                       t-key="item.label">
+                                        <li>
+                                            <t t-esc="item.label"/>
+                                            —
+                                            <t t-esc="item.motivo"/>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+
+                            <div t-if="state.applyResult.ya_completas.length">
+                                <strong>Ya estaban completos:</strong>
+                                <ul>
+                                    <t t-foreach="state.applyResult.ya_completas"
+                                       t-as="item"
+                                       t-key="item.label">
+                                        <li>
+                                            <t t-esc="item.label"/>
+                                            —
+                                            <t t-esc="item.motivo"/>
+                                        </li>
+                                    </t>
+                                </ul>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
             </div>
 
+            <!-- NOTA -->
             <div class="o_ia_utiles_note">
                 <strong>Nota:</strong>
-                este apartado usa tu modelo entrenado de 30 clases. Si el modelo no responde en DigitalOcean,
-                faltará instalar la librería de YOLO en el contenedor.
+                este apartado usa tu modelo entrenado de 30 clases. Para marcar útiles en la lista del alumno,
+                abre este panel desde una recepción y usa el botón “Marcar en recepción”.
             </div>
 
         </div>
