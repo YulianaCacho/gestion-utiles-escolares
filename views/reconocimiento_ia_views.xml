@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_reconocimiento_ia_dashboard" model="ir.actions.client">
+        <field name="name">🤖 Reconocimiento IA</field>
+        <field name="tag">gestion_utiles_escolares.reconocimiento_ia_dashboard</field>
+    </record>
+
+    <record id="menu_reconocimiento_ia_utiles" model="ir.ui.menu">
+        <field name="name">🤖 Reconocimiento IA</field>
+        <field name="parent_id" ref="stock.menu_stock_root"/>
+        <field name="action" eval="'ir.actions.client,%d' % ref('action_reconocimiento_ia_dashboard')"/>
+        <field name="sequence">6</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>
