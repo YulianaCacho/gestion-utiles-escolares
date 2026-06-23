@@ -538,3 +538,14 @@ class AlmacenUtilesMovimiento(models.Model):
             "total": len(rows),
             "rows": rows,
         }
+        
+    @api.model
+    def get_reporte_almacen_pdf_data(self, month=None, year=None, grado=False, responsable_id=False, anio_escolar_id=False):
+        data = self.get_reporte_almacen_movimientos(
+            month=month,
+            year=year,
+            grado=grado,
+            responsable_id=responsable_id,
+            anio_escolar_id=anio_escolar_id,
+        )
+        return data

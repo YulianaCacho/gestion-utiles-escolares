@@ -98,9 +98,14 @@ class ReporteLineaTiempoMovimientos extends Component {
         await this.loadData();
     }
 
-    exportPdf() {
-        window.print();
-    }
+    async exportPdf() {
+        const ids = this.state.rows.map(r => r.id);
+        if (!ids.length) {
+            return;
+        }
+        const url = `/report/pdf/gestion_utiles_escolares.report_linea_tiempo_document/${ids.join(",")}`;
+        window.open(url, "_blank");
+}
 }
 
 registry
