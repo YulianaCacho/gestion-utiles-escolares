@@ -10,9 +10,7 @@
 
             <!-- Reemplazar responsable individual por responsables múltiples y ubicación escolar -->
             <xpath expr="//field[@name='responsible_id']" position="replace">
-                 <field name="responsable_escolar_ids"
-                        widget="many2many_tags"
-                        options="{'no_create': True}"/>
+                <field name="responsable_escolar_ids" widget="many2many_tags" options="{'no_create': True}"/>
             </xpath>
 
             <!-- Mostrar Tipo de uso escolar debajo de Referencia interna -->
@@ -86,12 +84,9 @@
 
             <!-- Reemplazar ubicación de inventario estándar por ubicación física escolar -->
             <xpath expr="//field[@name='property_stock_inventory']" position="replace">
-                <field name="ubicacion_fisica_id"
-                       options="{'no_create': True}"
-                       placeholder="Ejemplo: A-N1"/>
+                <field name="ubicacion_fisica_id" options="{'no_create': True}" placeholder="Ejemplo: A-N1"/>
 
-                <field name="codigo_ubicacion_fisica"
-                       readonly="1"/>
+                <field name="codigo_ubicacion_fisica" readonly="1"/>
             </xpath>
 
             <!-- Ocultar todo el bloque: Descripción para recepciones -->
@@ -138,9 +133,10 @@
                 <attribute name="optional">hide</attribute>
             </xpath>
 
-            <!-- Mostrar categoría después de referencia interna -->
+            <!-- Mostrar categoría y Clase IA después de referencia interna -->
             <xpath expr="//field[@name='default_code']" position="after">
                 <field name="categ_id" optional="show"/>
+                <field name="ia_clase_util" string="Clase IA" optional="show"/>
             </xpath>
 
             <!-- Mostrar tipo de uso escolar después de unidad -->
@@ -151,7 +147,7 @@
         </field>
     </record>
 
-       <!-- ========================= -->
+    <!-- ========================= -->
     <!-- OCULTAR MENÚ NATIVO PRODUCTOS DE ODOO -->
     <!-- ========================= -->
 
@@ -180,54 +176,55 @@
         <field name="priority">1</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_mobile">
-               <field name="name"/>
-               <field name="default_code"/>
-               <field name="qty_available"/>
-               <field name="uom_id"/>
-               <field name="tipo_uso_escolar"/>
+                <field name="name"/>
+                <field name="default_code"/>
+                <field name="ia_clase_util" string="Clase IA"/>
+                <field name="qty_available"/>
+                <field name="uom_id"/>
+                <field name="tipo_uso_escolar"/>
 
-               <templates>
-                  <t t-name="card">
-                      <div class="p-3 rounded shadow-sm bg-white border" style="min-height: 155px;">
-                        
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <strong class="fs-5">
-                                    <field name="name"/>
-                                </strong>
+                <templates>
+                    <t t-name="card">
+                        <div class="p-3 rounded shadow-sm bg-white border" style="min-height: 155px;">
 
-                                <div class="text-muted mt-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong class="fs-5">
+                                        <field name="name"/>
+                                    </strong>
+
+                                    <div class="text-muted mt-1">
                                     Ref:
-                                    <field name="default_code"/>
+                                        <field name="default_code"/>
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    <span style="font-size: 24px;">📦</span>
                                 </div>
                             </div>
 
-                            <div class="text-end">
-                                <span style="font-size: 24px;">📦</span>
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <div class="text-muted small">Tipo de uso escolar</div>
-                            <span class="badge rounded-pill text-bg-success">
-                                <field name="tipo_uso_escolar"/>
-                            </span>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                <div class="text-muted small">A la mano</div>
-                                <strong>
-                                    <field name="qty_available"/>
-                                </strong>
-                                <span>
-                                    <field name="uom_id"/>
+                            <div class="mt-3">
+                                <div class="text-muted small">Tipo de uso escolar</div>
+                                <span class="badge rounded-pill text-bg-success">
+                                    <field name="tipo_uso_escolar"/>
                                 </span>
                             </div>
-                        </div>
 
-                    </div>
-                  </t>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <div class="text-muted small">A la mano</div>
+                                    <strong>
+                                        <field name="qty_available"/>
+                                    </strong>
+                                    <span>
+                                        <field name="uom_id"/>
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </t>
                 </templates>
             </kanban>
         </field>
@@ -269,5 +266,5 @@
         <field name="sequence">20</field>
         <field name="active" eval="True"/>
     </record>
-    
+
 </odoo>

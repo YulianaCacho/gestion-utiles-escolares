@@ -12,7 +12,112 @@ class ReconocimientoIAUtiles(models.Model):
 
     _MODEL_CACHE = None
     _MODEL_CACHE_PATH = None
-    
+
+    IA_CLASS_ALIASES = {
+        "alcohol gel": "alcohol_gel",
+        "alcohol_gel": "alcohol_gel",
+        "alcohol en gel": "alcohol_gel",
+
+        "alcohol liquido": "alcohol_liquido",
+        "alcohol_liquido": "alcohol_liquido",
+        "alcohol líquido": "alcohol_liquido",
+
+        "papel toalla": "papel_toalla",
+        "papel_toalla": "papel_toalla",
+
+        "panos humedos": "panos_humedos",
+        "paños humedos": "panos_humedos",
+        "paños húmedos": "panos_humedos",
+        "panos_humedos": "panos_humedos",
+
+        "goma": "goma",
+        "silicona": "silicona",
+
+        "barra de silicona": "barra_de_silicona",
+        "barra_de_silicona": "barra_de_silicona",
+        "barras de silicona": "barra_de_silicona",
+
+        "lapiceros": "lapiceros",
+        "lapicero": "lapiceros",
+        "boligrafos": "lapiceros",
+        "bolígrafos": "lapiceros",
+
+        "lapiz": "lapiz",
+        "lápiz": "lapiz",
+
+        "lapiz rojo": "lapiz_rojo",
+        "lápiz rojo": "lapiz_rojo",
+        "lapiz_rojo": "lapiz_rojo",
+
+        "corrector": "corrector",
+        "resaltador": "resaltador",
+        "borrador": "borrador",
+        "tajador": "tajador",
+        "tijera": "tijera",
+        "tijeras": "tijera",
+
+        "plumones": "plumones",
+        "plumon de pizarra": "plumon_de_pizarra",
+        "plumón de pizarra": "plumon_de_pizarra",
+        "plumon_de_pizarra": "plumon_de_pizarra",
+
+        "plumon indeleble": "plumon_indeleble",
+        "plumón indeleble": "plumon_indeleble",
+        "plumon_indeleble": "plumon_indeleble",
+
+        "colores crayones": "colores_crayones",
+        "colores_crayones": "colores_crayones",
+        "colores": "colores_crayones",
+        "crayones": "colores_crayones",
+
+        "plastilina": "plastilina",
+        "pintura acrilica": "pintura_acrilica",
+        "pintura_acrilica": "pintura_acrilica",
+        "pintura acrílica": "pintura_acrilica",
+
+        "tempera": "tempera",
+        "témpera": "tempera",
+
+        "pincel lengua": "pincel_lengua",
+        "pincel_lengua": "pincel_lengua",
+
+        "tizas pastel": "tizas_pastel",
+        "tizas_pastel": "tizas_pastel",
+
+        "cuaderno": "cuaderno",
+        "archivador": "archivador",
+        "cartuchera": "cartuchera",
+        "regla": "regla",
+        "transportador": "transportador",
+
+        "cinta masking": "cinta_masking",
+        "cinta_masking": "cinta_masking",
+        "masking": "cinta_masking",
+    }
+
+    @api.model
+    def _normalizar_texto(self, texto):
+        texto = (texto or "").lower().replace("_", " ").strip()
+        reemplazos = {
+            "á": "a",
+            "é": "e",
+            "í": "i",
+            "ó": "o",
+            "ú": "u",
+            "ñ": "n",
+        }
+        for origen, destino in reemplazos.items():
+            texto = texto.replace(origen, destino)
+        return " ".join(texto.split())
+
+    @api.model
+    def _normalizar_clase_ia(self, texto):
+        texto_normalizado = self._normalizar_texto(texto)
+        return self.IA_CLASS_ALIASES.get(
+            texto_normalizado,
+            texto_normalizado.replace(" ", "_"),
+        )
+
     @api.model
     def _get_local_model_path(self):
         module_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -20,12 +125,6 @@ class ReconocimientoIAUtiles(models.Model):
 
     @api.model
     def _get_model_path(self):
-        """
-        Busca el modelo entrenado.
-        Primero intenta con un parámetro del sistema.
-        Luego con la ruta del servidor DigitalOcean.
-        Luego con la carpeta local ai_models si existe.
-        """
         configured_path = self.env["ir.config_parameter"].sudo().get_param(
             "gestion_utiles_escolares.ia_model_path"
         )
@@ -41,7 +140,7 @@ class ReconocimientoIAUtiles(models.Model):
             if path and os.path.exists(path):
                 return path
 
-        return configured_path or "/opt/odoo-genios/ia_models/utiles_escolares_best.pt"
+        return configured_path or self._get_local_model_path()
 
     @api.model
     def get_estado_modelo(self):
@@ -102,67 +201,12 @@ class ReconocimientoIAUtiles(models.Model):
         return self.__class__._MODEL_CACHE
 
     @api.model
-    def _buscar_producto_por_nombre(self, nombre_clase):
-        if not nombre_clase:
+    def _buscar_producto_por_clase_ia(self, ia_class):
+        if not ia_class:
             return False
 
-        nombre_limpio = str(nombre_clase).replace("_", " ").strip().lower()
-
-        # Diccionario de equivalencias entre clases del modelo IA y productos reales de Odoo.
-        # Aquí corregimos casos ambiguos como "silicona".
-        equivalencias = {
-            "silicona": [
-                "Silicona líquida x 250 ml",
-                "Silicona liquida x 250 ml",
-                "Silicona líquida",
-                "Silicona liquida",
-            ],
-            "goma": [
-                "Goma x 250 ml",
-                "Goma líquida x 250 ml",
-                "Goma liquida x 250 ml",
-            ],
-            "alcohol gel": [
-                "Alcohol en gel",
-                "Alcohol gel",
-            ],
-            "alcohol en gel": [
-                "Alcohol en gel",
-            ],
-            "borrador": [
-                "Borrador",
-            ],
-            "tajador": [
-                "Tajador",
-            ],
-            "tijera": [
-                "Tijera",
-                "Tijeras",
-            ],
-        }
-
-        # 1. Primero busca usando equivalencias exactas/priorizadas
-        posibles_nombres = equivalencias.get(nombre_limpio, [])
-
-        for posible in posibles_nombres:
-            producto = self.env["product.product"].search(
-                [
-                    "|",
-                    ("name", "ilike", posible),
-                    ("display_name", "ilike", posible),
-                ],
-                limit=1,
-            )
-            if producto:
-                return producto
-
-        # 2. Si no hay equivalencia, busca por nombre detectado
         producto = self.env["product.product"].search(
-            [
-                "|",
-                ("name", "ilike", nombre_limpio),
-                ("display_name", "ilike", nombre_limpio),
-            ],
+            [("product_tmpl_id.ia_clase_util", "=", ia_class)],
             limit=1,
         )
 
@@ -214,15 +258,17 @@ class ReconocimientoIAUtiles(models.Model):
                 class_id = int(box.cls[0].item())
                 confidence = float(box.conf[0].item()) * 100
 
-                label = names.get(class_id, str(class_id))
-                label_clean = str(label).replace("_", " ").strip()
+                label_original = names.get(class_id, str(class_id))
+                label_clean = str(label_original).replace("_", " ").strip()
+                ia_class = self._normalizar_clase_ia(label_original)
 
-                producto = self._buscar_producto_por_nombre(label_clean)
+                producto = self._buscar_producto_por_clase_ia(ia_class)
 
                 detections.append(
                     {
                         "class_id": class_id,
-                        "label": label_clean,
+                        "label": label_clean.title(),
+                        "ia_class": ia_class,
                         "confidence": round(confidence, 2),
                         "product_id": producto.id if producto else False,
                         "product_name": producto.display_name if producto else "",

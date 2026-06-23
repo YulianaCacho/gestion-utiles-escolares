@@ -396,3 +396,13 @@
 .o_rad_icon_edit:hover {
     background: #eaffd8;
 }
+
+.o_rad_btn_ia {
+    background: #eef3ff;
+    border-color: #aebcff;
+    color: #253a88;
+}
+
+.o_rad_btn_ia:hover {
+    background: #e1e8ff;
+}
