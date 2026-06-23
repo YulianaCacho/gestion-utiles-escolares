@@ -417,11 +417,6 @@ class RecepcionUtilesEscolar(models.Model):
 
                 producto_recepcion = producto.product_variant_id if producto._name == "product.template" else producto
 
-                import logging
-                _logger = logging.getLogger(__name__)
-                _logger.warning("DEBUG producto: %s | nombre: %s | producto_recepcion: %s | id: %s", 
-                    producto, producto._name, producto_recepcion, producto_recepcion.id if producto_recepcion else 'VACIO')
-
                 if not producto_recepcion:
                     continue
 
@@ -509,11 +504,6 @@ class RecepcionUtilesEscolar(models.Model):
                     continue
 
                 producto_recepcion = producto.product_variant_id if producto._name == "product.template" else producto
-
-                import logging
-                _logger = logging.getLogger(__name__)
-                _logger.warning("DEBUG producto: %s | nombre: %s | producto_recepcion: %s | id: %s", 
-                    producto, producto._name, producto_recepcion, producto_recepcion.id if producto_recepcion else 'VACIO')
 
                 if not producto_recepcion:
                     continue
@@ -693,11 +683,27 @@ class RecepcionUtilesEscolar(models.Model):
                 estado_label = "Incompleto"
                 estado_class = "incompleto"
 
+            tipo_entrada_labels = {
+                "recepcion_utiles": "Recepción de útiles",
+                "compra_directa": "Compra directa",
+                "traslado_interno": "Traslado interno",
+                "otro": "Otro ingreso",
+            }
+
+            if rec.estudiante_id:
+                alumno = rec.estudiante_id.name
+                iniciales = rec._iniciales_dashboard(rec.estudiante_id.name)
+                grado = rec._grado_label_dashboard(rec.grado_escolar)
+            else:
+                alumno = tipo_entrada_labels.get(rec.tipo_entrada, "Ingreso externo")
+                iniciales = rec.tipo_entrada[0].upper() if rec.tipo_entrada else "?"
+                grado = ""
+
             rows.append({
                 "id": rec.id,
-                "alumno": rec.estudiante_id.name or "",
-                "iniciales": rec._iniciales_dashboard(rec.estudiante_id.name),
-                "grado": rec._grado_label_dashboard(rec.grado_escolar),
+                "alumno": alumno,
+                "iniciales": iniciales,
+                "grado": grado,
                 "fecha": rec.fecha.strftime("%d/%m/%Y") if rec.fecha else "",
                 "recibido_por": rec.recibido_por_id.name or "",
                 "items": rec.items_resumen or "0/0",
