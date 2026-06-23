@@ -12,3 +12,4 @@ from . import sobrante_utiles
 from . import cierre_anio_utiles
 from . import reconocimiento_ia_utiles
 from . import recepcion_ia_utiles
+from . import product_ia_utiles

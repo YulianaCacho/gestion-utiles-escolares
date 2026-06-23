@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_product_template_ia_list" model="ir.ui.view">
+        <field name="name">product.template.ia.class.list</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <list string="Clases IA de productos" editable="bottom">
+                <field name="default_code"/>
+                <field name="name"/>
+                <field name="ia_clase_util"/>
+                <field name="categ_id"/>
+                <field name="uom_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_product_template_ia_search" model="ir.ui.view">
+        <field name="name">product.template.ia.class.search</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <search string="Buscar productos por clase IA">
+                <field name="name"/>
+                <field name="default_code"/>
+                <field name="ia_clase_util"/>
+                <filter name="con_clase_ia"
+                    string="Con clase IA"
+                    domain="[('ia_clase_util', '!=', False)]"/>
+                <filter name="sin_clase_ia"
+                    string="Sin clase IA"
+                    domain="[('ia_clase_util', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_ia_clase"
+                        string="Clase IA"
+                        context="{'group_by': 'ia_clase_util'}"/>
+                    <filter name="group_categoria"
+                        string="Categoría"
+                        context="{'group_by': 'categ_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_product_template_ia_clases" model="ir.actions.act_window">
+        <field name="name">Clases IA de productos</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_product_template_ia_list"/>
+        <field name="search_view_id" ref="view_product_template_ia_search"/>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_product_template_ia_clases"
+        name="Clases IA de productos"
+        parent="stock.menu_stock_root"
+        action="action_product_template_ia_clases"
+        sequence="8"/>
+
+</odoo>

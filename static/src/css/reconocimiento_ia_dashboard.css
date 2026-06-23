@@ -361,3 +361,116 @@
 .o_ia_utiles_apply_result li {
     margin-bottom: 5px;
 }
+
+.o_ia_utiles_ia_class {
+    margin-top: 12px;
+    color: #405172;
+    font-size: 14px;
+}
+
+.o_ia_utiles_candidates {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 20px;
+    background: #f8fbff;
+    border: 1px solid #dce7fb;
+}
+
+.o_ia_utiles_candidates h3 {
+    margin: 0 0 10px;
+    color: #25304d;
+    font-size: 18px;
+}
+
+.o_ia_utiles_candidate_list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 14px 0;
+}
+
+.o_ia_utiles_candidate {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid #dfe7f5;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.o_ia_utiles_candidate:hover {
+    border-color: #6b85ff;
+    transform: translateY(-1px);
+}
+
+.o_ia_utiles_candidate.complete {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f3f5f9;
+}
+
+.o_ia_utiles_candidate input {
+    margin-top: 4px;
+}
+
+.o_ia_utiles_candidate_meta {
+    margin-top: 5px;
+    color: #61708d;
+    font-size: 13px;
+}
+
+.o_ia_utiles_candidate_complete {
+    margin-top: 5px;
+    color: #1f8f55;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.o_ia_utiles_no_candidates {
+    padding: 14px;
+    border-radius: 14px;
+    background: #fff8e6;
+    color: #9a6a00;
+}
+
+.o_ia_utiles_quantity_box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 16px 0;
+}
+
+.o_ia_utiles_quantity_box label {
+    font-weight: 800;
+    color: #25304d;
+}
+
+.o_ia_utiles_quantity_box input {
+    width: 160px;
+    border: 1px solid #ccd8ef;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 800;
+}
+
+.o_ia_utiles_quantity_box small {
+    color: #71809b;
+}
+
+.o_ia_utiles_apply_result {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: #f4fff8;
+    border: 1px solid #ccefd9;
+    color: #254732;
+}
+
+.o_ia_utiles_apply_result h3 {
+    margin: 0 0 10px;
+    font-size: 17px;
+    color: #1f6f43;
+}

@@ -4,7 +4,6 @@
     <t t-name="gestion_utiles_escolares.ReconocimientoIADashboard">
         <div class="o_ia_utiles_dashboard">
 
-            <!-- ENCABEZADO -->
             <div class="o_ia_utiles_hero">
                 <div>
                     <span class="o_ia_utiles_badge">Modelo YOLO entrenado</span>
@@ -15,9 +14,7 @@
                 </div>
 
                 <div class="o_ia_utiles_status_card">
-                    <div class="o_ia_utiles_status_title">
-                        Estado del modelo
-                    </div>
+                    <div class="o_ia_utiles_status_title">Estado del modelo</div>
 
                     <div t-if="state.checkingModel" class="o_ia_utiles_status_wait">
                         Verificando modelo...
@@ -45,10 +42,8 @@
                 </div>
             </div>
 
-            <!-- CONTENIDO PRINCIPAL -->
             <div class="o_ia_utiles_grid">
 
-                <!-- PANEL IZQUIERDO: IMAGEN -->
                 <div class="o_ia_utiles_upload_panel">
                     <div class="o_ia_utiles_panel_header">
                         <div>
@@ -86,16 +81,6 @@
                             <span t-if="state.loading">Analizando...</span>
                         </button>
 
-                        <button t-if="state.recepcionId &amp;&amp; state.detections.length"
-                                type="button"
-                                class="o_ia_utiles_btn primary"
-                                t-on-click="applyToReception"
-                                t-att-disabled="state.applyLoading">
-                            <i class="fa fa-check"/>
-                            <span t-if="!state.applyLoading">Marcar en recepción</span>
-                            <span t-if="state.applyLoading">Marcando...</span>
-                        </button>
-
                         <button type="button"
                                 class="o_ia_utiles_btn secondary"
                                 t-on-click="clearImage">
@@ -109,28 +94,24 @@
                     </div>
                 </div>
 
-                <!-- PANEL DERECHO: RESULTADOS -->
                 <div class="o_ia_utiles_result_panel">
                     <div class="o_ia_utiles_panel_header">
                         <div>
                             <h2>Resultado del reconocimiento</h2>
-                            <p>El sistema mostrará la clase detectada, confianza y coincidencia con producto de Odoo.</p>
+                            <p>El sistema mostrará la clase detectada, confianza y coincidencias en la recepción.</p>
                         </div>
                     </div>
 
-                    <!-- SIN RESULTADO -->
                     <div t-if="!state.result" class="o_ia_utiles_empty_result">
                         <i class="fa fa-search"/>
                         <h3>Aún no hay análisis</h3>
                         <p>Selecciona una imagen y presiona “Analizar imagen”.</p>
                     </div>
 
-                    <!-- CON RESULTADO -->
                     <div t-if="state.result">
 
-                        <!-- MEJOR RESULTADO -->
                         <div t-if="topDetection" class="o_ia_utiles_best_result">
-                            <span>Producto más probable</span>
+                            <span>Clase más probable</span>
                             <h3 t-esc="topDetection.label"/>
 
                             <div class="o_ia_utiles_confidence">
@@ -138,32 +119,35 @@
                                 <strong t-esc="confidenceText"/>
                             </div>
 
+                            <div class="o_ia_utiles_ia_class">
+                                Clase IA:
+                                <strong t-esc="topDetection.ia_class"/>
+                            </div>
+
                             <div t-if="topDetection.product_name" class="o_ia_utiles_product_match">
-                                Coincide con Odoo:
+                                Coincidencia general:
                                 <strong t-esc="topDetection.product_name"/>
                             </div>
 
                             <div t-if="!topDetection.product_name" class="o_ia_utiles_product_nomatch">
-                                No se encontró coincidencia exacta con productos de Odoo.
+                                Esta clase debe validarse contra la lista de útiles del alumno.
                             </div>
                         </div>
 
-                        <!-- NO DETECTÓ -->
                         <div t-if="!topDetection" class="o_ia_utiles_empty_result">
                             <i class="fa fa-exclamation-circle"/>
                             <h3>No se detectaron productos</h3>
                             <p>Prueba con una imagen más clara o con el útil más cerca.</p>
                         </div>
 
-                        <!-- TABLA DE DETECCIONES -->
                         <div t-if="state.detections.length" class="o_ia_utiles_table_wrap">
                             <table class="o_ia_utiles_table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
                                         <th>Clase detectada</th>
+                                        <th>Clase IA</th>
                                         <th>Confianza</th>
-                                        <th>Producto en Odoo</th>
                                     </tr>
                                 </thead>
 
@@ -173,24 +157,15 @@
                                        t-key="detection_index">
                                         <tr>
                                             <td t-esc="detection_index + 1"/>
-
                                             <td>
                                                 <strong t-esc="detection.label"/>
                                             </td>
-
+                                            <td>
+                                                <t t-esc="detection.ia_class"/>
+                                            </td>
                                             <td>
                                                 <t t-esc="detection.confidence"/>
                                                 %
-                                            </td>
-
-                                            <td>
-                                                <span t-if="detection.product_name"
-                                                      t-esc="detection.product_name"/>
-
-                                                <span t-if="!detection.product_name"
-                                                      class="o_ia_utiles_muted">
-                                                    Sin coincidencia
-                                                </span>
                                             </td>
                                         </tr>
                                     </t>
@@ -198,57 +173,99 @@
                             </table>
                         </div>
 
-                        <!-- RESULTADO APLICADO A RECEPCIÓN -->
+                        <div t-if="state.candidateLoading" class="o_ia_utiles_candidates">
+                            Buscando productos candidatos en la recepción...
+                        </div>
+
+                        <div t-if="state.candidatePanel" class="o_ia_utiles_candidates">
+                            <h3>Validación en la recepción del alumno</h3>
+
+                            <p>
+                                Clase detectada:
+                                <strong t-esc="state.candidatePanel.ia_class"/>
+                                —
+                                Confianza:
+                                <strong t-esc="state.candidatePanel.confidence"/>
+                                %
+                            </p>
+
+                            <div t-if="!hasCandidates" class="o_ia_utiles_no_candidates">
+                                No se encontraron productos relacionados en la lista de útiles del alumno.
+                                Revisa que el producto tenga asignada su Clase IA.
+                            </div>
+
+                            <div t-if="hasCandidates">
+                                <div class="o_ia_utiles_candidate_list">
+                                    <t t-foreach="candidates"
+                                       t-as="candidate"
+                                       t-key="candidate.linea_id">
+                                        <label t-att-class="candidate.is_complete ? 'o_ia_utiles_candidate complete' : 'o_ia_utiles_candidate'">
+                                            <input type="radio"
+                                                   name="ia_candidate"
+                                                   t-att-value="candidate.linea_id"
+                                                   t-att-checked="state.selectedLineId === candidate.linea_id"
+                                                   t-att-disabled="candidate.is_complete"
+                                                   t-on-change="onCandidateChange"/>
+
+                                            <div>
+                                                <strong t-esc="candidate.producto"/>
+                                                <div class="o_ia_utiles_candidate_meta">
+                                                    Esperado:
+                                                    <t t-esc="candidate.cantidad_esperada"/>
+                                                    |
+                                                    Entregado:
+                                                    <t t-esc="candidate.cantidad_entregada"/>
+                                                    |
+                                                    Faltante:
+                                                    <t t-esc="candidate.cantidad_faltante"/>
+                                                </div>
+
+                                                <div t-if="candidate.is_complete" class="o_ia_utiles_candidate_complete">
+                                                    Producto completo
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </t>
+                                </div>
+
+                                <div class="o_ia_utiles_quantity_box">
+                                    <label>Cantidad a marcar</label>
+                                    <input type="number"
+                                           min="1"
+                                           step="1"
+                                           t-att-value="state.quantityToMark"
+                                           t-on-input="onQuantityChange"/>
+                                    <small>
+                                        Ingresa la cantidad entregada por el padre de familia.
+                                    </small>
+                                </div>
+
+                                <button type="button"
+                                        class="o_ia_utiles_btn primary"
+                                        t-on-click="applySelectedToReception"
+                                        t-att-disabled="state.applyLoading">
+                                    <i class="fa fa-check"/>
+                                    <span t-if="!state.applyLoading">Marcar como verificado</span>
+                                    <span t-if="state.applyLoading">Marcando...</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <div t-if="state.applyResult" class="o_ia_utiles_apply_result">
-                            <h3>Resultado aplicado a recepción</h3>
-
-                            <div t-if="state.applyResult.aplicadas.length">
-                                <strong>Productos marcados:</strong>
-                                <ul>
-                                    <t t-foreach="state.applyResult.aplicadas"
-                                       t-as="item"
-                                       t-key="item.linea_id">
-                                        <li>
-                                            <t t-esc="item.producto"/>
-                                            —
-                                            Entregado:
-                                            <t t-esc="item.cantidad_entregada"/>
-                                            /
-                                            <t t-esc="item.cantidad_esperada"/>
-                                        </li>
-                                    </t>
-                                </ul>
-                            </div>
-
-                            <div t-if="state.applyResult.no_encontradas.length">
-                                <strong>No encontrados en la lista:</strong>
-                                <ul>
-                                    <t t-foreach="state.applyResult.no_encontradas"
-                                       t-as="item"
-                                       t-key="item.label">
-                                        <li>
-                                            <t t-esc="item.label"/>
-                                            —
-                                            <t t-esc="item.motivo"/>
-                                        </li>
-                                    </t>
-                                </ul>
-                            </div>
-
-                            <div t-if="state.applyResult.ya_completas.length">
-                                <strong>Ya estaban completos:</strong>
-                                <ul>
-                                    <t t-foreach="state.applyResult.ya_completas"
-                                       t-as="item"
-                                       t-key="item.label">
-                                        <li>
-                                            <t t-esc="item.label"/>
-                                            —
-                                            <t t-esc="item.motivo"/>
-                                        </li>
-                                    </t>
-                                </ul>
-                            </div>
+                            <h3>Producto verificado</h3>
+                            <p>
+                                <strong t-esc="state.applyResult.producto"/>
+                            </p>
+                            <p>
+                                Cantidad marcada:
+                                <strong t-esc="state.applyResult.cantidad_marcada"/>
+                            </p>
+                            <p>
+                                Entregado:
+                                <strong t-esc="state.applyResult.cantidad_entregada"/>
+                                /
+                                <strong t-esc="state.applyResult.cantidad_esperada"/>
+                            </p>
                         </div>
 
                     </div>
@@ -256,11 +273,9 @@
 
             </div>
 
-            <!-- NOTA -->
             <div class="o_ia_utiles_note">
                 <strong>Nota:</strong>
-                este apartado usa tu modelo entrenado de 30 clases. Para marcar útiles en la lista del alumno,
-                abre este panel desde una recepción y usa el botón “Marcar en recepción”.
+                para marcar útiles en la lista del alumno, abre este panel desde una recepción y valida el producto candidato antes de guardar.
             </div>
 
         </div>
