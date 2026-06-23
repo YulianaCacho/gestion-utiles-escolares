@@ -33,7 +33,6 @@
     'views/favicon_views.xml',
 
     "views/dashboard_utiles_views.xml",
-    "views/reconocimiento_ia_views.xml",
     "views/reportes_menu_views.xml",
     "views/reporte_recepcion_dashboard_views.xml",
     "views/reporte_almacen_movimientos_views.xml",
@@ -43,6 +42,7 @@
     'views/sobrante_utiles_views.xml',
     'views/cierre_anio_utiles_views.xml',
     'views/recepcion_ia_views.xml',
+    "views/reconocimiento_ia_views.xml",
     
    
     
@@ -94,6 +94,11 @@
             "gestion_utiles_escolares/static/src/js/sobrantes_dashboard.js",
             "gestion_utiles_escolares/static/src/xml/sobrantes_dashboard.xml",
             "gestion_utiles_escolares/static/src/css/sobrantes_dashboard.css",
+        
+            'gestion_utiles_escolares/static/src/css/reconocimiento_ia_dashboard.css',
+            'gestion_utiles_escolares/static/src/js/reconocimiento_ia_dashboard.js',
+            'gestion_utiles_escolares/static/src/xml/reconocimiento_ia_dashboard.xml', 
+        
         ],
     },
     "installable": True,
