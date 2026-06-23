@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_report_almacen_movimientos_pdf" model="ir.actions.report">
+        <field name="name">Historial de movimientos — línea de tiempo</field>
+        <field name="model">almacen.utiles.movimiento</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">gestion_utiles_escolares.report_almacen_movimientos_pdf_document</field>
+        <field name="report_file">gestion_utiles_escolares.report_almacen_movimientos_pdf_document</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <template id="report_almacen_movimientos_pdf_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+
+                <t t-set="pdf_data" t-value="docs.env['almacen.utiles.movimiento'].get_reporte_almacen_pdf_data(
+                    month=docs.env.context.get('month'),
+                    year=docs.env.context.get('year'),
+                    grado=docs.env.context.get('grado') or False,
+                    responsable_id=docs.env.context.get('responsable_id') or False,
+                    anio_escolar_id=docs.env.context.get('anio_escolar_id') or False
+                )"/>
+
+                <div class="page">
+
+                    <style>
+                        .ram-header { text-align: center; margin-bottom: 18px; border-bottom: 1.5px solid #ddd; padding-bottom: 10px; }
+                        .ram-header h2 { font-size: 17px; font-weight: 700; margin: 0 0 3px 0; color: #1a1a1a; }
+                        .ram-header p { font-size: 11px; color: #666; margin: 0; }
+
+                        .ram-kpis { display: table; width: 100%; margin-bottom: 16px; border-collapse: separate; border-spacing: 8px 0; }
+                        .ram-kpi-cell { display: table-cell; width: 25%; background: #f5f5f2; border: 1px solid #e0e0da; border-radius: 6px; padding: 10px 12px; vertical-align: top; }
+                        .ram-kpi-num { font-size: 20px; font-weight: 700; color: #1a1a1a; display: block; }
+                        .ram-kpi-label { font-size: 9.5px; color: #777; display: block; margin-top: 2px; }
+
+                        .ram-section-title { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: #555; text-transform: uppercase; margin: 0 0 10px 0; border-top: 1px solid #e0e0da; padding-top: 10px; }
+
+                        .ram-event { display: table; width: 100%; margin-bottom: 10px; page-break-inside: avoid; }
+                        .ram-dot-cell { display: table-cell; width: 18px; vertical-align: top; padding-top: 3px; }
+                        .ram-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-top: 2px; }
+                        .ram-dot-entrada { background: #22c55e; }
+                        .ram-dot-salida  { background: #ef4444; }
+                        .ram-dot-ajuste  { background: #f59e0b; }
+
+                        .ram-content-cell { display: table-cell; vertical-align: top; padding: 0 0 8px 6px; border-bottom: 0.5px solid #ececec; }
+                        .ram-event-top { display: table; width: 100%; margin-bottom: 2px; }
+                        .ram-event-titulo { display: table-cell; font-size: 11px; font-weight: 700; color: #1a1a1a; vertical-align: middle; }
+                        .ram-badge { display: table-cell; font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 99px; vertical-align: middle; white-space: nowrap; text-align: center; width: 60px; }
+                        .ram-badge-pos    { background: #dcfce7; color: #15803d; }
+                        .ram-badge-neg    { background: #fee2e2; color: #b91c1c; }
+                        .ram-badge-adjust { background: #fef9c3; color: #92400e; }
+                        .ram-meta { display: table-cell; font-size: 9px; color: #888; vertical-align: middle; text-align: right; white-space: nowrap; padding-left: 8px; }
+                        .ram-detalle { font-size: 10px; color: #444; margin: 0; line-height: 1.45; }
+
+                        .ram-footer { font-size: 9px; color: #aaa; text-align: center; margin-top: 16px; border-top: 0.5px solid #e0e0da; padding-top: 8px; }
+                    </style>
+
+                    <div class="ram-header">
+                        <h2>Historial de movimientos · I.E.P. Genios del Millennium</h2>
+                        <p>
+                            Período: <t t-esc="pdf_data.get('month_label', '')"/> ·
+                            Total de eventos: <t t-esc="len(pdf_data.get('events', []))"/>
+                        </p>
+                    </div>
+
+                    <div class="ram-kpis">
+                        <div class="ram-kpi-cell">
+                            <span class="ram-kpi-num"><t t-esc="pdf_data.get('kpis', {}).get('entradas', '0')"/></span>
+                            <span class="ram-kpi-label">Entradas este mes</span>
+                        </div>
+                        <div class="ram-kpi-cell">
+                            <span class="ram-kpi-num"><t t-esc="pdf_data.get('kpis', {}).get('salidas', '0')"/></span>
+                            <span class="ram-kpi-label">Salidas este mes</span>
+                        </div>
+                        <div class="ram-kpi-cell">
+                            <span class="ram-kpi-num"><t t-esc="pdf_data.get('kpis', {}).get('ajustes', 0)"/></span>
+                            <span class="ram-kpi-label">Ajustes realizados</span>
+                        </div>
+                        <div class="ram-kpi-cell">
+                            <span class="ram-kpi-num"><t t-esc="pdf_data.get('kpis', {}).get('balance', '0')"/></span>
+                            <span class="ram-kpi-label">Balance neto</span>
+                        </div>
+                    </div>
+
+                    <p class="ram-section-title">
+                        LÍNEA DE TIEMPO — <t t-esc="pdf_data.get('month_short', pdf_data.get('month_label', ''))"/>
+                    </p>
+
+                    <div class="ram-timeline">
+                        <t t-if="pdf_data.get('events')">
+                            <t t-foreach="pdf_data['events']" t-as="event">
+                                <div class="ram-event">
+                                    <div class="ram-dot-cell">
+                                        <span t-att-class="'ram-dot ram-dot-' + (event.get('tipo', 'entrada'))"/>
+                                    </div>
+                                    <div class="ram-content-cell">
+                                        <div class="ram-event-top">
+                                            <span class="ram-event-titulo">
+                                                <t t-esc="event.get('titulo', '')"/>
+                                            </span>
+                                            <span t-att-class="'ram-badge ' + ('ram-badge-pos' if event.get('tipo') == 'entrada' else ('ram-badge-neg' if event.get('tipo') == 'salida' else 'ram-badge-adjust'))">
+                                                <t t-esc="event.get('badge', '')"/>
+                                            </span>
+                                            <span class="ram-meta">
+                                                <t t-esc="event.get('fecha', '')"/> · <t t-esc="event.get('responsable', '')"/>
+                                            </span>
+                                        </div>
+                                        <p class="ram-detalle">
+                                            <t t-esc="event.get('detalle', '')"/>
+                                        </p>
+                                    </div>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-else="">
+                            <p style="font-size:11px; color:#888;">No hay movimientos registrados para el período seleccionado.</p>
+                        </t>
+                    </div>
+
+                    <div class="ram-footer">
+                        Generado desde el sistema de gestión de útiles escolares
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

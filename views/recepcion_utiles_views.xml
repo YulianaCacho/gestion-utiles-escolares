@@ -39,12 +39,14 @@
                     <button name="action_cargar_lista"
                         string="Cargar lista de útiles"
                         type="object"
-                        icon="fa-upload" />
+                        icon="fa-upload"
+                        invisible="tipo_entrada != 'recepcion_utiles'" />
 
                     <button name="action_calcular_faltantes"
                         string="Calcular faltantes"
                         type="object"
-                        icon="fa-calculator" />
+                        icon="fa-calculator"
+                        invisible="tipo_entrada != 'recepcion_utiles'" />
 
                     <button name="action_validar"
                         string="Validar recepción"
@@ -129,7 +131,7 @@
 
                         </div>
 
-                        <div class="o_recepcion_cards_grid">
+                        <div class="o_recepcion_cards_grid" invisible="tipo_entrada != 'recepcion_utiles'">
 
                             <div class="o_recepcion_card">
                                 <span class="o_form_label">TOTAL DE PRODUCTOS</span>
@@ -173,13 +175,14 @@
 
                     <notebook>
                         <page string="Productos recibidos">
-                            <field name="linea_ids" nolabel="1">
+                            <field name="linea_ids" nolabel="1"
+                                context="{'default_destino_recepcion': 'almacen'}">
                                 <list editable="bottom"
-                                    create="0"
-                                    delete="0"
+                                    create="tipo_entrada != 'recepcion_utiles'"
+                                    delete="tipo_entrada != 'recepcion_utiles'"
                                     string="Productos recibidos">
 
-                                    <field name="product_id" string="Producto" readonly="1" force_save="1"/>
+                                    <field name="product_id" string="Producto" force_save="1"/>
                                     <field name="categoria_id" string="Categoría" readonly="1" force_save="1"/>
                                     <field name="cantidad_esperada" string="Cantidad esperada" readonly="1" force_save="1"/>
                                     <field name="cantidad_entregada" string="Cantidad entregada" />

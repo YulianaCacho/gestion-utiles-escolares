@@ -95,8 +95,55 @@ class ReporteAlmacenMovimientos extends Component {
         await this.loadData();
     }
 
-    exportPdf() {
-        window.print();
+    async exportPdf() {
+        let anchorId = false;
+
+        if (this.state.events && this.state.events.length > 0) {
+            for (const ev of this.state.events) {
+                const match = String(ev.id || "").match(/\d+/);
+                if (match) {
+                    anchorId = match[0];
+                    break;
+                }
+            }
+        }
+
+        if (!anchorId) {
+            const movs = await this.orm.search(
+                "almacen.utiles.movimiento",
+                [],
+                { limit: 1 }
+            );
+            anchorId = movs.length ? movs[0] : false;
+        }
+
+        if (!anchorId) {
+            alert("No hay datos disponibles para exportar en el período seleccionado.");
+            return;
+        }
+
+        let year = null;
+        let month = null;
+
+        if (this.state.selectedMonth) {
+            const parts = this.state.selectedMonth.split("-");
+            year = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10);
+        }
+
+        const ctx = {
+            month: month,
+            year: year,
+            grado: this.state.gradoSeleccionado || false,
+            responsable_id: this.state.responsableSeleccionado
+                ? parseInt(this.state.responsableSeleccionado, 10)
+                : false,
+            anio_escolar_id: this.state.anioEscolarId || false,
+        };
+
+        const ctxEncoded = encodeURIComponent(JSON.stringify(ctx));
+        const url = `/report/pdf/gestion_utiles_escolares.report_almacen_movimientos_pdf_document/${anchorId}?context=${ctxEncoded}`;
+        window.open(url, "_blank");
     }
 }
 

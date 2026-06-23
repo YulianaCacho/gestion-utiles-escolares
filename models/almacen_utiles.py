@@ -470,8 +470,16 @@ class AlmacenUtilesMovimiento(models.Model):
             motivo = mov.observacion or ""
 
             if mov.tipo_movimiento == "entrada" and mov.recepcion_id:
-                estudiante = mov.estudiante_id.name or "Estudiante"
-                motivo = f"Recep. matrícula — {estudiante}"
+                tipo_entrada = mov.recepcion_id.tipo_entrada or "recepcion_utiles"
+                if tipo_entrada == "compra_directa":
+                    motivo = "Compra directa"
+                elif tipo_entrada == "traslado_interno":
+                    motivo = "Traslado interno"
+                elif tipo_entrada == "otro":
+                    motivo = mov.observacion or "Otro ingreso"
+                else:
+                    estudiante = mov.estudiante_id.name or "Estudiante"
+                    motivo = f"Recep. matrícula — {estudiante}"
             elif mov.tipo_movimiento == "salida":
                 motivo = mov.destino or mov.observacion or "Entrega docente"
             elif mov.tipo_movimiento == "ajuste":
@@ -530,3 +538,14 @@ class AlmacenUtilesMovimiento(models.Model):
             "total": len(rows),
             "rows": rows,
         }
+        
+    @api.model
+    def get_reporte_almacen_pdf_data(self, month=None, year=None, grado=False, responsable_id=False, anio_escolar_id=False):
+        data = self.get_reporte_almacen_movimientos(
+            month=month,
+            year=year,
+            grado=grado,
+            responsable_id=responsable_id,
+            anio_escolar_id=anio_escolar_id,
+        )
+        return data
