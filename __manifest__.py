@@ -21,7 +21,6 @@
 
     # Luego Matrículas
     'views/matricula_escolar_views.xml',
-  
 
     # Luego Lista de útiles porque ahora irá dentro de Matrículas
     "views/lista_utiles_views.xml",
@@ -30,6 +29,7 @@
     'views/salida_almacen_utiles_views.xml',
 
     'reports/reporte_recepcion_utiles.xml',
+    'reports/reporte_linea_tiempo_movimientos.xml',
     'views/favicon_views.xml',
 
     "views/dashboard_utiles_views.xml",
