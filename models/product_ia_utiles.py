@@ -43,3 +43,15 @@ class ProductTemplateIAUtiles(models.Model):
         string="Clase IA",
         help="Clase del modelo YOLO usada para relacionar este producto con el reconocimiento inteligente.",
     )
+
+
+class ProductProductIAUtiles(models.Model):
+    _inherit = "product.product"
+
+    ia_clase_util = fields.Selection(
+        selection=IA_CLASE_SELECTION,
+        related="product_tmpl_id.ia_clase_util",
+        string="Clase IA",
+        readonly=False,
+        help="Clase del modelo YOLO usada para relacionar este producto con el reconocimiento inteligente.",
+    )

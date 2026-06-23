@@ -182,6 +182,7 @@
             <kanban class="o_kanban_mobile">
                <field name="name"/>
                <field name="default_code"/>
+               <field name="ia_clase_util" string="Clase IA"/>
                <field name="qty_available"/>
                <field name="uom_id"/>
                <field name="tipo_uso_escolar"/>
