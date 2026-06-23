@@ -61,9 +61,7 @@
                             <span>JPG, PNG o JPEG</span>
                         </div>
 
-                        <img t-if="state.preview"
-                             t-att-src="state.preview"
-                             class="o_ia_utiles_preview"/>
+                        <img t-if="state.preview" t-att-src="state.preview" class="o_ia_utiles_preview"/>
                     </label>
 
                     <div t-if="state.filename" class="o_ia_utiles_filename">
@@ -71,19 +69,42 @@
                         <strong t-esc="state.filename"/>
                     </div>
 
+                    <div class="o_ia_utiles_camera_box">
+                        <div class="o_ia_utiles_camera_actions">
+                            <button type="button" class="o_ia_utiles_btn secondary" t-on-click="openCamera" t-att-disabled="state.cameraLoading">
+                                <i class="fa fa-video-camera"/>
+                                <span t-if="!state.cameraLoading">Usar cámara</span>
+                                <span t-if="state.cameraLoading">Abriendo cámara...</span>
+                            </button>
+
+                            <button t-if="state.cameraActive" type="button" class="o_ia_utiles_btn primary" t-on-click="captureFromCamera">
+                                <i class="fa fa-camera"/>
+            Capturar foto
+                            </button>
+
+                            <button t-if="state.cameraActive" type="button" class="o_ia_utiles_btn secondary" t-on-click="stopCamera">
+            Cerrar cámara
+                            </button>
+                        </div>
+
+                        <div t-if="state.cameraActive" class="o_ia_utiles_camera_preview">
+                            <video class="o_ia_utiles_camera_video" autoplay="autoplay" playsinline="playsinline"/>
+                        </div>
+
+                        <div t-if="state.cameraError" class="o_ia_utiles_error">
+                            <strong>Cámara:</strong>
+                            <t t-esc="state.cameraError"/>
+                        </div>
+                    </div>
+
                     <div class="o_ia_utiles_actions">
-                        <button type="button"
-                                class="o_ia_utiles_btn primary"
-                                t-on-click="analyzeImage"
-                                t-att-disabled="state.loading">
+                        <button type="button" class="o_ia_utiles_btn primary" t-on-click="analyzeImage" t-att-disabled="state.loading">
                             <i class="fa fa-magic"/>
                             <span t-if="!state.loading">Analizar imagen</span>
                             <span t-if="state.loading">Analizando...</span>
                         </button>
 
-                        <button type="button"
-                                class="o_ia_utiles_btn secondary"
-                                t-on-click="clearImage">
+                        <button type="button" class="o_ia_utiles_btn secondary" t-on-click="clearImage">
                             Limpiar
                         </button>
                     </div>
@@ -152,9 +173,7 @@
                                 </thead>
 
                                 <tbody>
-                                    <t t-foreach="state.detections"
-                                       t-as="detection"
-                                       t-key="detection_index">
+                                    <t t-foreach="state.detections" t-as="detection" t-key="detection_index">
                                         <tr>
                                             <td t-esc="detection_index + 1"/>
                                             <td>
@@ -196,16 +215,9 @@
 
                             <div t-if="hasCandidates">
                                 <div class="o_ia_utiles_candidate_list">
-                                    <t t-foreach="candidates"
-                                       t-as="candidate"
-                                       t-key="candidate.linea_id">
+                                    <t t-foreach="candidates" t-as="candidate" t-key="candidate.linea_id">
                                         <label t-att-class="candidate.is_complete ? 'o_ia_utiles_candidate complete' : 'o_ia_utiles_candidate'">
-                                            <input type="radio"
-                                                   name="ia_candidate"
-                                                   t-att-value="candidate.linea_id"
-                                                   t-att-checked="state.selectedLineId === candidate.linea_id"
-                                                   t-att-disabled="candidate.is_complete"
-                                                   t-on-change="onCandidateChange"/>
+                                            <input type="radio" name="ia_candidate" t-att-value="candidate.linea_id" t-att-checked="state.selectedLineId === candidate.linea_id" t-att-disabled="candidate.is_complete" t-on-change="onCandidateChange"/>
 
                                             <div>
                                                 <strong t-esc="candidate.producto"/>
@@ -230,20 +242,13 @@
 
                                 <div class="o_ia_utiles_quantity_box">
                                     <label>Cantidad a marcar</label>
-                                    <input type="number"
-                                           min="1"
-                                           step="1"
-                                           t-att-value="state.quantityToMark"
-                                           t-on-input="onQuantityChange"/>
+                                    <input type="number" min="1" step="1" t-att-value="state.quantityToMark" t-on-input="onQuantityChange"/>
                                     <small>
                                         Ingresa la cantidad entregada por el padre de familia.
                                     </small>
                                 </div>
 
-                                <button type="button"
-                                        class="o_ia_utiles_btn primary"
-                                        t-on-click="applySelectedToReception"
-                                        t-att-disabled="state.applyLoading">
+                                <button type="button" class="o_ia_utiles_btn primary" t-on-click="applySelectedToReception" t-att-disabled="state.applyLoading">
                                     <i class="fa fa-check"/>
                                     <span t-if="!state.applyLoading">Marcar como verificado</span>
                                     <span t-if="state.applyLoading">Marcando...</span>
@@ -271,6 +276,13 @@
                     </div>
                 </div>
 
+            </div>
+
+            <div t-if="state.returnToReceptionDashboard" class="o_ia_utiles_return_box">
+                <button type="button" class="o_ia_utiles_btn secondary" t-on-click="volverAlCotejo">
+                    <i class="fa fa-arrow-left"/>
+        Volver al cotejo
+                </button>
             </div>
 
             <div class="o_ia_utiles_note">

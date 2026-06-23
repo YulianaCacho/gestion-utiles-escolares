@@ -474,3 +474,39 @@
     font-size: 17px;
     color: #1f6f43;
 }
+
+.o_ia_utiles_camera_box {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 18px;
+    background: #f8fbff;
+    border: 1px solid #dce7fb;
+}
+
+.o_ia_utiles_camera_actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.o_ia_utiles_camera_preview {
+    margin-top: 14px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid #ccd8ef;
+}
+
+.o_ia_utiles_camera_video {
+    display: block;
+    width: 100%;
+    max-height: 420px;
+    object-fit: contain;
+    background: #111;
+}
+
+.o_ia_utiles_return_box {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-start;
+}
