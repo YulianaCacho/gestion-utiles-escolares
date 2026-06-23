@@ -106,8 +106,57 @@ class ReconocimientoIAUtiles(models.Model):
         if not nombre_clase:
             return False
 
-        nombre_limpio = str(nombre_clase).replace("_", " ").strip()
+        nombre_limpio = str(nombre_clase).replace("_", " ").strip().lower()
 
+        # Diccionario de equivalencias entre clases del modelo IA y productos reales de Odoo.
+        # Aquí corregimos casos ambiguos como "silicona".
+        equivalencias = {
+            "silicona": [
+                "Silicona líquida x 250 ml",
+                "Silicona liquida x 250 ml",
+                "Silicona líquida",
+                "Silicona liquida",
+            ],
+            "goma": [
+                "Goma x 250 ml",
+                "Goma líquida x 250 ml",
+                "Goma liquida x 250 ml",
+            ],
+            "alcohol gel": [
+                "Alcohol en gel",
+                "Alcohol gel",
+            ],
+            "alcohol en gel": [
+                "Alcohol en gel",
+            ],
+            "borrador": [
+                "Borrador",
+            ],
+            "tajador": [
+                "Tajador",
+            ],
+            "tijera": [
+                "Tijera",
+                "Tijeras",
+            ],
+        }
+
+        # 1. Primero busca usando equivalencias exactas/priorizadas
+        posibles_nombres = equivalencias.get(nombre_limpio, [])
+
+        for posible in posibles_nombres:
+            producto = self.env["product.product"].search(
+                [
+                    "|",
+                    ("name", "ilike", posible),
+                    ("display_name", "ilike", posible),
+                ],
+                limit=1,
+            )
+            if producto:
+                return producto
+
+        # 2. Si no hay equivalencia, busca por nombre detectado
         producto = self.env["product.product"].search(
             [
                 "|",
