@@ -326,6 +326,23 @@ class RecepcionUtilesEscolar(models.Model):
                     "recepcion.utiles.escolar"
                 ) or "Nueva"
         return super().create(vals_list)
+    
+    @api.constrains("matricula_id", "tipo_entrada")
+    def _check_recepcion_unica_por_matricula(self):
+        for rec in self:
+            if rec.tipo_entrada != "recepcion_utiles":
+                continue
+            if not rec.matricula_id:
+                continue
+            existe = self.search_count([
+                ("matricula_id", "=", rec.matricula_id.id),
+                ("tipo_entrada", "=", "recepcion_utiles"),
+                ("id", "!=", rec.id),
+            ])
+            if existe:
+                raise UserError(
+                    f"El alumno {rec.matricula_id.estudiante_id.name} ya tiene una recepción registrada."
+                )
 
     def _obtener_valor_linea(self, linea, posibles_campos, valor_default=False):
         for campo in posibles_campos:
@@ -367,6 +384,21 @@ class RecepcionUtilesEscolar(models.Model):
         for rec in self:
             if rec.tipo_entrada != "recepcion_utiles":
                 continue
+
+            if rec.matricula_id:
+                existe = self.env["recepcion.utiles.escolar"].search_count([
+                    ("matricula_id", "=", rec.matricula_id.id),
+                    ("tipo_entrada", "=", "recepcion_utiles"),
+                    ("id", "!=", rec._origin.id or 0),
+                ])
+                if existe:
+                    rec.matricula_id = False
+                    return {
+                        "warning": {
+                            "title": "Alumno ya registrado",
+                            "message": "Este alumno ya tiene una recepción registrada. Selecciona otro alumno.",
+                        }
+                    }
 
             rec.linea_ids = [(5, 0, 0)]
             rec.estado = "borrador"
