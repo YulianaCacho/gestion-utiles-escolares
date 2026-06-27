@@ -10,7 +10,7 @@
 
 .o_ltm_toolbar {
     display: grid;
-    grid-template-columns: minmax(360px, 1fr) 170px 120px 140px;
+    grid-template-columns: minmax(260px, 1fr) 170px 160px 160px;
     gap: 10px;
     align-items: center;
     margin-bottom: 20px;

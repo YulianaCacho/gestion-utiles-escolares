@@ -20,6 +20,10 @@ class ReporteLineaTiempoMovimientos extends Component {
             monthLabel: "",
             search: "",
             tipoSeleccionado: "",
+            gradoSeleccionado: "",
+            responsableSeleccionado: "",
+            grados: [],
+            responsables: [],
             total: 0,
             rows: [],
             anioEscolarId: false,
@@ -57,6 +61,8 @@ class ReporteLineaTiempoMovimientos extends Component {
                 year: year,
                 tipo: this.state.tipoSeleccionado || false,
                 search: this.state.search || false,
+                grado: this.state.gradoSeleccionado || false,
+                responsable_id: this.state.responsableSeleccionado || false,
                 anio_escolar_id: this.state.anioEscolarId || false,
             }
         );
@@ -64,6 +70,8 @@ class ReporteLineaTiempoMovimientos extends Component {
         this.state.monthLabel = data.month_label || "";
         this.state.total = data.total || 0;
         this.state.rows = data.rows || [];
+        this.state.grados = data.grados || [];
+        this.state.responsables = data.responsables || [];
     }
 
     async onChangeMonth(ev) {
@@ -73,6 +81,16 @@ class ReporteLineaTiempoMovimientos extends Component {
 
     async onChangeTipo(ev) {
         this.state.tipoSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeGrado(ev) {
+        this.state.gradoSeleccionado = ev.target.value;
+        await this.loadData();
+    }
+
+    async onChangeResponsable(ev) {
+        this.state.responsableSeleccionado = ev.target.value;
         await this.loadData();
     }
 
@@ -105,7 +123,7 @@ class ReporteLineaTiempoMovimientos extends Component {
         }
         const url = `/report/pdf/gestion_utiles_escolares.report_linea_tiempo_document/${ids.join(",")}`;
         window.open(url, "_blank");
-}
+    }
 }
 
 registry

@@ -17,11 +17,25 @@
 
                 <div class="o_ltm_type">
                     <i class="fa fa-filter"/>
-                    <select t-on-change="onChangeTipo">
-                        <option value="">Tipo</option>
-                        <option value="entrada" t-att-selected="state.tipoSeleccionado === 'entrada' ? true : undefined">Entrada</option>
-                        <option value="salida" t-att-selected="state.tipoSeleccionado === 'salida' ? true : undefined">Salida</option>
-                        <option value="ajuste" t-att-selected="state.tipoSeleccionado === 'ajuste' ? true : undefined">Ajuste</option>
+                    <select t-on-change="onChangeGrado">
+                        <option value="">Por grado</option>
+                        <t t-foreach="state.grados" t-as="grado" t-key="grado.value">
+                            <option t-att-value="grado.value" t-att-selected="state.gradoSeleccionado === grado.value ? true : undefined">
+                                <t t-esc="grado.label"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <div class="o_ltm_type">
+                    <i class="fa fa-user-o"/>
+                    <select t-on-change="onChangeResponsable">
+                        <option value="">Por responsable</option>
+                        <t t-foreach="state.responsables" t-as="responsable" t-key="responsable.id">
+                            <option t-att-value="responsable.id" t-att-selected="state.responsableSeleccionado == responsable.id ? true : undefined">
+                                <t t-esc="responsable.name"/>
+                            </option>
+                        </t>
                     </select>
                 </div>
 
@@ -35,7 +49,7 @@
                 <h2>Todos los movimientos</h2>
                 <span>
                     <t t-esc="state.total"/>
- movimientos · <t t-esc="state.monthLabel"/>
+    movimientos · <t t-esc="state.monthLabel"/>
                 </span>
             </div>
 

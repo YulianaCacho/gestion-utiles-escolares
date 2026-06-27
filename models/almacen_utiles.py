@@ -374,6 +374,8 @@ class AlmacenUtilesMovimiento(models.Model):
         year=False,
         tipo=False,
         search=False,
+        grado=False,
+        responsable_id=False,
         anio_escolar_id=False
     ):
         today = fields.Date.context_today(self)
@@ -392,6 +394,12 @@ class AlmacenUtilesMovimiento(models.Model):
 
         if tipo:
             domain.append(("tipo_movimiento", "=", tipo))
+
+        if grado:
+            domain.append(("grado_escolar", "=", grado))
+
+        if responsable_id:
+            domain.append(("responsable_id", "=", int(responsable_id)))
 
         movimientos = self.search(domain, order="fecha desc, id desc")
 
@@ -532,11 +540,24 @@ class AlmacenUtilesMovimiento(models.Model):
                 "detalle": " · ".join([p for p in detalle_partes if p]),
             })
 
+        grados = []
+        grado_info = self.fields_get(["grado_escolar"]).get("grado_escolar", {})
+        grado_selection = grado_info.get("selection", [])
+        for value, label in grado_selection:
+            grados.append({"value": value, "label": label})
+
+        responsables = []
+        for user in movimientos.mapped("responsable_id"):
+            if user:
+                responsables.append({"id": user.id, "name": user.name})
+
         return {
             "month_label": f"{meses[month]} {year}",
             "month_short": f"{meses[month]} {year}",
             "total": len(rows),
             "rows": rows,
+            "grados": grados,
+            "responsables": responsables,
         }
         
     @api.model
