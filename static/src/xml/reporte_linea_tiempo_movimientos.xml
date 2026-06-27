@@ -83,8 +83,8 @@
                         <th>Producto</th>
                         <th>Cantidad</th>
                         <th>Responsable</th>
-                        <th>Motivo / referencia</th>
-                        <th>Detalle</th>
+                        <th>Origen</th>
+                        <th>Destino</th>
                     </tr>
                 </thead>
 
@@ -98,11 +98,6 @@
                                 <span t-att-class="'o_ltm_motivo_badge ' + row.motivo_class">
                                     <t t-esc="row.motivo"/>
                                 </span>
-                                <div class="o_ltm_obs" t-if="row.observacion" t-esc="row.observacion"/>
-                            </td>
-
-                            <td>
-                                <div class="o_ltm_detalle" t-esc="row.detalle || 'Sin detalle adicional'"/>
                             </td>
 
                             <td t-esc="row.producto"/>
@@ -117,6 +112,10 @@
                                     <strong t-esc="row.responsable"/>
                                 </div>
                             </td>
+
+                            <td t-esc="row.origen_col"/>
+                            <td t-esc="row.destino_col"/>
+
                         </tr>
                     </t>
 

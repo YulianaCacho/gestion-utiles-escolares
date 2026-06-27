@@ -455,7 +455,7 @@ class AlmacenUtilesMovimiento(models.Model):
             if mov.tipo_movimiento == "salida":
                 cantidad_signed = -abs(cantidad)
                 cantidad_class = "neg"
-                tipo_label = "Salida"
+                tipo_label = "Retiro de útiles"
                 tipo_class = "salida"
             elif mov.tipo_movimiento == "ajuste":
                 cantidad_signed = cantidad
@@ -476,49 +476,42 @@ class AlmacenUtilesMovimiento(models.Model):
                 cantidad_text = "0"
 
             motivo = mov.observacion or ""
+            origen_col = ""
+            destino_col = ""
 
             if mov.tipo_movimiento == "entrada" and mov.recepcion_id:
                 tipo_entrada = mov.recepcion_id.tipo_entrada or "recepcion_utiles"
                 if tipo_entrada == "compra_directa":
                     motivo = "Compra directa"
+                    origen_col = "Compra directa"
+                    destino_col = "Almacén general"
                 elif tipo_entrada == "traslado_interno":
                     motivo = "Traslado interno"
+                    origen_col = "Traslado interno"
+                    destino_col = "Almacén general"
                 elif tipo_entrada == "otro":
                     motivo = mov.observacion or "Otro ingreso"
+                    origen_col = mov.observacion or "Otro ingreso"
+                    destino_col = "Almacén general"
                 else:
                     estudiante = mov.estudiante_id.name or "Estudiante"
+                    grado_label_mot = self._grado_label(mov.grado_escolar)
                     motivo = f"Recep. matrícula — {estudiante}"
+                    origen_col = f"Estudiante: {estudiante}"
+                    if grado_label_mot and grado_label_mot != "Sin grado":
+                        origen_col += f" · Grado: {grado_label_mot}"
+                    destino_col = "Almacén general"
             elif mov.tipo_movimiento == "salida":
                 motivo = mov.destino or mov.observacion or "Entrega docente"
+                origen_col = "Almacén general"
+                destino_col = mov.destino or "Entrega docente"
             elif mov.tipo_movimiento == "ajuste":
                 motivo = mov.observacion or "Ajuste inventario físico"
-
-            detalle_partes = []
-
-            if mov.estudiante_id:
-                detalle_partes.append(f"Estudiante: {mov.estudiante_id.name}")
+                origen_col = ""
+                destino_col = ""
 
             grado_label = self._grado_label(mov.grado_escolar)
-            if grado_label and grado_label != "Sin grado":
-                detalle_partes.append(f"Grado: {grado_label}")
 
-            if mov.destino:
-                detalle_partes.append(f"Destino: {mov.destino}")
-
-            if mov.recepcion_id:
-                detalle_partes.append(f"Recepción: {mov.recepcion_id.name}")
-
-            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
-            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
-
-            anio_origen = mov.anio_origen_id if "anio_origen_id" in mov._fields else False
-            anio_destino = mov.anio_destino_id if "anio_destino_id" in mov._fields else False
-
-            if anio_origen or anio_destino:
-                origen = anio_origen.name if anio_origen else ""
-                destino = anio_destino.name if anio_destino else ""
-                detalle_partes.append(f"Año: {origen} → {destino}" if origen or destino else "")
-            
             rows.append({
                 "id": mov.id,
                 "fecha": fecha_txt,
@@ -537,7 +530,8 @@ class AlmacenUtilesMovimiento(models.Model):
                 "estudiante": mov.estudiante_id.name or "",
                 "recepcion": mov.recepcion_id.name or "",
                 "observacion": mov.observacion or "",
-                "detalle": " · ".join([p for p in detalle_partes if p]),
+                "origen_col": origen_col,
+                "destino_col": destino_col,
             })
 
         grados = []
