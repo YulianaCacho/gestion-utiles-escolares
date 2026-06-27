@@ -26,16 +26,16 @@
             <form string="Año escolar">
                 <header>
                     <button name="action_activar"
-                           type="object"
-                           string="Activar año"
-                           class="btn-primary"
-                           invisible="not id or estado == 'activo'"/>
+                        type="object"
+                        string="Activar año"
+                        class="btn-primary"
+                        invisible="not id or estado == 'activo'"/>
 
-                     <button name="action_vincular_datos_existentes"
-                             type="object"
-                             string="Vincular datos existentes"
-                             class="btn-secondary"
-                             invisible="not id"/>
+                    <button name="action_vincular_datos_existentes"
+                            type="object"
+                            string="Vincular datos existentes"
+                            class="btn-secondary"
+                            invisible="not id"/>
 
                     <button name="action_copiar_listas_desde_anio_anterior"
                             type="object"
@@ -56,12 +56,19 @@
                             invisible="not id"
                             confirm="Se calcularán los sobrantes del año anterior para usarlos en este año escolar. ¿Deseas continuar?"/>
 
-                    <button name="action_pasar_a_borrador_prueba"
+                    <button name="action_crear_revision_cierre_utiles"
                             type="object"
-                            string="Pasar a borrador para prueba"
-                            class="btn-secondary"
-                            invisible="not id or estado == 'borrador'"
-                            confirm="Esta acción pasará el año escolar a estado Borrador para poder eliminarlo si era una prueba. ¿Deseas continuar?"/>
+                            string="Iniciar cierre de año"
+                            class="btn-primary"
+                            invisible="not id or estado == 'cerrado'"
+                            confirm="Se creará la revisión de cierre de útiles para este año escolar. ¿Deseas continuar?"/>
+
+                    <button name="action_pasar_a_borrador_prueba"
+                        type="object"
+                        string="Pasar a borrador para prueba"
+                        class="btn-secondary"
+                        invisible="not id or estado == 'borrador'"
+                        confirm="Esta acción pasará el año escolar a estado Borrador para poder eliminarlo si era una prueba. ¿Deseas continuar?"/>
 
                     <button name="action_eliminar_anio_prueba"
                             type="object"
@@ -76,10 +83,10 @@
                             class="btn-danger"
                             invisible="not id"
                             confirm="Esta acción limpiará listas vacías, matrículas de prueba, sobrantes y movimientos huérfanos del año seleccionado. Solo úsalo si el año fue creado por prueba. ¿Deseas continuar?"/>
-                   
+
                     <field name="estado"
-                           widget="statusbar"
-                           statusbar_visible="borrador,activo,cerrado"/>
+                        widget="statusbar"
+                        statusbar_visible="borrador,activo,cerrado"/>
                 </header>
 
                 <sheet>

@@ -38,7 +38,7 @@ class AnioEscolar(models.Model):
         string="Año",
         compute="_compute_anio_visual",
         store=True
-   )
+    )
 
     @api.depends("anio")
     def _compute_anio_visual(self):
@@ -279,7 +279,7 @@ class AnioEscolar(models.Model):
                     "situacion_siguiente_anio": "promovido",
                 })
 
-                matricula.matricula_siguiente_id = nueva.id
+                matricula.with_context(skip_anio_check=True).write({"matricula_siguiente_id": nueva.id})
                 creadas += 1
 
         return {
@@ -349,6 +349,7 @@ class AnioEscolar(models.Model):
             "view_mode": "list,form",
             "target": "current",
         }
+
     def action_limpiar_y_eliminar_anio_prueba(self):
         Matricula = self.env["matricula.escolar"]
         Lista = self.env["lista.utiles.grado"]
@@ -358,7 +359,6 @@ class AnioEscolar(models.Model):
         Sobrante = self.env["sobrante.utiles.anio"]
 
         for rec in self:
-            # 1. Si el usuario tiene seleccionado este año, cambiarlo al año anterior
             usuarios = self.env["res.users"].sudo().search([
                 ("anio_escolar_actual_id", "=", rec.id)
             ])
@@ -372,42 +372,38 @@ class AnioEscolar(models.Model):
                     "anio_escolar_actual_id": nuevo_anio.id if nuevo_anio else False
                 })
 
-            # 2. Eliminar movimientos del año
             movimientos = Movimiento.search([
-                ("anio_escolar_id", "=", rec.id)
+                ("anio_escolar_id", "=", rec.id),
+                ("anio_origen_id", "=", False),
             ])
             if movimientos:
-                movimientos.unlink()
+                movimientos.with_context(skip_anio_check=True).unlink()
 
-            # 3. Eliminar recepciones del año
             recepciones = Recepcion.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
             if recepciones:
-                recepciones.unlink()
+                recepciones.with_context(skip_anio_check=True).unlink()
 
-            # 4. Eliminar entregas/salidas del año
             salidas = Salida.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
             if salidas:
                 salidas.unlink()
 
-            # 5. Eliminar matrículas del año
             matriculas = Matricula.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
 
             for matricula in matriculas:
                 if matricula.matricula_anterior_id:
-                    matricula.matricula_anterior_id.write({
+                    matricula.matricula_anterior_id.with_context(skip_anio_check=True).write({
                         "matricula_siguiente_id": False
                     })
 
             if matriculas:
-                matriculas.unlink()
+                matriculas.with_context(skip_anio_check=True).unlink()
 
-            # 6. Eliminar líneas y listas de útiles del año
             listas = Lista.search([
                 ("anio_escolar_id", "=", rec.id)
             ])
@@ -418,8 +414,15 @@ class AnioEscolar(models.Model):
 
             if listas:
                 listas.unlink()
+                
+            cierres = self.env["cierre.anio.utiles"].search([
+                "|",
+                ("anio_origen_id", "=", rec.id),
+                ("anio_destino_id", "=", rec.id),
+            ])
+            if cierres:
+                cierres.unlink()
 
-            # 7. Eliminar sobrantes vinculados al año
             sobrantes = Sobrante.search([
                 "|",
                 ("anio_destino_id", "=", rec.id),
@@ -428,7 +431,6 @@ class AnioEscolar(models.Model):
             if sobrantes:
                 sobrantes.unlink()
 
-        # 8. Eliminar el año sin intentar pasarlo a borrador
         self.with_context(forzar_eliminar_anio_prueba=True).unlink()
 
         return {
@@ -441,8 +443,8 @@ class AnioEscolar(models.Model):
 
     def unlink(self):
         if self.env.context.get("forzar_eliminar_anio_prueba"):
-                return super().unlink()
-        
+            return super().unlink()
+
         Matricula = self.env["matricula.escolar"]
         Lista = self.env["lista.utiles.grado"]
         Recepcion = self.env["recepcion.utiles.escolar"]
@@ -495,11 +497,11 @@ class AnioEscolar(models.Model):
 
             for matricula in matriculas:
                 if matricula.matricula_anterior_id:
-                    matricula.matricula_anterior_id.write({
+                    matricula.matricula_anterior_id.with_context(skip_anio_check=True).write({
                         "matricula_siguiente_id": False
                     })
 
-            matriculas.unlink()
+            matriculas.with_context(skip_anio_check=True).unlink()
 
             for lista in listas:
                 if lista.linea_ids:
@@ -519,7 +521,6 @@ class AnioEscolar(models.Model):
             usuarios = self.env["res.users"].sudo().search([
                 ("anio_escolar_actual_id", "=", rec.id)
             ])
-            
 
             nuevo_anio = rec.anio_anterior_id or self.search([
                 ("id", "!=", rec.id)
@@ -564,9 +565,9 @@ class MatriculaEscolar(models.Model):
     )
 
     es_anio_actual = fields.Boolean(
-       string="Es año actual",
-       compute="_compute_es_anio_actual",
-       search="_search_es_anio_actual"
+        string="Es año actual",
+        compute="_compute_es_anio_actual",
+        search="_search_es_anio_actual"
     )
 
     def _compute_es_anio_actual(self):
@@ -574,20 +575,20 @@ class MatriculaEscolar(models.Model):
 
         for rec in self:
             rec.es_anio_actual = bool(
-               anio_actual and rec.anio_escolar_id.id == anio_actual.id
+                anio_actual and rec.anio_escolar_id.id == anio_actual.id
             )
 
     def _search_es_anio_actual(self, operator, value):
         anio_actual = self.env.user.anio_escolar_actual_id
 
         if not anio_actual:
-           return [("id", "=", 0)]
+            return [("id", "=", 0)]
 
         if operator in ("=", "==") and value:
-           return [("anio_escolar_id", "=", anio_actual.id)]
- 
+            return [("anio_escolar_id", "=", anio_actual.id)]
+
         if operator in ("!=", "<>") and value:
-           return [("anio_escolar_id", "!=", anio_actual.id)]
+            return [("anio_escolar_id", "!=", anio_actual.id)]
 
         return [("anio_escolar_id", "=", anio_actual.id)]
 
@@ -676,7 +677,8 @@ class MatriculaEscolar(models.Model):
         return records
 
     def write(self, vals):
-        self._check_anio_abierto()
+        if not self.env.context.get("skip_anio_check"):
+            self._check_anio_abierto()
         if "anio_escolar_id" in vals and vals.get("anio_escolar_id"):
             nuevo_anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
 
@@ -695,10 +697,12 @@ class MatriculaEscolar(models.Model):
             self._sync_datos_estudiante_contacto()
 
         return result
-    
+
     def unlink(self):
-        self._check_anio_abierto()
+        if not self.env.context.get("skip_anio_check"):
+            self._check_anio_abierto()
         return super().unlink()
+
 
 class ListaUtilesGrado(models.Model):
     _inherit = "lista.utiles.grado"
@@ -756,7 +760,7 @@ class RecepcionUtilesEscolar(models.Model):
         store=True,
         readonly=True
     )
-    
+
     def _anio_control_cierre(self):
         self.ensure_one()
         return self.anio_escolar_id
@@ -788,7 +792,8 @@ class RecepcionUtilesEscolar(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        self._check_anio_abierto()
+        if not self.env.context.get("skip_anio_check"):
+            self._check_anio_abierto()
 
         if vals.get("anio_ingreso_id"):
             anio = self.env["anio.escolar"].browse(vals["anio_ingreso_id"])
@@ -803,7 +808,8 @@ class RecepcionUtilesEscolar(models.Model):
         return super().write(vals)
 
     def unlink(self):
-        self._check_anio_abierto()
+        if not self.env.context.get("skip_anio_check"):
+            self._check_anio_abierto()
         return super().unlink()
 
 
@@ -843,7 +849,7 @@ class AlmacenUtilesMovimiento(models.Model):
         string="Año escolar",
         default=lambda self: self.env.user.anio_escolar_actual_id.id if self.env.user.anio_escolar_actual_id else False
     )
-    
+
     def _check_anio_abierto(self):
         for rec in self:
             if rec.anio_escolar_id and rec.anio_escolar_id.estado == "cerrado":
@@ -853,7 +859,8 @@ class AlmacenUtilesMovimiento(models.Model):
                 )
 
     def write(self, vals):
-        self._check_anio_abierto()
+        if not self.env.context.get("skip_anio_check"):
+            self._check_anio_abierto()
 
         if vals.get("anio_escolar_id"):
             anio = self.env["anio.escolar"].browse(vals["anio_escolar_id"])
@@ -863,9 +870,10 @@ class AlmacenUtilesMovimiento(models.Model):
         return super().write(vals)
 
     def unlink(self):
-        self._check_anio_abierto()
+        if not self.env.context.get("skip_anio_check"):
+            self._check_anio_abierto()
         return super().unlink()
-    
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:

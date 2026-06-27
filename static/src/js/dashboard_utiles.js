@@ -252,8 +252,7 @@ class DashboardUtilesEscolares extends Component {
                 const sobranteAnterior = Number(sobranteByProduct[product.id] || 0);
 
                 const actualDisponible = Math.max(stockActual, 0);
-                const sobranteDisponible = Math.max(sobranteAnterior, 0);
-                const totalDisponible = actualDisponible + sobranteDisponible;
+                const totalDisponible = actualDisponible;
 
                 const category = product.categ_id
                     ? product.categ_id[1].split("/").pop().trim()
@@ -266,7 +265,7 @@ class DashboardUtilesEscolares extends Component {
                     category: category || "Varios",
 
                     currentQty: actualDisponible,
-                    previousQty: sobranteDisponible,
+                    previousQty: 0,
                     totalQty: totalDisponible,
                     reserved: retirado,
 

@@ -133,7 +133,6 @@ class CierreAnioUtiles(models.Model):
         movimientos = Movimiento.search([
             ("anio_escolar_id", "=", self.anio_origen_id.id),
             ("product_id", "!=", False),
-            ("motivo_movimiento", "not in", ["salida_fin_anio", "entrada_traslado_anio"]),
         ])
 
         saldos = {}
@@ -274,7 +273,6 @@ class CierreAnioUtiles(models.Model):
                         **base_vals,
                         "anio_escolar_id": rec.anio_origen_id.id,
                         "tipo_movimiento": "ajuste",
-                        "motivo_movimiento": "ajuste_inventario",
                         "cantidad": -cantidad_no_aprovechable,
                         "destino": "Ajuste de cierre de año",
                         "observacion": (
@@ -289,7 +287,6 @@ class CierreAnioUtiles(models.Model):
                         **base_vals,
                         "anio_escolar_id": rec.anio_origen_id.id,
                         "tipo_movimiento": "salida",
-                        "motivo_movimiento": "salida_fin_anio",
                         "cantidad": cantidad_trasladar,
                         "destino": rec.anio_destino_id.name,
                         "observacion": (
@@ -302,7 +299,6 @@ class CierreAnioUtiles(models.Model):
                         **base_vals,
                         "anio_escolar_id": rec.anio_destino_id.id,
                         "tipo_movimiento": "entrada",
-                        "motivo_movimiento": "entrada_traslado_anio",
                         "cantidad": cantidad_trasladar,
                         "destino": "Almacén del nuevo periodo",
                         "observacion": (
@@ -316,13 +312,11 @@ class CierreAnioUtiles(models.Model):
                         ("anio_origen_id", "=", rec.anio_origen_id.id),
                         ("anio_destino_id", "=", rec.anio_destino_id.id),
                         ("product_id", "=", producto.id),
-                        ("grado_escolar", "=", grado),
                     ], limit=1)
 
                     vals_sobrante = {
                         "anio_origen_id": rec.anio_origen_id.id,
                         "anio_destino_id": rec.anio_destino_id.id,
-                        "grado_escolar": grado,
                         "product_id": producto.id,
                         "cantidad_inicial": cantidad_trasladar,
                         "cantidad_usada": 0,
