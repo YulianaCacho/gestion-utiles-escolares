@@ -1,26 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <record id="action_reporte_almacen_movimientos_dashboard" model="ir.actions.client">
-        <field name="name">⧗ Historial de movimientos</field>
-        <field name="tag">gestion_utiles_escolares.reporte_almacen_movimientos</field>
-    </record>
-
-    <!-- Reemplaza el menú Línea de tiempo para que abra el dashboard visual -->
-    <record id="menu_reporte_linea_tiempo_utiles" model="ir.ui.menu">
-        <field name="name">⧗ Historial de movimientos </field>
-        <field name="parent_id" ref="stock.menu_warehouse_report"/>
-        <field name="action" eval="'ir.actions.client,%d' % ref('action_reporte_almacen_movimientos_dashboard')"/>
-        <field name="sequence">10</field>
-        <field name="active" eval="True"/>
-    </record>
-
-    <!-- Oculta el historial antiguo porque ese abre tabla normal -->
-    <record id="menu_reporte_historial_movimientos_utiles" model="ir.ui.menu">
-        <field name="active" eval="False"/>
-    </record>
-
-        <record id="action_reporte_linea_tiempo_movimientos_dashboard" model="ir.actions.client">
+    <record id="action_reporte_linea_tiempo_movimientos_dashboard" model="ir.actions.client">
         <field name="name">Línea de tiempo</field>
         <field name="tag">gestion_utiles_escolares.reporte_linea_tiempo_movimientos</field>
     </record>
@@ -31,6 +12,10 @@
         <field name="action" eval="'ir.actions.client,%d' % ref('action_reporte_linea_tiempo_movimientos_dashboard')"/>
         <field name="sequence">5</field>
         <field name="active" eval="True"/>
+    </record>
+
+    <record id="menu_reporte_historial_movimientos_utiles" model="ir.ui.menu">
+        <field name="active" eval="False"/>
     </record>
 
 </odoo>
