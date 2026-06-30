@@ -49,16 +49,9 @@
                             class="btn-secondary"
                             invisible="not id"/>
 
-                    <button name="action_generar_sobrantes_desde_anio_anterior"
-                            type="object"
-                            string="Generar sobrantes del año anterior"
-                            class="btn-secondary"
-                            invisible="not id"
-                            confirm="Se calcularán los sobrantes del año anterior para usarlos en este año escolar. ¿Deseas continuar?"/>
-
                     <button name="action_crear_revision_cierre_utiles"
                             type="object"
-                            string="Iniciar cierre de año"
+                            string="Cierre de año"
                             class="btn-primary"
                             invisible="not id or estado == 'cerrado'"
                             confirm="Se creará la revisión de cierre de útiles para este año escolar. ¿Deseas continuar?"/>
