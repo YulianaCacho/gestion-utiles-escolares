@@ -49,6 +49,13 @@
                             class="btn-secondary"
                             invisible="not id"/>
 
+                    <button name="action_crear_revision_matriculas"
+                            type="object"
+                            string="Iniciar revisión de promoción"
+                            class="btn-primary"
+                            invisible="not id or estado == 'cerrado'"
+                            confirm="Se creará la revisión de promoción de alumnos para este año escolar. ¿Deseas continuar?"/>
+
                     <button name="action_crear_revision_cierre_utiles"
                             type="object"
                             string="Cierre de año"

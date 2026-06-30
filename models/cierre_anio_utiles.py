@@ -199,14 +199,12 @@ class CierreAnioUtiles(models.Model):
             })
 
         return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": "Revisión generada",
-                "message": "Se generó el reporte de útiles sobrantes para revisión física.",
-                "type": "success",
-                "sticky": False,
-            }
+            "type": "ir.actions.act_window",
+            "name": "Cierre de año y revisión de sobrantes",
+            "res_model": "cierre.anio.utiles",
+            "view_mode": "form",
+            "res_id": self.id,
+            "target": "current",
         }
 
     def action_confirmar_traslado(self):
@@ -436,6 +434,12 @@ class CierreAnioUtilesLinea(models.Model):
     def _onchange_cantidad_revisada(self):
         for rec in self:
             rec.cantidad_a_trasladar = rec.cantidad_revisada
+            
+    @api.onchange("cantidad_a_trasladar", "cantidad_sistema")
+    def _onchange_cantidad_no_aprovechable(self):
+        for rec in self:
+            diferencia = float(rec.cantidad_sistema or 0) - float(rec.cantidad_a_trasladar or 0)
+            rec.cantidad_no_aprovechable = diferencia if diferencia > 0 else 0
 
     @api.constrains("cantidad_revisada", "cantidad_a_trasladar", "cantidad_sistema")
     def _check_cantidades(self):
