@@ -114,9 +114,29 @@ class DashboardUtilesEscolares extends Component {
         }
     }
 
-    _matchesSelectedScope(gradoEscolar) {
+    _matchesSelectedScope(gradoEscolar, tipoMovimiento, cantidad) {
         const selectedGrade = this.state.selectedGrade || "Todos";
         const selectedNivel = this.state.selectedNivel || "";
+        const viendoTodos = selectedGrade === "Todos" && !selectedNivel;
+
+        if (!gradoEscolar) {
+            // Un movimiento sin grado puede sumar o restar stock. Solo
+            // cuenta siempre (en cualquier grado) si efectivamente RESTA
+            // del almacén compartido: una salida, o un ajuste negativo
+            // (ej. mermas del cierre de año). Si en cambio SUMA stock
+            // (una entrada, o un ajuste positivo como una compra directa
+            // registrada como corrección de inventario), no pertenece a
+            // ningún grado en particular y solo debe contarse en "Todos".
+            const esReductor =
+                tipoMovimiento === "salida" ||
+                (tipoMovimiento === "ajuste" && Number(cantidad) < 0);
+
+            if (esReductor) {
+                return true;
+            }
+
+            return viendoTodos;
+        }
 
         if (selectedGrade !== "Todos") {
             return gradoEscolar === selectedGrade;
@@ -188,7 +208,7 @@ class DashboardUtilesEscolares extends Component {
         const sobranteByProduct = {};
 
         for (const mov of movimientos) {
-            if (!this._matchesSelectedScope(mov.grado_escolar)) {
+            if (!this._matchesSelectedScope(mov.grado_escolar, mov.tipo_movimiento, mov.cantidad)) {
                 continue;
             }
 
