@@ -338,14 +338,12 @@ class CierreAnioUtiles(models.Model):
             rec.anio_origen_id.estado = "cerrado"
 
         return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": "Cierre confirmado",
-                "message": "Se registró el ajuste, la salida de fin de año y el ingreso al nuevo periodo.",
-                "type": "success",
-                "sticky": False,
-            }
+            "type": "ir.actions.act_window",
+            "name": "Cierre de año y revisión de sobrantes",
+            "res_model": "cierre.anio.utiles",
+            "view_mode": "form",
+            "res_id": self.id,
+            "target": "current",
         }
 
 

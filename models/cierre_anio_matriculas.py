@@ -187,17 +187,12 @@ class CierreAnioMatriculas(models.Model):
             })
 
         return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": "Revisión confirmada",
-                "message": (
-                    "Se guardó la situación de cada alumno. Ya puedes usar "
-                    "'Generar matrículas desde año anterior' en el año destino."
-                ),
-                "type": "success",
-                "sticky": False,
-            }
+            "type": "ir.actions.act_window",
+            "name": "Revisión de promoción de alumnos",
+            "res_model": "cierre.anio.matriculas",
+            "view_mode": "form",
+            "res_id": self.id,
+            "target": "current",
         }
 
 

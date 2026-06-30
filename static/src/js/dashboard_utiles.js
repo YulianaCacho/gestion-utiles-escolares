@@ -167,7 +167,7 @@ class DashboardUtilesEscolares extends Component {
         const movimientos = await this.orm.searchRead(
             "almacen.utiles.movimiento",
             movimientosDomain,
-            ["product_id", "cantidad", "tipo_movimiento", "categoria_id", "grado_escolar"],
+            ["product_id", "cantidad", "tipo_movimiento", "categoria_id", "grado_escolar", "anio_origen_id"],
             { limit: 10000, order: "id asc" }
         );
 
@@ -219,13 +219,15 @@ class DashboardUtilesEscolares extends Component {
             const productId = mov.product_id[0];
             const cantidad = Number(mov.cantidad || 0);
 
-            if (!stockActualByProduct[productId]) {
-                stockActualByProduct[productId] = 0;
+            // Las entradas de cierre de año van a la columna "sobrante"
+            if (mov.tipo_movimiento === "entrada" && mov.anio_origen_id) {
+                if (!sobranteByProduct[productId]) sobranteByProduct[productId] = 0;
+                sobranteByProduct[productId] += cantidad;
+                continue;
             }
 
-            if (!retiradoByProduct[productId]) {
-                retiradoByProduct[productId] = 0;
-            }
+            if (!stockActualByProduct[productId]) stockActualByProduct[productId] = 0;
+            if (!retiradoByProduct[productId]) retiradoByProduct[productId] = 0;
 
             if (mov.tipo_movimiento === "entrada") {
                 stockActualByProduct[productId] += cantidad;
@@ -237,34 +239,6 @@ class DashboardUtilesEscolares extends Component {
             }
         }
 
-        for (const sobrante of sobrantes) {
-            if (sobranteHasGrade && !this._matchesSelectedScope(sobrante.grado_escolar)) {
-                continue;
-            }
-
-            if (!sobrante.product_id || !sobrante.product_id[0]) {
-                continue;
-            }
-
-            const productId = sobrante.product_id[0];
-
-            let disponible = 0;
-
-            if ("cantidad_disponible" in sobrante) {
-                disponible = Number(sobrante.cantidad_disponible || 0);
-            } else {
-                const inicial = Number(sobrante.cantidad_inicial || 0);
-                const usada = Number(sobrante.cantidad_usada || 0);
-                disponible = inicial - usada;
-            }
-
-            if (!sobranteByProduct[productId]) {
-                sobranteByProduct[productId] = 0;
-            }
-
-            sobranteByProduct[productId] += disponible;
-        }
-
         const normalized = products
             .map((product) => {
                 const stockActual = Number(stockActualByProduct[product.id] || 0);
@@ -272,7 +246,7 @@ class DashboardUtilesEscolares extends Component {
                 const sobranteAnterior = Number(sobranteByProduct[product.id] || 0);
 
                 const actualDisponible = Math.max(stockActual, 0);
-                const totalDisponible = actualDisponible;
+                const totalDisponible = actualDisponible + sobranteAnterior;
 
                 const category = product.categ_id
                     ? product.categ_id[1].split("/").pop().trim()
@@ -285,7 +259,7 @@ class DashboardUtilesEscolares extends Component {
                     category: category || "Varios",
 
                     currentQty: actualDisponible,
-                    previousQty: 0,
+                    previousQty: sobranteAnterior,
                     totalQty: totalDisponible,
                     reserved: retirado,
 
