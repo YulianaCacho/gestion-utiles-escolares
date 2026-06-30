@@ -373,8 +373,10 @@ class AnioEscolar(models.Model):
                 })
 
             movimientos = Movimiento.search([
+                "|", "|",
                 ("anio_escolar_id", "=", rec.id),
-                ("anio_origen_id", "=", False),
+                ("anio_origen_id", "=", rec.id),
+                ("anio_destino_id", "=", rec.id),
             ])
             if movimientos:
                 movimientos.with_context(skip_anio_check=True).unlink()
