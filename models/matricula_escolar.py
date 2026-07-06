@@ -280,11 +280,12 @@ class MatriculaEscolar(models.Model):
 
         if search:
             domain += [
-                "|", "|",
+                "|", "|", "|",
                 ("estudiante_id.name", "ilike", search),
                 ("grado_escolar", "ilike", search),
                 ("apoderado_principal_id.name", "ilike", search),
-            ]
+                ("estado", "ilike", search),
+        ]
 
         records = self.search(domain, order="estudiante_id asc")
 
@@ -314,7 +315,9 @@ class MatriculaEscolar(models.Model):
                     if rec.apoderado_principal_id
                     else "No registrado"
                 ),
-                "estado": rec.estado or "",
+                "estado": rec.estado or "activo",
+                "estado_label": self._estado_alumno_label_estado(rec.estado),
+                "estado_class": self._estado_alumno_class_estado(rec.estado),
             })
 
         return {
