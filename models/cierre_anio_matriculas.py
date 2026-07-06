@@ -177,8 +177,12 @@ class CierreAnioMatriculas(models.Model):
                 raise UserError("Primero genera la lista de alumnos a revisar.")
 
             for linea in rec.linea_ids:
-                linea.matricula_id.with_context(skip_anio_check=True).write({
+                linea.matricula_id.with_context(
+                    skip_anio_check=True,
+                    permitir_estado_finalizado=True
+                ).write({
                     "situacion_siguiente_anio": linea.situacion_revisada,
+                    "estado": "finalizado",
                 })
 
             rec.write({
