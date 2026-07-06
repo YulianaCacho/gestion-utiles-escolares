@@ -168,18 +168,25 @@ class MatriculaEscolar(models.Model):
             if rec.grado_escolar and estudiante.grado_escolar != rec.grado_escolar:
                 vals["grado_escolar"] = rec.grado_escolar
 
-            if "lista_utiles_id" in estudiante._fields and rec.lista_utiles_id and estudiante.lista_utiles_id != rec.lista_utiles_id:
+            if (
+                "lista_utiles_id" in estudiante._fields
+                and rec.lista_utiles_id
+                and estudiante.lista_utiles_id != rec.lista_utiles_id
+            ):
                 vals["lista_utiles_id"] = rec.lista_utiles_id.id
 
             if vals:
                 estudiante.write(vals)
-                
-                for apoderado in [rec.apoderado_principal_id, rec.apoderado_secundario_id]:
-                    if apoderado and "tipo_contacto_escolar" in apoderado._fields:
-                        selection = dict(apoderado._fields["tipo_contacto_escolar"].selection)
-                        if "apoderado" in selection and apoderado.tipo_contacto_escolar != "apoderado":
-                            apoderado.write({"tipo_contacto_escolar": "apoderado"})
 
+            for apoderado in [rec.apoderado_principal_id, rec.apoderado_secundario_id]:
+                if apoderado and "tipo_contacto_escolar" in apoderado._fields:
+                    selection = dict(apoderado._fields["tipo_contacto_escolar"].selection)
+                    if (
+                        "apoderado" in selection
+                        and apoderado.tipo_contacto_escolar != "apoderado"
+                    ):
+                        apoderado.write({"tipo_contacto_escolar": "apoderado"})
+    
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
