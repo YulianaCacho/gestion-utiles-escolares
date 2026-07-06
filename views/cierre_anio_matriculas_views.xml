@@ -104,8 +104,8 @@
         parent="menu_utiles_escolares_root"
         action="action_cierre_anio_matriculas"
         sequence="50" />
-        
-    <record id="menu_revision_promocion" model="ir.ui.menu">
+
+    <record id="menu_cierre_anio_matriculas" model="ir.ui.menu">
         <field name="active" eval="False"/>
     </record>
 
