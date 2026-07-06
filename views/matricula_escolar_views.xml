@@ -82,7 +82,11 @@
                                 <div class="o_ge_two_cols">
                                     <div class="o_ge_field_block">
                                         <label for="lista_utiles_id" />
-                                        <field name="lista_utiles_id" nolabel="1" placeholder="Sin asignar" options="{'no_create': True}" />
+                                        <field name="lista_utiles_id" nolabel="1"
+                                                placeholder="Se asigna automáticamente según el grado"
+                                                readonly="1"
+                                                force_save="1"
+                                                options="{'no_create': True, 'no_open': True}" />
                                     </div>
 
                                     <div class="o_ge_field_block">
@@ -111,12 +115,20 @@
                                 <div class="o_ge_two_cols">
                                     <div class="o_ge_field_block">
                                         <label for="apoderado_principal_id" />
-                                        <field name="apoderado_principal_id" nolabel="1" readonly="1" placeholder="No registrado" options="{'no_open': True, 'no_create': True}" />
+                                        <field name="apoderado_principal_id" nolabel="1"
+                                            placeholder="Seleccionar o crear apoderado principal"
+                                            domain="['|', ('tipo_contacto_escolar', '=', 'apoderado'), ('tipo_contacto_escolar', '=', False)]"
+                                            context="{'default_tipo_contacto_escolar': 'apoderado'}"
+                                            options="{'no_create': False, 'no_open': False}" />
                                     </div>
 
                                     <div class="o_ge_field_block">
                                         <label for="apoderado_secundario_id" />
-                                        <field name="apoderado_secundario_id" nolabel="1" readonly="1" placeholder="No registrado" options="{'no_open': True, 'no_create': True}" />
+                                        <field name="apoderado_secundario_id" nolabel="1"
+                                            placeholder="Seleccionar o crear apoderado secundario"
+                                            domain="['|', ('tipo_contacto_escolar', '=', 'apoderado'), ('tipo_contacto_escolar', '=', False)]"
+                                            context="{'default_tipo_contacto_escolar': 'apoderado'}"
+                                            options="{'no_create': False, 'no_open': False}" />
                                     </div>
                                 </div>
                             </div>

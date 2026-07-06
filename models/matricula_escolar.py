@@ -60,14 +60,14 @@ class MatriculaEscolar(models.Model):
         'res.partner',
         string='Apoderado principal',
         related='estudiante_id.apoderado_principal_id',
-        readonly=True
+        readonly=False
     )
 
     apoderado_secundario_id = fields.Many2one(
         'res.partner',
         string='Apoderado secundario',
         related='estudiante_id.apoderado_secundario_id',
-        readonly=True
+        readonly=False
     )
 
     estado = fields.Selection([
@@ -173,6 +173,23 @@ class MatriculaEscolar(models.Model):
 
             if vals:
                 estudiante.write(vals)
+                
+                for apoderado in [rec.apoderado_principal_id, rec.apoderado_secundario_id]:
+                    if apoderado and "tipo_contacto_escolar" in apoderado._fields:
+                        selection = dict(apoderado._fields["tipo_contacto_escolar"].selection)
+                        if "apoderado" in selection and apoderado.tipo_contacto_escolar != "apoderado":
+                            apoderado.write({"tipo_contacto_escolar": "apoderado"})
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._sync_datos_estudiante_contacto()
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        self._sync_datos_estudiante_contacto()
+        return res
 
     @api.onchange('grado_escolar', 'anio_escolar')
     def _onchange_grado_anio(self):
