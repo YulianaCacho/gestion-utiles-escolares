@@ -60,7 +60,39 @@ class ListaUtilesGrado(models.Model):
     def _compute_cantidad_productos(self):
         for record in self:
             record.cantidad_productos = len(record.linea_ids)
+    
+    @api.constrains("anio", "grado_escolar")
+    def _check_lista_unica_por_grado_anio(self):
+        for rec in self:
+            if not rec.grado_escolar:
+                continue
 
+            domain = [
+                ("id", "!=", rec.id),
+                ("grado_escolar", "=", rec.grado_escolar),
+            ]
+
+            if "anio_escolar_id" in rec._fields and rec.anio_escolar_id:
+                domain.append(("anio_escolar_id", "=", rec.anio_escolar_id.id))
+                anio_label = rec.anio_escolar_id.anio
+            else:
+                domain.append(("anio", "=", rec.anio))
+                anio_label = rec.anio
+
+            existe = self.search_count(domain)
+
+            if existe:
+                grado_label = dict(rec._fields["grado_escolar"].selection).get(
+                    rec.grado_escolar,
+                    rec.grado_escolar
+                )
+
+                raise ValidationError(
+                    "Ya existe una lista de útiles para %s en el año escolar %s. "
+                    "No se puede registrar una lista duplicada para el mismo grado."
+                    % (grado_label, anio_label)
+                )
+    
     # =========================
     # DASHBOARD MODERNO
     # =========================
