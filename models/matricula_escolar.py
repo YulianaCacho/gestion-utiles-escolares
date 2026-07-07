@@ -60,14 +60,14 @@ class MatriculaEscolar(models.Model):
         'res.partner',
         string='Apoderado principal',
         related='estudiante_id.apoderado_principal_id',
-        readonly=True
+        readonly=False
     )
 
     apoderado_secundario_id = fields.Many2one(
         'res.partner',
         string='Apoderado secundario',
         related='estudiante_id.apoderado_secundario_id',
-        readonly=True
+        readonly=False
     )
 
     estado = fields.Selection([
@@ -152,6 +152,24 @@ class MatriculaEscolar(models.Model):
                 rec.lista_utiles_id = estudiante.lista_utiles_id.id
             elif rec.grado_escolar:
                 rec._onchange_grado_anio()
+    
+    @api.onchange("estado")
+    def _onchange_estado_finalizado_manual(self):
+        for rec in self:
+            if (
+                rec.estado == "finalizado"
+                and not self.env.context.get("permitir_estado_finalizado")
+            ):
+                rec.estado = rec._origin.estado or "activo"
+                return {
+                    "warning": {
+                        "title": "Estado no permitido",
+                        "message": (
+                            "No puedes colocar 'Finalizado' manualmente. "
+                            "Ese estado se asignará automáticamente al cerrar el año escolar."
+                        ),
+                    }
+                }
 
     def _sync_datos_estudiante_contacto(self):
         for rec in self:
@@ -168,11 +186,50 @@ class MatriculaEscolar(models.Model):
             if rec.grado_escolar and estudiante.grado_escolar != rec.grado_escolar:
                 vals["grado_escolar"] = rec.grado_escolar
 
-            if "lista_utiles_id" in estudiante._fields and rec.lista_utiles_id and estudiante.lista_utiles_id != rec.lista_utiles_id:
+            if (
+                "lista_utiles_id" in estudiante._fields
+                and rec.lista_utiles_id
+                and estudiante.lista_utiles_id != rec.lista_utiles_id
+            ):
                 vals["lista_utiles_id"] = rec.lista_utiles_id.id
 
             if vals:
                 estudiante.write(vals)
+
+            for apoderado in [rec.apoderado_principal_id, rec.apoderado_secundario_id]:
+                if apoderado and "tipo_contacto_escolar" in apoderado._fields:
+                    selection = dict(apoderado._fields["tipo_contacto_escolar"].selection)
+                    if (
+                        "apoderado" in selection
+                        and apoderado.tipo_contacto_escolar != "apoderado"
+                    ):
+                        apoderado.write({"tipo_contacto_escolar": "apoderado"})
+    
+    def _validar_estado_finalizado_manual(self, vals):
+        if (
+            vals.get("estado") == "finalizado"
+            and not self.env.context.get("permitir_estado_finalizado")
+        ):
+            raise ValidationError(
+                "No puedes colocar el estado 'Finalizado' manualmente. "
+                "Este estado se asigna automáticamente cuando se realiza el cierre del año escolar."
+        )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._validar_estado_finalizado_manual(vals)
+
+        records = super().create(vals_list)
+        records._sync_datos_estudiante_contacto()
+        return records
+
+    def write(self, vals):
+        self._validar_estado_finalizado_manual(vals)
+
+        res = super().write(vals)
+        self._sync_datos_estudiante_contacto()
+        return res
 
     @api.onchange('grado_escolar', 'anio_escolar')
     def _onchange_grado_anio(self):
@@ -280,11 +337,12 @@ class MatriculaEscolar(models.Model):
 
         if search:
             domain += [
-                "|", "|",
+                "|", "|", "|",
                 ("estudiante_id.name", "ilike", search),
                 ("grado_escolar", "ilike", search),
                 ("apoderado_principal_id.name", "ilike", search),
-            ]
+                ("estado", "ilike", search),
+        ]
 
         records = self.search(domain, order="estudiante_id asc")
 
@@ -314,7 +372,9 @@ class MatriculaEscolar(models.Model):
                     if rec.apoderado_principal_id
                     else "No registrado"
                 ),
-                "estado": rec.estado or "",
+                "estado": rec.estado or "activo",
+                "estado_label": self._estado_alumno_label_estado(rec.estado),
+                "estado_class": self._estado_alumno_class_estado(rec.estado),
             })
 
         return {

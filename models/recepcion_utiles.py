@@ -318,6 +318,28 @@ class RecepcionUtilesEscolar(models.Model):
                 ).mapped("cantidad_entregada")
             )
 
+    def _estado_matricula_label(self, matricula):
+        selection = dict(matricula._fields["estado"].selection)
+        return selection.get(matricula.estado, matricula.estado or "Sin estado")
+
+    def _ensure_matricula_activa_para_recepcion(self):
+        for rec in self:
+            if rec.tipo_entrada != "recepcion_utiles":
+                continue
+
+            if not rec.matricula_id:
+                continue
+
+            if rec.matricula_id.estado != "activo":
+                estado = rec._estado_matricula_label(rec.matricula_id)
+                estudiante = rec.matricula_id.estudiante_id.name or "el estudiante"
+
+                raise UserError(
+                    "No se puede registrar recepción de útiles para %s porque su matrícula está en estado '%s'. "
+                    "Solo las matrículas en estado 'Activo' pueden registrar recepción de útiles."
+                    % (estudiante, estado)
+                )
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -325,7 +347,26 @@ class RecepcionUtilesEscolar(models.Model):
                 vals["name"] = self.env["ir.sequence"].next_by_code(
                     "recepcion.utiles.escolar"
                 ) or "Nueva"
-        return super().create(vals_list)
+
+            tipo_entrada = vals.get("tipo_entrada", "recepcion_utiles")
+            matricula_id = vals.get("matricula_id")
+
+            if tipo_entrada == "recepcion_utiles" and matricula_id:
+                matricula = self.env["matricula.escolar"].browse(matricula_id)
+                if matricula.estado != "activo":
+                    estado = dict(matricula._fields["estado"].selection).get(
+                        matricula.estado,
+                        matricula.estado or "Sin estado"
+                )
+                raise UserError(
+                    "No se puede registrar recepción de útiles para %s porque su matrícula está en estado '%s'. "
+                    "Solo las matrículas en estado 'Activo' pueden registrar recepción de útiles."
+                    % (matricula.estudiante_id.name or "el estudiante", estado)
+                )
+
+        records = super().create(vals_list)
+        records._ensure_matricula_activa_para_recepcion()
+        return records
     
     @api.constrains("matricula_id", "tipo_entrada")
     def _check_recepcion_unica_por_matricula(self):
@@ -384,6 +425,24 @@ class RecepcionUtilesEscolar(models.Model):
         for rec in self:
             if rec.tipo_entrada != "recepcion_utiles":
                 continue
+            
+            if rec.matricula_id and rec.matricula_id.estado != "activo":
+                estado = rec._estado_matricula_label(rec.matricula_id)
+                estudiante = rec.matricula_id.estudiante_id.name or "el estudiante"
+
+                rec.matricula_id = False
+                rec.linea_ids = [(5, 0, 0)]
+
+                return {
+                    "warning": {
+                        "title": "Matrícula no activa",
+                        "message": (
+                            "No se puede registrar recepción de útiles para %s porque su matrícula está en estado '%s'. "
+                            "Solo se permite recepción cuando la matrícula está Activa."
+                            % (estudiante, estado)
+                        ),
+                }
+            }
 
             if rec.matricula_id:
                 existe = self.env["recepcion.utiles.escolar"].search_count([
@@ -486,6 +545,7 @@ class RecepcionUtilesEscolar(models.Model):
         for rec in self:
             if not rec.matricula_id:
                 raise UserError("Primero debes seleccionar una matrícula.")
+            rec._ensure_matricula_activa_para_recepcion()
 
             if not rec.lista_id:
                 raise UserError("La matrícula seleccionada no tiene una lista de útiles asociada.")
@@ -576,6 +636,7 @@ class RecepcionUtilesEscolar(models.Model):
             })
 
     def action_calcular_faltantes(self):
+        self._ensure_matricula_activa_para_recepcion()
         for rec in self:
             if not rec.linea_ids:
                 raise UserError("Primero debes cargar los productos de la lista.")
@@ -585,11 +646,15 @@ class RecepcionUtilesEscolar(models.Model):
             rec.estado = "incompleto" if tiene_faltantes else "completo"
 
     def action_validar(self):
+        self._ensure_matricula_activa_para_recepcion()
+        
         for rec in self:
             rec.action_calcular_faltantes()
             rec.estado = "validado"
 
     def action_enviar_productos_almacen(self):
+        self._ensure_matricula_activa_para_recepcion()
+        
         procesadas = 0
         omitidas = 0
         sin_productos = 0
