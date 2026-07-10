@@ -105,9 +105,13 @@
     </record>
 
     <menuitem id="menu_cierre_anio_utiles"
-              name="Cierre de año"
-              parent="menu_almacen_utiles_root"
-              action="action_cierre_anio_utiles"
-              sequence="45"/>
+            name="Cierre de año"
+            parent="menu_almacen_utiles_root"
+            action="action_cierre_anio_utiles"
+            sequence="45"/>
+
+    <record id="menu_cierre_anio_utiles" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
 
 </odoo>
