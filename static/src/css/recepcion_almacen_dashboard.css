@@ -289,8 +289,9 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    border-top: 1px solid #ddd;
-    padding-top: 14px;
+    border-top: none;
+    padding-top: 0;
+    margin: 12px 0 18px 0;
 }
 
 .o_rad_summary div {
@@ -338,7 +339,7 @@
 }
 
 .o_rad_summary {
-    margin-bottom: 80px;
+    margin: 12px 0 18px 0;
 }
 .o_rad_btn_send {
     border-color: #5ca443;
