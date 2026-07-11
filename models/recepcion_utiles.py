@@ -1,5 +1,5 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class RecepcionUtilesEscolar(models.Model):
@@ -217,6 +217,36 @@ class RecepcionUtilesEscolar(models.Model):
         compute="_compute_totales_destino",
         store=True
     )
+    
+    @api.constrains("matricula_id")
+    def _check_matricula_anio_seleccionado(self):
+        for rec in self:
+
+            if not rec.matricula_id:
+                continue
+
+            anio_seleccionado = (
+                self.env.user.anio_escolar_actual_id
+            )
+
+            anio_matricula = (
+                rec.matricula_id.anio_escolar_id
+            )
+
+            if (
+                anio_seleccionado
+                and anio_matricula
+                and anio_matricula != anio_seleccionado
+            ):
+                raise ValidationError(
+                    "No se puede guardar la recepción.\n\n"
+                    f"La matrícula seleccionada pertenece al año "
+                    f"{anio_matricula.anio}, pero actualmente está "
+                    f"seleccionado el año escolar "
+                    f"{anio_seleccionado.anio}.\n\n"
+                    "Seleccione una matrícula correspondiente "
+                    "al año escolar seleccionado."
+                )
 
     @api.depends("matricula_id", "matricula_id.anio_escolar")
     def _compute_datos_matricula(self):
