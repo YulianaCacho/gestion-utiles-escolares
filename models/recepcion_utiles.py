@@ -352,17 +352,29 @@ class RecepcionUtilesEscolar(models.Model):
             matricula_id = vals.get("matricula_id")
 
             if tipo_entrada == "recepcion_utiles" and matricula_id:
-                matricula = self.env["matricula.escolar"].browse(matricula_id)
+                matricula = self.env["matricula.escolar"].browse(
+                    matricula_id
+                )
+
                 if matricula.estado != "activo":
-                    estado = dict(matricula._fields["estado"].selection).get(
+                    estado = dict(
+                        matricula._fields["estado"].selection
+                    ).get(
                         matricula.estado,
                         matricula.estado or "Sin estado"
-                )
-                raise UserError(
-                    "No se puede registrar recepción de útiles para %s porque su matrícula está en estado '%s'. "
-                    "Solo las matrículas en estado 'Activo' pueden registrar recepción de útiles."
-                    % (matricula.estudiante_id.name or "el estudiante", estado)
-                )
+                    )
+
+                    raise UserError(
+                        "No se puede registrar recepción de útiles "
+                        "para %s porque su matrícula está en estado '%s'. "
+                        "Solo las matrículas en estado 'Activo' "
+                        "pueden registrar recepción de útiles."
+                        % (
+                            matricula.estudiante_id.name
+                            or "el estudiante",
+                            estado
+                        )
+                    )
 
         records = super().create(vals_list)
         records._ensure_matricula_activa_para_recepcion()
@@ -752,9 +764,17 @@ class RecepcionUtilesEscolar(models.Model):
     def get_recepciones_almacen_dashboard(self, search=False, estado=False):
         domain = []
 
-        if estado and estado != "todos":
-            domain.append(("estado_visual", "=", estado))
+        anio_seleccionado = self.env.user.anio_escolar_actual_id
 
+        if anio_seleccionado:
+            domain.append(
+                ("anio_escolar_id", "=", anio_seleccionado.id)
+            )
+
+        if estado and estado != "todos":
+            domain.append(
+                ("estado_visual", "=", estado)
+            )
         recepciones = self.search(domain, order="fecha desc, id desc")
 
         if search:

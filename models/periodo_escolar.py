@@ -66,7 +66,7 @@ class AnioEscolar(models.Model):
             "3er_grado": "4to_grado",
             "4to_grado": "5to_grado",
             "5to_grado": "6to_grado",
-            "6to_grado": "6to_grado",
+            "6to_grado": False,  # Último grado, no hay siguiente",
         }
         return mapa.get(grado, grado)
 
@@ -229,57 +229,147 @@ class AnioEscolar(models.Model):
 
     def action_generar_matriculas_desde_anio_anterior(self):
         Matricula = self.env["matricula.escolar"]
+        Revision = self.env["cierre.anio.matriculas"]
 
         creadas = 0
         repetidores = 0
         retirados = 0
+        egresados = 0
         omitidas = 0
 
         for rec in self:
+
             if not rec.anio_anterior_id:
-                raise UserError("Primero debes seleccionar el año anterior.")
+                raise UserError(
+                    "Primero debes seleccionar el año anterior."
+                )
 
-            matriculas_anteriores = Matricula.search([
-                ("anio_escolar_id", "=", rec.anio_anterior_id.id),
-                ("estado", "=", "activo"),
-            ])
+            revision = Revision.search(
+                [
+                    (
+                        "anio_origen_id",
+                        "=",
+                        rec.anio_anterior_id.id
+                    ),
+                    (
+                        "anio_destino_id",
+                        "=",
+                        rec.id
+                    ),
+                    (
+                        "estado",
+                        "=",
+                        "confirmado"
+                    ),
+                ],
+                limit=1
+            )
 
-            for matricula in matriculas_anteriores:
-                if matricula.situacion_siguiente_anio == "retirado":
+            if not revision:
+                raise UserError(
+                    "Primero debes realizar y confirmar la "
+                    "revisión de promoción del año anterior.\n\n"
+                    "Debes indicar qué estudiantes fueron "
+                    "promovidos, cuáles repiten y cuáles "
+                    "no continuarán."
+                )
+
+            for linea in revision.linea_ids:
+
+                matricula = linea.matricula_id
+                situacion = linea.situacion_revisada
+
+                # El alumno no continuará el siguiente año
+                if situacion == "retirado":
                     retirados += 1
                     continue
 
-                ya_existe = Matricula.search_count([
-                    ("anio_escolar_id", "=", rec.id),
-                    ("estudiante_id", "=", matricula.estudiante_id.id),
-                ])
+                # El alumno repite el mismo grado
+                if situacion == "repite":
+                    nuevo_grado = matricula.grado_escolar
+                    repetidores += 1
+
+                else:
+                    nuevo_grado = rec._siguiente_grado(
+                        matricula.grado_escolar
+                    )
+
+                    # Un estudiante promovido de 6to
+                    # termina la primaria
+                    if not nuevo_grado:
+                        egresados += 1
+                        continue
+
+                ya_existe = Matricula.search_count(
+                    [
+                        (
+                            "anio_escolar_id",
+                            "=",
+                            rec.id
+                        ),
+                        (
+                            "estudiante_id",
+                            "=",
+                            matricula.estudiante_id.id
+                        ),
+                    ]
+                )
 
                 if ya_existe:
                     omitidas += 1
                     continue
 
-                if matricula.situacion_siguiente_anio == "repite":
-                    nuevo_grado = matricula.grado_escolar
-                    repetidores += 1
-                else:
-                    nuevo_grado = rec._siguiente_grado(matricula.grado_escolar)
+                lista = rec._buscar_lista_utiles_del_anio(
+                    nuevo_grado
+                )
 
-                lista = rec._buscar_lista_utiles_del_anio(nuevo_grado)
+                nueva_matricula = Matricula.create(
+                    {
+                        "estudiante_id":
+                            matricula.estudiante_id.id,
 
-                nueva = Matricula.create({
-                    "estudiante_id": matricula.estudiante_id.id,
-                    "anio_escolar_id": rec.id,
-                    "anio_escolar": rec.anio,
-                    "grado_escolar": nuevo_grado,
-                    "lista_utiles_id": lista.id if lista else False,
-                    "estado": "activo",
-                    "apoderado_principal_id": matricula.apoderado_principal_id.id if matricula.apoderado_principal_id else False,
-                    "apoderado_secundario_id": matricula.apoderado_secundario_id.id if matricula.apoderado_secundario_id else False,
-                    "matricula_anterior_id": matricula.id,
-                    "situacion_siguiente_anio": "promovido",
-                })
+                        "anio_escolar_id":
+                            rec.id,
 
-                matricula.with_context(skip_anio_check=True).write({"matricula_siguiente_id": nueva.id})
+                        "anio_escolar":
+                            rec.anio,
+
+                        "grado_escolar":
+                            nuevo_grado,
+
+                        "lista_utiles_id":
+                            lista.id if lista else False,
+
+                        "estado":
+                            "activo",
+
+                        "apoderado_principal_id":
+                            matricula.apoderado_principal_id.id
+                            if matricula.apoderado_principal_id
+                            else False,
+
+                        "apoderado_secundario_id":
+                            matricula.apoderado_secundario_id.id
+                            if matricula.apoderado_secundario_id
+                            else False,
+
+                        "matricula_anterior_id":
+                            matricula.id,
+
+                        "situacion_siguiente_anio":
+                            "promovido",
+                    }
+                )
+
+                matricula.with_context(
+                    skip_anio_check=True
+                ).write(
+                    {
+                        "matricula_siguiente_id":
+                            nueva_matricula.id
+                    }
+                )
+
                 creadas += 1
 
         return {
@@ -288,13 +378,15 @@ class AnioEscolar(models.Model):
             "params": {
                 "title": "Matrículas generadas",
                 "message": (
-                    f"Creadas: {creadas}. "
-                    f"Repetidores: {repetidores}. "
-                    f"Retirados: {retirados}. "
-                    f"Omitidas: {omitidas}."
+                    f"Matrículas creadas: {creadas}. "
+                    f"Estudiantes que repiten: {repetidores}. "
+                    f"Estudiantes retirados: {retirados}. "
+                    f"Estudiantes que finalizaron primaria: "
+                    f"{egresados}. "
+                    f"Matrículas que ya existían: {omitidas}."
                 ),
                 "type": "success",
-                "sticky": False,
+                "sticky": True,
             }
         }
 
@@ -755,6 +847,13 @@ class ListaUtilesGrado(models.Model):
 class RecepcionUtilesEscolar(models.Model):
     _inherit = "recepcion.utiles.escolar"
 
+    matricula_id = fields.Many2one(
+        "matricula.escolar",
+        string="Matrícula",
+        domain="[('estado', '=', 'activo'), ('es_anio_actual', '=', True)]",
+        ondelete="restrict"
+    )
+
     anio_escolar_id = fields.Many2one(
         "anio.escolar",
         string="Año escolar",
@@ -762,6 +861,22 @@ class RecepcionUtilesEscolar(models.Model):
         store=True,
         readonly=True
     )
+    
+    def _validar_matricula_del_anio_seleccionado(self, matricula):
+        anio_seleccionado = self.env.user.anio_escolar_actual_id
+
+        if (
+            matricula
+            and anio_seleccionado
+            and matricula.anio_escolar_id != anio_seleccionado
+        ):
+            raise UserError(
+                "No se puede seleccionar esta matrícula.\n\n"
+                f"La matrícula pertenece al año {matricula.anio_escolar_id.anio}, "
+                f"pero actualmente está seleccionado el año "
+                f"{anio_seleccionado.anio}.\n\n"
+                "Seleccione una matrícula correspondiente al año escolar actual."
+            )
 
     def _anio_control_cierre(self):
         self.ensure_one()
@@ -784,8 +899,17 @@ class RecepcionUtilesEscolar(models.Model):
 
             if matricula_id:
                 matricula = self.env["matricula.escolar"].browse(matricula_id)
-                anio_id = matricula.anio_escolar_id.id if matricula.anio_escolar_id else anio_id
 
+                self._validar_matricula_del_anio_seleccionado(
+                    matricula
+                )
+
+                anio_id = (
+                    matricula.anio_escolar_id.id
+                    if matricula.anio_escolar_id
+                    else anio_id
+                )
+            
             if anio_id:
                 anio = self.env["anio.escolar"].browse(anio_id)
                 if anio.estado == "cerrado":
@@ -804,6 +928,25 @@ class RecepcionUtilesEscolar(models.Model):
 
         if vals.get("matricula_id"):
             matricula = self.env["matricula.escolar"].browse(vals["matricula_id"])
+            
+        if vals.get("matricula_id"):
+            matricula = self.env["matricula.escolar"].browse(
+                vals["matricula_id"]
+            )
+
+            self._validar_matricula_del_anio_seleccionado(
+                matricula
+            )
+
+            if (
+                matricula.anio_escolar_id
+                and matricula.anio_escolar_id.estado == "cerrado"
+            ):
+                raise UserError(
+                    "No se puede asignar una matrícula "
+                    "de un año escolar cerrado."
+                )
+            
             if matricula.anio_escolar_id and matricula.anio_escolar_id.estado == "cerrado":
                 raise UserError("No se puede asignar una matrícula de un año escolar cerrado.")
 

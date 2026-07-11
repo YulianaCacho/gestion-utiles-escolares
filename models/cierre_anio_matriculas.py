@@ -1,5 +1,6 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+
 
 GRADO_ESCOLAR_SELECTION = [
     ("inicial_3", "Inicial 3 años"),
@@ -104,60 +105,101 @@ class CierreAnioMatriculas(models.Model):
         for rec in self:
             origen = rec.anio_origen_id.name or ""
             destino = rec.anio_destino_id.name or ""
+
             rec.name = (
                 f"Revisión de promoción {origen} → {destino}"
-                if origen and destino else "Revisión de promoción"
+                if origen and destino
+                else "Revisión de promoción"
             )
 
-    @api.depends("linea_ids", "linea_ids.situacion_revisada")
+    @api.depends(
+        "linea_ids",
+        "linea_ids.situacion_revisada"
+    )
     def _compute_totales(self):
         for rec in self:
             rec.total_alumnos = len(rec.linea_ids)
+
             rec.total_promovidos = len(
-                rec.linea_ids.filtered(lambda l: l.situacion_revisada == "promovido")
+                rec.linea_ids.filtered(
+                    lambda linea:
+                    linea.situacion_revisada == "promovido"
+                )
             )
+
             rec.total_repiten = len(
-                rec.linea_ids.filtered(lambda l: l.situacion_revisada == "repite")
+                rec.linea_ids.filtered(
+                    lambda linea:
+                    linea.situacion_revisada == "repite"
+                )
             )
+
             rec.total_retirados = len(
-                rec.linea_ids.filtered(lambda l: l.situacion_revisada == "retirado")
+                rec.linea_ids.filtered(
+                    lambda linea:
+                    linea.situacion_revisada == "retirado"
+                )
             )
 
     def action_generar_revision(self):
         Matricula = self.env["matricula.escolar"]
 
         for rec in self:
+
             if rec.estado == "confirmado":
                 raise UserError(
-                    "Esta revisión ya fue confirmada y no puede regenerarse."
+                    "Esta revisión ya fue confirmada "
+                    "y no puede regenerarse."
                 )
 
-            matriculas = Matricula.search([
-                ("anio_escolar_id", "=", rec.anio_origen_id.id),
-                ("estado", "=", "activo"),
-            ])
+            matriculas = Matricula.search(
+                [
+                    (
+                        "anio_escolar_id",
+                        "=",
+                        rec.anio_origen_id.id
+                    ),
+                    (
+                        "estado",
+                        "=",
+                        "activo"
+                    ),
+                ]
+            )
 
             if not matriculas:
                 raise UserError(
-                    "No se encontraron matrículas activas para este año escolar."
+                    "No se encontraron matrículas activas "
+                    "para este año escolar."
                 )
 
             rec.linea_ids.unlink()
 
             lineas = []
-            for matricula in matriculas:
-                lineas.append((0, 0, {
-                    "matricula_id": matricula.id,
-                    # Si el alumno ya tenía una situación marcada (por ejemplo,
-                    # editada antes desde la matrícula misma), se respeta como
-                    # punto de partida en vez de resetear todo a "Promovido".
-                    "situacion_revisada": matricula.situacion_siguiente_anio or "promovido",
-                }))
 
-            rec.write({
-                "linea_ids": lineas,
-                "estado": "revision",
-            })
+            for matricula in matriculas:
+
+                lineas.append(
+                    (
+                        0,
+                        0,
+                        {
+                            "matricula_id":
+                                matricula.id,
+
+                            "situacion_revisada":
+                                matricula.situacion_siguiente_anio
+                                or "promovido",
+                        }
+                    )
+                )
+
+            rec.write(
+                {
+                    "linea_ids": lineas,
+                    "estado": "revision",
+                }
+            )
 
         return {
             "type": "ir.actions.act_window",
@@ -169,26 +211,44 @@ class CierreAnioMatriculas(models.Model):
         }
 
     def action_confirmar_revision(self):
+
         for rec in self:
+
             if rec.estado == "confirmado":
-                raise UserError("Esta revisión ya fue confirmada.")
+                raise UserError(
+                    "Esta revisión ya fue confirmada."
+                )
 
             if not rec.linea_ids:
-                raise UserError("Primero genera la lista de alumnos a revisar.")
+                raise UserError(
+                    "Primero genera la lista "
+                    "de alumnos a revisar."
+                )
 
             for linea in rec.linea_ids:
+
                 linea.matricula_id.with_context(
                     skip_anio_check=True,
                     permitir_estado_finalizado=True
-                ).write({
-                    "situacion_siguiente_anio": linea.situacion_revisada,
-                    "estado": "finalizado",
-                })
+                ).write(
+                    {
+                        "situacion_siguiente_anio":
+                            linea.situacion_revisada,
 
-            rec.write({
-                "estado": "confirmado",
-                "fecha_confirmacion": fields.Datetime.now(),
-            })
+                        "estado":
+                            "finalizado",
+                    }
+                )
+
+            rec.write(
+                {
+                    "estado":
+                        "confirmado",
+
+                    "fecha_confirmacion":
+                        fields.Datetime.now(),
+                }
+            )
 
         return {
             "type": "ir.actions.act_window",
@@ -235,9 +295,18 @@ class CierreAnioMatriculasLinea(models.Model):
 
     situacion_revisada = fields.Selection(
         [
-            ("promovido", "Promovido al siguiente grado"),
-            ("repite", "Repite grado"),
-            ("retirado", "Retirado / no continúa"),
+            (
+                "promovido",
+                "Promovido al siguiente grado"
+            ),
+            (
+                "repite",
+                "Repite grado"
+            ),
+            (
+                "retirado",
+                "Retirado / no continúa"
+            ),
         ],
         string="Situación",
         default="promovido",
@@ -253,32 +322,113 @@ class CierreAnioMatriculasLinea(models.Model):
         string="Observación"
     )
 
-    @api.depends("situacion_revisada", "grado_escolar")
+    def _obtener_grado_siguiente_label(self):
+        """
+        Obtiene el texto que se mostrará como situación
+        o grado del estudiante para el siguiente año.
+        """
+
+        self.ensure_one()
+
+        labels = dict(
+            GRADO_ESCOLAR_SELECTION
+        )
+
+        # El estudiante no continuará
+        if self.situacion_revisada == "retirado":
+            return "No continúa"
+
+        # El estudiante permanece en el mismo grado
+        if self.situacion_revisada == "repite":
+            return labels.get(
+                self.grado_escolar,
+                ""
+            )
+
+        # Si fue promovido desde 6to,
+        # termina el nivel primaria
+        if (
+            self.situacion_revisada == "promovido"
+            and self.grado_escolar == "6to_grado"
+        ):
+            return "Finaliza primaria"
+
+        # Promoción normal al siguiente grado
+        anio = (
+            self.cierre_id.anio_origen_id
+            if self.cierre_id
+            else False
+        )
+
+        siguiente = (
+            anio._siguiente_grado(
+                self.grado_escolar
+            )
+            if anio
+            else self.grado_escolar
+        )
+
+        return labels.get(
+            siguiente,
+            ""
+        )
+
+    @api.depends(
+        "situacion_revisada",
+        "grado_escolar",
+        "cierre_id.anio_origen_id"
+    )
     def _compute_grado_siguiente_label(self):
-        labels = dict(GRADO_ESCOLAR_SELECTION)
 
         for rec in self:
-            if rec.situacion_revisada == "retirado":
-                rec.grado_siguiente_label = "No continúa"
-            elif rec.situacion_revisada == "repite":
-                rec.grado_siguiente_label = labels.get(rec.grado_escolar, "")
-            else:
-                anio = rec.cierre_id.anio_origen_id
-                siguiente = anio._siguiente_grado(rec.grado_escolar) if anio else rec.grado_escolar
-                rec.grado_siguiente_label = labels.get(siguiente, "")
-                
-    @api.onchange("situacion_revisada")
+
+            rec.grado_siguiente_label = (
+                rec._obtener_grado_siguiente_label()
+            )
+
+    @api.onchange(
+        "situacion_revisada",
+        "grado_escolar"
+    )
     def _onchange_situacion_revisada(self):
-        labels = dict(GRADO_ESCOLAR_SELECTION)
+
         for rec in self:
-            if rec.situacion_revisada == "retirado":
-                rec.grado_siguiente_label = "No continúa"
-            elif rec.situacion_revisada == "repite":
-                rec.grado_siguiente_label = labels.get(rec.grado_escolar, "")
-            else:
-                anio = rec.cierre_id.anio_origen_id
-                siguiente = anio._siguiente_grado(rec.grado_escolar) if anio else rec.grado_escolar
-                rec.grado_siguiente_label = labels.get(siguiente, "")
+
+            rec.grado_siguiente_label = (
+                rec._obtener_grado_siguiente_label()
+            )
+
+    @api.constrains(
+        "situacion_revisada",
+        "grado_escolar"
+    )
+    def _check_repitencia_desde_segundo(self):
+        """
+        La opción Repite grado solo se permite
+        desde 2do grado hasta 6to grado.
+        """
+
+        grados_con_repitencia = {
+            "2do_grado",
+            "3er_grado",
+            "4to_grado",
+            "5to_grado",
+            "6to_grado",
+        }
+
+        for rec in self:
+
+            if (
+                rec.situacion_revisada == "repite"
+                and rec.grado_escolar
+                not in grados_con_repitencia
+            ):
+                raise ValidationError(
+                    "No se puede seleccionar "
+                    "'Repite grado'.\n\n"
+                    "La repitencia solo puede registrarse "
+                    "desde 2do grado hasta 6to grado."
+                )
 
 
 class AnioEscolarCierreMatriculas(models.Model):
@@ -291,35 +441,85 @@ class AnioEscolarCierreMatriculas(models.Model):
     )
 
     def action_crear_revision_matriculas(self):
+
         self.ensure_one()
 
         if self.estado == "cerrado":
-            raise UserError("Este año escolar ya está cerrado.")
-
-        anio_destino = self.env["anio.escolar"].search([
-            ("anio_anterior_id", "=", self.id)
-        ], limit=1)
-
-        if not anio_destino:
-            anio_destino = self.env["anio.escolar"].search([
-                ("anio", "=", self.anio + 1)
-            ], limit=1)
-
-        if not anio_destino:
             raise UserError(
-                f"Primero crea el año escolar {self.anio + 1} y selecciona como año anterior {self.name}."
+                "Este año escolar ya está cerrado."
             )
 
-        cierre = self.env["cierre.anio.matriculas"].search([
-            ("anio_origen_id", "=", self.id),
-            ("anio_destino_id", "=", anio_destino.id),
-        ], limit=1)
+        anio_destino = (
+            self.env["anio.escolar"].search(
+                [
+                    (
+                        "anio_anterior_id",
+                        "=",
+                        self.id
+                    )
+                ],
+                limit=1
+            )
+        )
+
+        if not anio_destino:
+
+            anio_destino = (
+                self.env["anio.escolar"].search(
+                    [
+                        (
+                            "anio",
+                            "=",
+                            self.anio + 1
+                        )
+                    ],
+                    limit=1
+                )
+            )
+
+        if not anio_destino:
+
+            raise UserError(
+                f"Primero crea el año escolar "
+                f"{self.anio + 1} y selecciona "
+                f"como año anterior {self.name}."
+            )
+
+        cierre = (
+            self.env[
+                "cierre.anio.matriculas"
+            ].search(
+                [
+                    (
+                        "anio_origen_id",
+                        "=",
+                        self.id
+                    ),
+                    (
+                        "anio_destino_id",
+                        "=",
+                        anio_destino.id
+                    ),
+                ],
+                limit=1
+            )
+        )
 
         if not cierre:
-            cierre = self.env["cierre.anio.matriculas"].create({
-                "anio_origen_id": self.id,
-                "anio_destino_id": anio_destino.id,
-            })
+
+            cierre = (
+                self.env[
+                    "cierre.anio.matriculas"
+                ].create(
+                    {
+                        "anio_origen_id":
+                            self.id,
+
+                        "anio_destino_id":
+                            anio_destino.id,
+                    }
+                )
+            )
 
         return {
             "type": "ir.actions.act_window",
