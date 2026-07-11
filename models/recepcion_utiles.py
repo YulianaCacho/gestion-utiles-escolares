@@ -888,6 +888,9 @@ class RecepcionUtilesEscolar(models.Model):
                 "producto": linea.product_id.display_name or "",
                 "cantidad_requerida": rec._fmt_qty_dashboard(linea.cantidad_esperada),
                 "cantidad_recibida": rec._fmt_qty_dashboard(linea.cantidad_entregada),
+                "cantidad_maxima": float(
+                        linea.cantidad_esperada or 0
+                ),
                 "estado": estado_label,
                 "estado_class": estado_class,
                 "completo": linea.estado_linea == "completo",
@@ -914,21 +917,146 @@ class RecepcionUtilesEscolar(models.Model):
         }
 
     @api.model
-    def guardar_recepcion_almacen_dashboard(self, recepcion_id, lineas):
-        rec = self.browse(int(recepcion_id)).exists()
+    def guardar_recepcion_almacen_dashboard(
+        self,
+        recepcion_id,
+        lineas
+    ):
+        rec = self.browse(
+            int(recepcion_id)
+        ).exists()
 
         if not rec:
-            return False
+            raise UserError(
+            "No se encontró la recepción que desea guardar."
+            )
 
-        Linea = self.env["recepcion.utiles.linea"]
+        Linea = self.env[
+            "recepcion.utiles.linea"
+        ]
 
-        for item in lineas:
-            linea = Linea.browse(int(item.get("id"))).exists()
-            if linea and linea.recepcion_id.id == rec.id:
-                cantidad = item.get("cantidad_recibida") or 0
-                linea.write({
-                    "cantidad_entregada": float(str(cantidad).replace(",", "."))
-                })
+        valores_validos = []
+        errores = []
+
+        for item in lineas or []:
+
+            linea_id = item.get("id")
+
+            if not linea_id:
+                continue
+
+            linea = Linea.browse(
+                int(linea_id)
+            ).exists()
+
+            if (
+                not linea
+                or linea.recepcion_id.id != rec.id
+            ):
+                continue
+
+            producto = (
+                linea.product_id.display_name
+                or "Producto sin nombre"
+            )
+
+            valor_original = item.get(
+                "cantidad_recibida"
+            )
+
+            # Un campo vacío será considerado cero
+            if valor_original in (
+                None,
+                "",
+                False
+            ):
+                cantidad = 0.0
+
+            else:
+
+                try:
+
+                    cantidad = float(
+                        str(
+                            valor_original
+                        ).replace(",", ".")
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    errores.append(
+                        f"{producto}: la cantidad "
+                        f"'{valor_original}' no es "
+                        f"un número válido."
+                    )
+
+                    continue
+
+            cantidad_requerida = float(
+                linea.cantidad_esperada or 0
+            )
+
+            # No permitir números negativos
+            if cantidad < 0:
+
+                errores.append(
+                    f"{producto}: se ingresó "
+                    f"{rec._fmt_qty_dashboard(cantidad)}, "
+                    f"pero no se permiten "
+                    f"cantidades negativas."
+                )
+
+                continue
+
+            # No permitir una cantidad mayor
+            # a la solicitada en la lista
+            if cantidad > cantidad_requerida:
+
+                errores.append(
+                    f"{producto}: se ingresó "
+                    f"{rec._fmt_qty_dashboard(cantidad)}, "
+                    f"pero la cantidad requerida es "
+                    f"{rec._fmt_qty_dashboard(cantidad_requerida)}."
+                )
+
+                continue
+
+            valores_validos.append(
+                (
+                    linea,
+                    cantidad
+                )
+            )
+
+        # Mostrar todos los productos con error
+        # antes de guardar cualquier cantidad
+        if errores:
+
+            detalle_errores = "\n".join(
+                f"• {error}"
+                for error in errores
+            )
+
+            raise UserError(
+                "No se puede guardar la recepción "
+                "porque se encontraron cantidades "
+                "incorrectas:\n\n"
+                f"{detalle_errores}\n\n"
+                "Corrige únicamente los productos "
+                "indicados y vuelve a guardar."
+            )
+
+        # Solo guardar cuando todas
+        # las cantidades sean válidas
+        for linea, cantidad in valores_validos:
+ 
+            linea.write({
+                "cantidad_entregada":
+                    cantidad
+            })
 
         rec.action_calcular_faltantes()
 
@@ -1117,6 +1245,64 @@ class RecepcionUtilesLinea(models.Model):
 
     observacion = fields.Char(string="Observación")
 
+    @api.constrains(
+        "cantidad_entregada",
+        "cantidad_esperada"
+    )
+    def _check_cantidad_entregada_valida(self):
+
+        errores = []
+
+        for linea in self:
+
+            producto = (
+                linea.product_id.display_name
+                or "Producto sin nombre"
+            )
+
+            cantidad_entregada = float(
+                linea.cantidad_entregada or 0
+            )
+
+            cantidad_esperada = float(
+                linea.cantidad_esperada or 0
+            )
+
+            if cantidad_entregada < 0:
+
+                errores.append(
+                    f"{producto}: no se permiten "
+                    f"cantidades negativas."
+                )
+
+            elif (
+                cantidad_entregada
+                > cantidad_esperada
+            ):
+
+                errores.append(
+                    f"{producto}: la cantidad "
+                    f"entregada es "
+                    f"{cantidad_entregada:g}, "
+                    f"pero la cantidad máxima "
+                    f"permitida es "
+                    f"{cantidad_esperada:g}."
+                )
+
+        if errores:
+
+            detalle = "\n".join(
+                f"• {error}"
+                for error in errores
+            )
+
+            raise ValidationError(
+                "Existen cantidades incorrectas:\n\n"
+                f"{detalle}\n\n"
+                "La cantidad entregada debe estar "
+                "entre cero y la cantidad requerida."
+            )
+    
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
         for linea in self:

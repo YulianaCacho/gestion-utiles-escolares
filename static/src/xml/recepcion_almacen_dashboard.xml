@@ -138,7 +138,7 @@
                         Reconocer por imagen
                     </button>
 
-                    
+
                 </div>
 
                 <div class="o_rad_steps">
@@ -226,7 +226,7 @@
                                 <td class="center" t-esc="linea.cantidad_requerida"/>
 
                                 <td>
-                                    <input class="o_rad_qty" type="number" min="0" t-att-value="linea.cantidad_recibida" t-on-input="(ev) => this.onChangeCantidad(linea.id, ev)"/>
+                                    <input class="o_rad_qty" type="number" min="0" step="any" t-att-max="linea.cantidad_maxima" t-att-value="linea.cantidad_recibida" t-on-keydown="onKeydownCantidad" t-on-input="(ev) => this.onChangeCantidad(linea.id, ev)" />
                                 </td>
 
                                 <td>
@@ -235,7 +235,7 @@
                             </tr>
                         </tbody>
                     </table>
-                </section> 
+                </section>
 
             </t>
 
