@@ -120,16 +120,77 @@ class RecepcionAlmacenDashboard extends Component {
   }
 
   onChangeCantidad(lineaId, ev) {
-    const value = ev.target.value;
-
     if (!this.state.detalle || !this.state.detalle.lineas) {
       return;
     }
 
     const linea = this.state.detalle.lineas.find((item) => item.id === lineaId);
 
-    if (linea) {
-      linea.cantidad_recibida = value;
+    if (!linea) {
+      return;
+    }
+
+    const valorIngresado = ev.target.value;
+
+    // Permitir que el campo quede vacío
+    // mientras el usuario está escribiendo
+    if (valorIngresado === "") {
+      linea.cantidad_recibida = "";
+      return;
+    }
+
+    let cantidad = Number(String(valorIngresado).replace(",", "."));
+
+    const cantidadMaxima = Number(linea.cantidad_maxima || 0);
+
+    // Validar número incorrecto
+    if (!Number.isFinite(cantidad)) {
+      cantidad = 0;
+
+      this.notification.add(
+        `La cantidad de "${linea.producto}" ` + "debe ser un número válido.",
+        {
+          type: "warning",
+        },
+      );
+    }
+
+    // No permitir números negativos
+    else if (cantidad < 0) {
+      cantidad = 0;
+
+      this.notification.add(
+        `No se permiten cantidades negativas ` + `para "${linea.producto}".`,
+        {
+          type: "warning",
+        },
+      );
+    }
+
+    // No permitir superar la cantidad requerida
+    else if (cantidad > cantidadMaxima) {
+      cantidad = cantidadMaxima;
+
+      this.notification.add(
+        `La cantidad de "${linea.producto}" ` +
+          `no puede ser mayor a ` +
+          `${cantidadMaxima}.`,
+        {
+          type: "warning",
+        },
+      );
+    }
+
+    linea.cantidad_recibida = cantidad;
+
+    ev.target.value = cantidad;
+  }
+
+  onKeydownCantidad(ev) {
+    const teclasNoPermitidas = ["-", "+", "e", "E"];
+
+    if (teclasNoPermitidas.includes(ev.key)) {
+      ev.preventDefault();
     }
   }
 
