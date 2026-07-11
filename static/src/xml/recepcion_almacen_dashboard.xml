@@ -112,6 +112,17 @@
             <t t-if="state.modo === 'detalle' and state.detalle">
 
                 <div class="o_rad_detail_toolbar">
+
+                    <button type="button" class="o_rad_btn" t-on-click="volverLista">
+                        <i class="fa fa-arrow-left"/>
+                        Volver
+                    </button>
+
+                    <button type="button" class="o_rad_btn" t-on-click="guardar">
+                        <i class="fa fa-save"/>
+                        Guardar
+                    </button>
+
                     <button type="button" class="o_rad_btn" t-on-click="validarRecepcion">
                         <i class="fa fa-check"/>
                         Validar recepción
@@ -127,15 +138,7 @@
                         Reconocer por imagen
                     </button>
 
-                    <button type="button" class="o_rad_btn" t-on-click="guardar">
-                        <i class="fa fa-save"/>
-                        Guardar
-                    </button>
-
-                    <button type="button" class="o_rad_btn" t-on-click="volverLista">
-                        <i class="fa fa-arrow-left"/>
-                        Volver
-                    </button>
+                    
                 </div>
 
                 <div class="o_rad_steps">
