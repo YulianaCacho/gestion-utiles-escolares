@@ -273,11 +273,14 @@ class CierreAnioMatriculasLinea(models.Model):
     )
 
     matricula_id = fields.Many2one(
-        "matricula.escolar",
-        string="Matrícula",
-        required=True,
-        readonly=True
-    )
+    "matricula.escolar",
+    string="Matrícula",
+    domain=[
+        ("estado", "=", "activo"),
+        ("es_anio_actual", "=", True),
+    ],
+    ondelete="restrict"
+)
 
     estudiante_id = fields.Many2one(
         "res.partner",
