@@ -52,3 +52,50 @@ class ProductTemplate(models.Model):
         for product in self:
             if len(product.responsable_escolar_ids) > 3:
                 raise ValidationError("Solo se pueden seleccionar hasta 3 responsables.")
+    @api.constrains("name", "default_code")
+    def _check_producto_duplicado(self):
+        ProductProduct = self.env["product.product"].with_context(
+            active_test=False
+        )
+
+        for product in self:
+            nombre = (product.name or "").strip()
+            referencia = (product.default_code or "").strip()
+
+            errores = []
+
+            # Validar que el nombre del producto no esté repetido
+            if nombre:
+                nombre_duplicado = self.with_context(
+                    active_test=False
+                ).search_count([
+                    ("id", "!=", product.id),
+                    ("name", "=ilike", nombre),
+                ])
+
+                if nombre_duplicado:
+                    errores.append(
+                        f"Ya existe un producto registrado con el nombre "
+                        f"'{nombre}'."
+                    )
+
+            # Validar que la referencia interna no esté repetida
+            if referencia:
+                referencia_duplicada = ProductProduct.search_count([
+                    ("product_tmpl_id", "!=", product.id),
+                    ("default_code", "=ilike", referencia),
+                ])
+
+                if referencia_duplicada:
+                    errores.append(
+                        f"Ya existe un producto registrado con la referencia "
+                        f"interna '{referencia}'."
+                    )
+
+            # Impedir el guardado y mostrar las validaciones encontradas
+            if errores:
+                raise ValidationError(
+                    "No se puede guardar el producto:\n\n- "
+                    + "\n- ".join(errores)
+                    + "\n\nIngrese un nombre y una referencia interna diferentes."
+                )
