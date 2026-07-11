@@ -37,6 +37,33 @@ class ProductTemplate(models.Model):
         compute="_compute_codigo_ubicacion_fisica",
         store=True,
     )
+    
+class ProductCategory(models.Model):
+    _inherit = "product.category"
+
+    @api.constrains("name")
+    def _check_nombre_categoria_duplicado(self):
+        for categoria in self:
+            nombre = (categoria.name or "").strip()
+
+            if not nombre:
+                continue
+
+            categoria_duplicada = self.search(
+                [
+                    ("id", "!=", categoria.id),
+                    ("name", "=ilike", nombre),
+                ],
+                limit=1,
+            )
+
+            if categoria_duplicada:
+                raise ValidationError(
+                    "No se puede guardar la categoría.\n\n"
+                    f"Ya existe una categoría registrada con el nombre "
+                    f"'{nombre}'.\n\n"
+                    "Ingrese un nombre diferente."
+                )
 
     @api.depends("ubicacion_fisica_id")
     def _compute_codigo_ubicacion_fisica(self):
