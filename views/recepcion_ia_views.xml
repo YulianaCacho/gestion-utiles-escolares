@@ -7,13 +7,9 @@
         model="ir.ui.view"
     >
 
-        <field name="name">
-            recepcion.utiles.escolar.form.ia.inherit
-        </field>
+        <field name="name">recepcion.utiles.escolar.form.ia.inherit</field>
 
-        <field name="model">
-            recepcion.utiles.escolar
-        </field>
+        <field name="model">recepcion.utiles.escolar</field>
 
         <field
             name="inherit_id"
