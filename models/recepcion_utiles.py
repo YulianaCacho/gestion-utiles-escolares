@@ -89,15 +89,44 @@ class RecepcionUtilesEscolar(models.Model):
 
     recibido_por_id = fields.Many2one(
         "res.users",
-        string="Recibido por",
+        string="Registrado por",
         default=lambda self: self.env.user,
         readonly=True
+    )
+    
+    comprado_por_id = fields.Many2one(
+        "res.partner",
+        string="Comprado por",
+        domain=[
+            (
+                "tipo_contacto_escolar",
+                "=",
+                "personal"
+            ),
+            (
+                "cargo_institucional",
+                "in",
+                [
+                    "directora",
+                    "coordinadora",
+                    "promotora",
+                    "secretaria",
+                ]
+            ),
+        ],
+        ondelete="restrict"
     )
 
     linea_ids = fields.One2many(
         "recepcion.utiles.linea",
         "recepcion_id",
         string="Productos recibidos"
+    )
+    
+    linea_compra_ids = fields.One2many(
+        "recepcion.utiles.linea",
+        "recepcion_id",
+        string="Productos comprados"
     )
 
     movimiento_almacen_ids = fields.One2many(
@@ -799,15 +828,138 @@ class RecepcionUtilesEscolar(models.Model):
             )
         )
 
+    @api.constrains(
+        "tipo_entrada",
+        "comprado_por_id"
+    )
+    def _check_comprado_por(self):
+
+        cargos_permitidos = {
+            "directora",
+            "coordinadora",
+            "promotora",
+            "secretaria",
+        }
+
+        for rec in self:
+
+            if rec.tipo_entrada != "compra_directa":
+                continue
+
+            if not rec.comprado_por_id:
+                raise ValidationError(
+                    "Debe seleccionar a la persona "
+                    "que realizó la compra."
+                )
+
+            if (
+                rec.comprado_por_id.tipo_contacto_escolar
+                != "personal"
+                or
+                rec.comprado_por_id.cargo_institucional
+                not in cargos_permitidos
+            ):
+                raise ValidationError(
+                    "La persona seleccionada en "
+                    "'Comprado por' debe tener uno "
+                    "de los siguientes cargos:\n\n"
+                    "• Directora\n"
+                    "• Coordinadora\n"
+                    "• Promotora\n"
+                    "• Secretaria"
+                )
+
+    def _validar_compra_directa(self):
+
+        for rec in self:
+
+            errores = []
+
+            if not rec.comprado_por_id:
+                errores.append(
+                    "No se seleccionó a la persona "
+                    "que realizó la compra."
+                )
+
+            if not rec.linea_ids:
+                errores.append(
+                    "No se agregó ningún producto."
+                )
+
+            for linea in rec.linea_ids:
+
+                producto = (
+                    linea.product_id.display_name
+                    or "Producto sin nombre"
+                )
+
+                cantidad = float(
+                    linea.cantidad_entregada or 0
+                )
+
+                if not linea.unidad_id:
+
+                    errores.append(
+                        f"{producto}: seleccione "
+                        f"una unidad."
+                    )
+
+                if cantidad < 0:
+
+                    errores.append(
+                        f"{producto}: la cantidad "
+                        f"{cantidad:g} es negativa."
+                    )
+
+                elif not cantidad.is_integer():
+
+                    errores.append(
+                        f"{producto}: la cantidad "
+                        f"{cantidad:g} contiene "
+                        f"decimales. Solo se permiten "
+                        f"números enteros."
+                    )
+
+            if errores:
+
+                detalle = "\n".join(
+                    f"• {error}"
+                    for error in errores
+                )
+
+                raise ValidationError(
+                    "No se puede validar la compra "
+                    "porque existen inconsistencias:"
+                    "\n\n"
+                    f"{detalle}"
+                    "\n\n"
+                    "Corrija los datos indicados "
+                    "y vuelva a validar."
+                )
+
+        return True
+
     def action_validar(self):
 
         self._ensure_matricula_activa_para_recepcion()
 
-        # Validar todas las cantidades antes
-        # de cambiar el estado de la recepción
-        self._validar_cantidades_recepcion()
-
         for rec in self:
+
+            # Compra directa
+            if rec.tipo_entrada == "compra_directa":
+
+                rec._validar_compra_directa()
+
+                rec.estado = "validado"
+
+                # Registrar automáticamente
+                # los productos en almacén
+                rec.action_enviar_productos_almacen()
+
+                continue
+
+            # Recepción por matrícula
+            rec._validar_cantidades_recepcion()
 
             rec.action_calcular_faltantes()
 
@@ -839,8 +991,12 @@ class RecepcionUtilesEscolar(models.Model):
             for linea in productos_almacen:
                 cantidad_a_enviar = linea.cantidad_pendiente_almacen
 
-                valores_movimiento = {
+                valores_movimiento = { 
                     "tipo_movimiento": "entrada",
+                    "anio_escolar_id":
+                        rec.anio_escolar_id.id
+                        if rec.anio_escolar_id
+                        else False,
                     "recepcion_id": rec.id,
                     "product_id": linea.product_id.id,
                     "cantidad": cantidad_a_enviar,
@@ -1377,11 +1533,6 @@ class RecepcionUtilesLinea(models.Model):
 
     @api.onchange("cantidad_entregada")
     def _onchange_advertir_cantidad_incorrecta(self):
-        """
-        Muestra una advertencia inmediata,
-        pero conserva el valor ingresado para
-        que el usuario pueda corregirlo.
-        """
 
         for linea in self:
 
@@ -1398,76 +1549,81 @@ class RecepcionUtilesLinea(models.Model):
                 or "Producto sin nombre"
             )
 
-            # Advertir cantidades negativas
+            tipo_entrada = (
+                linea.recepcion_id.tipo_entrada
+                if linea.recepcion_id
+                else False
+            )
+
+            # Negativos: se validan
+            # en todos los tipos de entrada
             if cantidad < 0:
 
                 return {
                     "warning": {
-                        "title": (
-                            "Cantidad negativa"
-                        ),
+                        "title":
+                            "Cantidad negativa",
+
                         "message": (
                             f"El producto '{producto}' "
                             f"tiene la cantidad "
                             f"{cantidad:g}.\n\n"
-                            "No se permiten cantidades "
-                            "menores que cero.\n\n"
-                            "Corrige el valor antes "
-                            "de guardar."
+                            "No se permiten números "
+                            "negativos."
                         ),
                     }
                 }
 
-            # Advertir cantidades decimales
+            # Decimales: se validan
+            # en todos los tipos
             if not cantidad.is_integer():
 
                 return {
                     "warning": {
-                        "title": (
-                            "Cantidad decimal"
-                        ),
+                        "title":
+                            "Cantidad decimal",
+
                         "message": (
                             f"El producto '{producto}' "
                             f"tiene la cantidad "
                             f"{cantidad:g}.\n\n"
-                            "Solo se permiten números "
-                            "enteros.\n\n"
-                            "Corrige el valor antes "
-                            "de guardar."
+                            "Solo se permiten "
+                            "números enteros."
                         ),
                     }
                 }
 
-            # Advertir cantidades mayores
-            if cantidad > cantidad_requerida:
+            # El máximo solo se aplica
+            # a recepción por matrícula
+            if (
+                tipo_entrada
+                == "recepcion_utiles"
+                and
+                cantidad
+                > cantidad_requerida
+            ):
 
                 return {
                     "warning": {
-                        "title": (
-                            "Cantidad superior "
-                            "a la requerida"
-                        ),
+                        "title":
+                            "Cantidad superior",
+
                         "message": (
                             f"El producto '{producto}' "
-                            f"tiene la cantidad "
-                            f"{cantidad:g}, pero solo "
                             f"requiere "
-                            f"{cantidad_requerida:g}.\n\n"
-                            "Corrige el valor antes "
-                            "de guardar."
+                            f"{cantidad_requerida:g}, "
+                            f"pero se ingresó "
+                            f"{cantidad:g}."
                         ),
                     }
                 }
-
+                
     @api.constrains(
         "cantidad_entregada",
-        "cantidad_esperada"
+        "cantidad_esperada",
+        "unidad_id"
     )
     def _check_cantidad_entregada_valida(self):
-        """
-        Impide guardar cantidades negativas,
-        decimales o superiores a la requerida.
-        """
 
         errores = []
 
@@ -1486,16 +1642,19 @@ class RecepcionUtilesLinea(models.Model):
                 linea.cantidad_esperada or 0
             )
 
-            # Cantidad negativa
+            tipo_entrada = (
+                linea.recepcion_id.tipo_entrada
+                if linea.recepcion_id
+                else False
+            )
+
             if cantidad < 0:
 
                 errores.append(
-                    f"{producto}: se ingresó "
-                    f"{cantidad:g}, pero no se "
-                    f"permiten cantidades negativas."
+                    f"{producto}: no se permiten "
+                    f"cantidades negativas."
                 )
 
-            # Cantidad decimal
             elif not cantidad.is_integer():
 
                 errores.append(
@@ -1504,14 +1663,31 @@ class RecepcionUtilesLinea(models.Model):
                     f"permiten números enteros."
                 )
 
-            # Cantidad mayor
-            elif cantidad > cantidad_requerida:
+            elif (
+                tipo_entrada
+                == "recepcion_utiles"
+                and
+                cantidad
+                > cantidad_requerida
+            ):
 
                 errores.append(
                     f"{producto}: se ingresó "
                     f"{cantidad:g}, pero la cantidad "
                     f"máxima permitida es "
                     f"{cantidad_requerida:g}."
+                )
+
+            if (
+                tipo_entrada
+                == "compra_directa"
+                and
+                not linea.unidad_id
+            ):
+
+                errores.append(
+                    f"{producto}: debe seleccionar "
+                    f"una unidad."
                 )
 
         if errores:
@@ -1522,13 +1698,14 @@ class RecepcionUtilesLinea(models.Model):
             )
 
             raise ValidationError(
-                "No se puede guardar la recepción "
-                "porque existen inconsistencias "
-                "en las cantidades:\n\n"
-                f"{detalle}\n\n"
-                "Corrige los productos indicados "
-                "y vuelve a guardar."
+                "No se puede guardar porque "
+                "existen inconsistencias:"
+                "\n\n"
+                f"{detalle}"
+                "\n\n"
+                "Corrija los productos indicados."
             )
+    
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
         for linea in self:

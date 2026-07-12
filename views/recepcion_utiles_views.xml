@@ -15,7 +15,7 @@
                 <field name="matricula_id" string="Matrícula" />
                 <field name="estudiante_id" string="Estudiante" />
                 <field name="grado_escolar" string="Grado escolar" />
-                <field name="recibido_por_id" string="Recibido por" />
+                <field name="recibido_por_id" string="Registrado por" />
                 <field name="items_resumen" string="Ítems" />
                 <field name="estado_entrega" string="Estado de entrega" />
                 <field name="estado_visual" string="Estado" />
@@ -40,10 +40,10 @@
                     <!-- Volver al dashboard de recepciones -->
 
                     <button name="action_volver_dashboard_recepcion" string="Volver" type="object" icon="fa-arrow-left" class="btn-secondary"/>
-                
+
                     <button name="action_validar" string="Validar recepción" type="object" icon="fa-check" />
 
-                    <button name="action_enviar_productos_almacen" string="Enviar a almacén" type="object" icon="fa-truck" class="btn-primary" invisible="estado != 'validado' or estado_almacen in ['enviado', 'sin_productos']" />
+                    <button name="action_enviar_productos_almacen" string="Enviar a almacén" type="object" icon="fa-truck" class="btn-primary" invisible="tipo_entrada == 'compra_directa' or estado != 'validado' or estado_almacen in ['enviado', 'sin_productos'] " />
 
                     <field name="estado" widget="statusbar" statusbar_visible="borrador,incompleto,completo,validado" />
 
@@ -110,6 +110,20 @@
                                 <field name="recibido_por_id" readonly="1" nolabel="1" />
                             </div>
 
+                            <div class="o_recepcion_field_row" invisible=" tipo_entrada != 'compra_directa'   ">
+
+                                <label for="comprado_por_id" string="Comprado por" />
+
+                                <field name="comprado_por_id" nolabel="1" required="
+            tipo_entrada
+            == 'compra_directa'
+        " options="{
+            'no_create': True,
+            'no_open': False
+        }" />
+
+                            </div>
+
                         </div>
 
                         <div class="o_recepcion_cards_grid" invisible="tipo_entrada != 'recepcion_utiles'">
@@ -166,7 +180,7 @@
                     </div>
 
                     <notebook>
-                        <page string="Productos recibidos">
+                        <page string="Productos recibidos" invisible=" tipo_entrada == 'compra_directa' ">
                             <field name="linea_ids" nolabel="1" context="{'default_destino_recepcion': 'almacen'}">
                                 <list editable="bottom" create="tipo_entrada != 'recepcion_utiles'" delete="tipo_entrada != 'recepcion_utiles'" string="Productos recibidos">
 
@@ -182,6 +196,37 @@
 
                                 </list>
                             </field>
+                        </page>
+
+                        <page string="Productos comprados" invisible="
+        tipo_entrada != 'compra_directa'
+    ">
+
+                            <field name="linea_compra_ids" nolabel="1" context="{
+            'default_destino_recepcion':
+                'almacen',
+            'default_cantidad_esperada':
+                0
+        }">
+
+                                <list editable="bottom" create="1" delete="1" string="Productos comprados">
+
+                                    <field name="product_id" string="Producto" options="{
+                    'no_create': True,
+                    'no_open': False
+                }" />
+
+                                    <field name="cantidad_entregada" string="Cantidad comprada" digits="[16, 0]" />
+
+                                    <field name="unidad_id" string="Unidad" required="1" options="{
+                    'no_create': True,
+                    'no_open': False
+                }" />
+
+                                </list>
+
+                            </field>
+
                         </page>
 
                         <page string="Observaciones">
