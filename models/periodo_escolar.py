@@ -857,10 +857,65 @@ class RecepcionUtilesEscolar(models.Model):
     anio_escolar_id = fields.Many2one(
         "anio.escolar",
         string="Año escolar",
-        related="matricula_id.anio_escolar_id",
-        store=True,
-        readonly=True
+        default=lambda self:
+            self.env.user.anio_escolar_actual_id.id
+            if
+            self.env.user.anio_escolar_actual_id
+            else False,
+        readonly=True,
+        required=True,
+        index=True
     )
+    
+    @api.depends(
+        "matricula_id.anio_escolar_id",
+        "anio_escolar_id"
+    )
+    def _compute_datos_matricula(self):
+
+        for rec in self:
+
+            anio = (
+                rec.matricula_id.anio_escolar_id
+                if rec.matricula_id
+                else rec.anio_escolar_id
+            )
+
+            rec.anio = (
+                str(anio.anio)
+                if anio
+                else ""
+            )
+            
+    @api.onchange(
+        "tipo_entrada",
+        "matricula_id"
+    )
+    def _onchange_anio_recepcion(self):
+
+        for rec in self:
+
+            if (
+                rec.tipo_entrada
+                == "recepcion_utiles"
+                and
+                rec.matricula_id
+            ):
+
+                rec.anio_escolar_id = (
+                    rec.matricula_id
+                    .anio_escolar_id
+                )
+
+            elif (
+                self.env.user
+                .anio_escolar_actual_id
+            ):
+
+                rec.anio_escolar_id = (
+                    self.env.user
+                    .anio_escolar_actual_id
+                )
     
     def _validar_matricula_del_anio_seleccionado(self, matricula):
         anio_seleccionado = self.env.user.anio_escolar_actual_id
