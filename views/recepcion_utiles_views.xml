@@ -203,11 +203,8 @@
     ">
 
                             <field name="linea_compra_ids" nolabel="1" context="{
-            'default_destino_recepcion':
-                'almacen',
-            'default_cantidad_esperada':
-                0
-        }">
+                                                                            'default_destino_recepcion': 'almacen',
+                                                                            'default_cantidad_esperada': 0 }">
 
                                 <list editable="bottom" create="1" delete="1" string="Productos comprados">
 

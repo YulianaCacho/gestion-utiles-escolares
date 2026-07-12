@@ -1458,7 +1458,9 @@ class RecepcionUtilesLinea(models.Model):
 
     cantidad_esperada = fields.Float(
         string="Cantidad esperada",
-        required=True
+        required=False,
+        default=0.0,
+        digits=(16, 0),
     )
 
     cantidad_entregada = fields.Float(
