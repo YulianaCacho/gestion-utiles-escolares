@@ -37,7 +37,7 @@ class RecepcionUtilesEscolar(models.Model):
         default=fields.Date.context_today,
         required=True
     )
-    
+
     tipo_entrada = fields.Selection(
     [
         ("recepcion_utiles", "Recepción de útiles escolares"),
@@ -93,7 +93,7 @@ class RecepcionUtilesEscolar(models.Model):
         default=lambda self: self.env.user,
         readonly=True
     )
-    
+
     comprado_por_id = fields.Many2one(
         "res.partner",
         string="Comprado por",
@@ -116,7 +116,7 @@ class RecepcionUtilesEscolar(models.Model):
         ],
         ondelete="restrict"
     )
-    
+
     grado_origen_traslado = fields.Selection(
         [
             ("inicial_3", "Inicial 3 años"),
@@ -185,13 +185,13 @@ class RecepcionUtilesEscolar(models.Model):
         "recepcion_id",
         string="Productos recibidos"
     )
-    
+
     linea_compra_ids = fields.One2many(
         "recepcion.utiles.linea",
         "recepcion_id",
         string="Productos comprados"
     )
-    
+
     linea_traslado_ids = fields.One2many(
         "recepcion.utiles.linea",
         "recepcion_id",
@@ -315,7 +315,7 @@ class RecepcionUtilesEscolar(models.Model):
         compute="_compute_totales_destino",
         store=True
     )
-    
+
     @api.constrains("matricula_id")
     def _check_matricula_anio_seleccionado(self):
         for rec in self:
@@ -507,7 +507,7 @@ class RecepcionUtilesEscolar(models.Model):
         records = super().create(vals_list)
         records._ensure_matricula_activa_para_recepcion()
         return records
-    
+
     @api.constrains("matricula_id", "tipo_entrada")
     def _check_recepcion_unica_por_matricula(self):
         for rec in self:
@@ -559,13 +559,13 @@ class RecepcionUtilesEscolar(models.Model):
                     valores["cantidad_enviada_almacen"] = 0
 
                 linea.write(valores)
-                
+
     @api.onchange("matricula_id")
     def _onchange_matricula_id_cargar_lista(self):
         for rec in self:
             if rec.tipo_entrada != "recepcion_utiles":
                 continue
-            
+
             if rec.matricula_id and rec.matricula_id.estado != "activo":
                 estado = rec._estado_matricula_label(rec.matricula_id)
                 estudiante = rec.matricula_id.estudiante_id.name or "el estudiante"
@@ -739,7 +739,7 @@ class RecepcionUtilesEscolar(models.Model):
 
                 if not producto_recepcion:
                     continue
-                
+
                 if not categoria and producto:
                     categoria = producto.categ_id
 
@@ -794,7 +794,7 @@ class RecepcionUtilesEscolar(models.Model):
         errores = []
 
         for rec in self:
-        
+
             for linea in rec.linea_ids:
 
                 producto = (
@@ -1007,7 +1007,7 @@ class RecepcionUtilesEscolar(models.Model):
                 )
 
         return True
-    
+
     def _stock_disponible_para_traslado(
         self,
         producto
@@ -1072,7 +1072,7 @@ class RecepcionUtilesEscolar(models.Model):
         )
 
         return entradas - salidas
-    
+
     def _validar_traslado_interno(self):
 
         for rec in self:
@@ -1275,7 +1275,7 @@ class RecepcionUtilesEscolar(models.Model):
             rec.action_calcular_faltantes()
 
             rec.estado = "validado"
-        
+
     def action_ejecutar_traslado_interno(self):
 
         Movimiento = self.env[
@@ -1464,7 +1464,7 @@ class RecepcionUtilesEscolar(models.Model):
 
     def action_enviar_productos_almacen(self):
         self._ensure_matricula_activa_para_recepcion()
-        
+
         procesadas = 0
         omitidas = 0
         sin_productos = 0
@@ -1488,7 +1488,7 @@ class RecepcionUtilesEscolar(models.Model):
             for linea in productos_almacen:
                 cantidad_a_enviar = linea.cantidad_pendiente_almacen
 
-                valores_movimiento = { 
+                valores_movimiento = {
                     "tipo_movimiento": "entrada",
                     "anio_escolar_id":
                         rec.anio_escolar_id.id
@@ -1788,7 +1788,7 @@ class RecepcionUtilesEscolar(models.Model):
                 )
 
                 continue
-            
+
             # No permitir cantidades decimales
             if not cantidad.is_integer():
 
@@ -1841,7 +1841,7 @@ class RecepcionUtilesEscolar(models.Model):
         # Solo guardar cuando todas
         # las cantidades sean válidas
         for linea, cantidad in valores_validos:
- 
+
             linea.write({
                 "cantidad_entregada":
                     cantidad
@@ -1883,7 +1883,7 @@ class RecepcionUtilesEscolar(models.Model):
         recepciones.unlink()
 
         return {"deleted": total}
-    
+
     @api.model
     def enviar_recepcion_almacen_dashboard(self, recepcion_id):
         rec = self.browse(int(recepcion_id)).exists()
@@ -1974,7 +1974,7 @@ class RecepcionUtilesLinea(models.Model):
         string="Cantidad entregada",
         default=0
     )
-    
+
     stock_disponible_traslado = fields.Float(
         string="Stock disponible",
         compute=(
@@ -2127,7 +2127,7 @@ class RecepcionUtilesLinea(models.Model):
                             ),
                     }
                 }
-                
+
     @api.constrains(
         "cantidad_entregada"
     )
@@ -2252,7 +2252,7 @@ class RecepcionUtilesLinea(models.Model):
                         ),
                     }
                 }
-                
+
     @api.constrains(
         "cantidad_entregada",
         "cantidad_esperada",
@@ -2340,7 +2340,7 @@ class RecepcionUtilesLinea(models.Model):
                 "\n\n"
                 "Corrija los productos indicados."
             )
-    
+
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
         for linea in self:
