@@ -155,6 +155,21 @@ class RecepcionAlmacenDashboard extends Component {
       );
     }
 
+    // No permitir números decimales,
+    // incluso si fueron pegados
+    else if (!Number.isInteger(cantidad)) {
+      this.notification.add(
+        `La cantidad de "${linea.producto}" ` + "debe ser un número entero.",
+        {
+          type: "warning",
+        },
+      );
+
+      ev.target.value = linea.cantidad_recibida || 0;
+
+      return;
+    }
+
     // No permitir números negativos
     else if (cantidad < 0) {
       cantidad = 0;
@@ -187,7 +202,7 @@ class RecepcionAlmacenDashboard extends Component {
   }
 
   onKeydownCantidad(ev) {
-    const teclasNoPermitidas = ["-", "+", "e", "E"];
+    const teclasNoPermitidas = ["-", "+", "e", "E", ".", ","];
 
     if (teclasNoPermitidas.includes(ev.key)) {
       ev.preventDefault();

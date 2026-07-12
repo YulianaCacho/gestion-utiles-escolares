@@ -37,6 +37,14 @@
 
                 <header>
 
+                    <!-- Volver al dashboard de recepciones -->
+
+                    <button name="action_volver_dashboard_recepcion" string="Volver" type="object" icon="fa-arrow-left" class="btn-secondary"/>
+                    
+                    <!-- Guardar los cambios -->
+
+                    <button name="action_guardar_recepcion_form" string="Guardar" type="object" icon="fa-save" class="btn-secondary"/>
+
                     <button name="action_validar" string="Validar recepción" type="object" icon="fa-check" />
 
                     <button name="action_enviar_productos_almacen" string="Enviar a almacén" type="object" icon="fa-truck" class="btn-primary" invisible="estado != 'validado' or estado_almacen in ['enviado', 'sin_productos']" />
@@ -168,9 +176,9 @@
 
                                     <field name="product_id" string="Producto" force_save="1" readonly="parent.tipo_entrada == 'recepcion_utiles'"/>
                                     <field name="categoria_id" string="Categoría" readonly="1" force_save="1"/>
-                                    <field name="cantidad_esperada" string="Cantidad esperada" readonly="1" force_save="1"/>
-                                    <field name="cantidad_entregada" string="Cantidad entregada" />
-                                    <field name="cantidad_faltante" string="Cantidad faltante" readonly="1" force_save="1"/>
+                                    <field name="cantidad_esperada" string="Cantidad esperada" readonly="1" force_save="1" digits="[16, 0]"/>
+                                    <field name="cantidad_entregada" string="Cantidad entregada" digits="[16, 0]" />
+                                    <field name="cantidad_faltante" string="Cantidad faltante" readonly="1" force_save="1"digits="[16, 0]" />
                                     <field name="unidad_id" string="Unidad" readonly="1" force_save="1"/>
                                     <field name="tipo_uso_escolar" string="Tipo de uso escolar" readonly="1" force_save="1"/>
                                     <field name="estado_linea" string="Estado" readonly="1" force_save="1" widget="badge" decoration-success="estado_linea == 'completo'" decoration-danger="estado_linea == 'faltante'" decoration-muted="estado_linea == 'pendiente'" />
