@@ -687,11 +687,130 @@ class RecepcionUtilesEscolar(models.Model):
 
             rec.estado = "incompleto" if tiene_faltantes else "completo"
 
-    def action_validar(self):
-        self._ensure_matricula_activa_para_recepcion()
-        
+    def _validar_cantidades_recepcion(self):
+        """
+        Verifica todas las cantidades antes de guardar
+        o validar una recepción.
+        """
+
+        errores = []
+
         for rec in self:
+        
+            for linea in rec.linea_ids:
+
+                producto = (
+                    linea.product_id.display_name
+                    or "Producto sin nombre"
+                )
+
+                cantidad = float(
+                    linea.cantidad_entregada or 0
+                )
+
+                cantidad_maxima = float(
+                    linea.cantidad_esperada or 0
+                )
+
+                # No permitir cantidades negativas
+                if cantidad < 0:
+
+                    errores.append(
+                        f"{producto}: se ingresó "
+                        f"{cantidad:g}, pero no se permiten "
+                        f"cantidades negativas."
+                    )
+
+                # No permitir números decimales
+                elif not cantidad.is_integer():
+
+                    errores.append(
+                        f"{producto}: se ingresó "
+                        f"{cantidad:g}, pero solo se permiten "
+                        f"números enteros."
+                    )
+
+                # No permitir superar lo solicitado
+                elif cantidad > cantidad_maxima:
+
+                    errores.append(
+                        f"{producto}: se ingresó "
+                        f"{cantidad:g}, pero la cantidad "
+                        f"requerida es {cantidad_maxima:g}."
+                    )
+
+        if errores:
+
+            detalle = "\n".join(
+                f"• {error}"
+                for error in errores
+            )
+
+            raise ValidationError(
+                "No se puede continuar porque existen "
+                "cantidades incorrectas:\n\n"
+                f"{detalle}\n\n"
+                "Las cantidades deben ser números enteros, "
+                "mayores o iguales a cero y no deben superar "
+                "la cantidad requerida."
+            )
+
+        return True
+
+    def action_guardar_recepcion_form(self):
+        """
+        Guarda y verifica las cantidades
+        ingresadas desde el formulario.
+        """
+
+        self.ensure_one()
+
+        self._validar_cantidades_recepcion()
+
+        self.action_calcular_faltantes()
+
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "Recepción guardada",
+                "message": (
+                    "Los cambios se guardaron "
+                    "correctamente."
+                ),
+                "type": "success",
+                "sticky": False,
+            }
+        }
+
+
+    def action_volver_dashboard_recepcion(self):
+        """
+        Regresa al dashboard principal
+        de recepciones.
+        """
+
+        return (
+            self.env[
+                "ir.actions.actions"
+            ]._for_xml_id(
+                "gestion_utiles_escolares."
+                "action_recepcion_utiles_almacen_dashboard"
+            )
+        )
+
+    def action_validar(self):
+
+        self._ensure_matricula_activa_para_recepcion()
+
+        # Validar todas las cantidades antes
+        # de cambiar el estado de la recepción
+        self._validar_cantidades_recepcion()
+
+        for rec in self:
+
             rec.action_calcular_faltantes()
+
             rec.estado = "validado"
 
     def action_enviar_productos_almacen(self):
@@ -1010,6 +1129,17 @@ class RecepcionUtilesEscolar(models.Model):
                 )
 
                 continue
+            
+            # No permitir cantidades decimales
+            if not cantidad.is_integer():
+
+                errores.append(
+                    f"{producto}: se ingresó "
+                    f"{cantidad:g}, pero solo se permiten "
+                    f"números enteros."
+                )
+
+            continue
 
             # No permitir una cantidad mayor
             # a la solicitada en la lista
@@ -1268,6 +1398,7 @@ class RecepcionUtilesLinea(models.Model):
                 linea.cantidad_esperada or 0
             )
 
+            # No permitir negativos
             if cantidad_entregada < 0:
 
                 errores.append(
@@ -1275,17 +1406,25 @@ class RecepcionUtilesLinea(models.Model):
                     f"cantidades negativas."
                 )
 
+            # No permitir decimales
+            elif not cantidad_entregada.is_integer():
+
+                errores.append(
+                    f"{producto}: la cantidad "
+                    f"{cantidad_entregada:g} no es válida. "
+                    f"Solo se permiten números enteros."
+                )
+
+            # No permitir cantidades mayores
             elif (
                 cantidad_entregada
                 > cantidad_esperada
             ):
 
                 errores.append(
-                    f"{producto}: la cantidad "
-                    f"entregada es "
-                    f"{cantidad_entregada:g}, "
-                    f"pero la cantidad máxima "
-                    f"permitida es "
+                    f"{producto}: se ingresó "
+                    f"{cantidad_entregada:g}, pero "
+                    f"la cantidad máxima permitida es "
                     f"{cantidad_esperada:g}."
                 )
 
@@ -1299,10 +1438,10 @@ class RecepcionUtilesLinea(models.Model):
             raise ValidationError(
                 "Existen cantidades incorrectas:\n\n"
                 f"{detalle}\n\n"
-                "La cantidad entregada debe estar "
-                "entre cero y la cantidad requerida."
+                "Ingrese únicamente números enteros "
+                "dentro del rango permitido."
             )
-    
+
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
         for linea in self:
