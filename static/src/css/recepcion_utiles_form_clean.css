@@ -335,3 +335,234 @@ porque ya se muestra arriba en tamaño grande */
         grid-template-columns: 1fr;
     }
 }
+/* ================================================= */
+/* BARRA DINÁMICA DEL PORCENTAJE DE RECEPCIÓN */
+/* ================================================= */
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget {
+    width: 100% !important;
+    margin-top: 10px;
+}
+
+
+/* El widget debe ocupar todo el ancho */
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.o_field_widget,
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.o_field_progressbar,
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.o_progressbar {
+
+    display: block !important;
+
+    width: 100% !important;
+
+    max-width: none !important;
+}
+
+
+/* Fondo gris */
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.o_progress,
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.progress {
+
+    width: 100% !important;
+
+    height: 10px !important;
+
+    min-height: 10px !important;
+
+    background-color: #dedbd2 !important;
+
+    border: none !important;
+
+    border-radius: 999px !important;
+
+    overflow: hidden !important;
+}
+
+
+/* Avance verde */
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.o_progressbar_complete,
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.progress-bar {
+
+    height: 100% !important;
+
+    min-height: 10px !important;
+
+    background-color: #8bcf4a !important;
+
+    border-radius: 999px !important;
+
+    transition: width 0.4s ease !important;
+}
+
+
+/* Ocultar el porcentaje pequeño del widget.
+
+El porcentaje grande ya aparece arriba. */
+
+.o_recepcion_clean_form
+.o_recepcion_progress_widget
+.o_progressbar_value {
+
+    display: none !important;
+}
+
+/* ================================================= */
+/* RECEPCIÓN A TODO EL ANCHO */
+/* SCROLL PEGADO AL BORDE DERECHO */
+/* ================================================= */
+
+
+/* El área principal debe ocupar todo el ancho */
+
+.o_action_manager
+.o_content:has(.o_recepcion_clean_form) {
+
+    width: 100% !important;
+
+    max-width: none !important;
+
+    padding-right: 0 !important;
+
+    margin-right: 0 !important;
+
+    overflow-y: auto !important;
+
+    overflow-x: hidden !important;
+}
+
+
+/* Vista completa */
+
+.o_action_manager
+.o_content:has(.o_recepcion_clean_form)
+> .o_form_view {
+
+    width: 100% !important;
+
+    max-width: none !important;
+
+    flex: 1 1 100% !important;
+}
+
+
+/* Formulario de recepción */
+
+.o_recepcion_clean_form {
+
+    width: 100% !important;
+
+    max-width: none !important;
+
+    margin: 0 !important;
+}
+
+
+/* El renderizador utilizará todo el espacio */
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o_form_renderer,
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o_form_renderer {
+
+    width: 100% !important;
+
+    max-width: none !important;
+
+    flex: 1 1 100% !important;
+
+    overflow: visible !important;
+}
+
+
+/* Fondo del formulario */
+
+.o_recepcion_clean_form
+.o_form_sheet_bg,
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o_form_sheet_bg {
+
+    width: 100% !important;
+
+    max-width: none !important;
+
+    margin: 0 !important;
+
+    padding-right: 18px !important;
+
+    box-sizing: border-box !important;
+
+    overflow: visible !important;
+}
+
+
+/* Hoja interna */
+
+.o_recepcion_clean_form
+.o_form_sheet,
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o_form_sheet {
+
+    width: 100% !important;
+
+    max-width: none !important;
+
+    margin-left: 0 !important;
+
+    margin-right: 0 !important;
+}
+
+
+/* Eliminar el espacio reservado para chatter */
+
+.o_recepcion_clean_form
+.o-mail-Form-chatter,
+
+.o_recepcion_clean_form
+.o_FormRenderer_chatterContainer,
+
+.o_recepcion_clean_form
+.o_chatter,
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o-mail-Form-chatter,
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o_FormRenderer_chatterContainer,
+
+.o_form_view:has(.o_recepcion_clean_form)
+.o_chatter {
+
+    display: none !important;
+
+    width: 0 !important;
+
+    min-width: 0 !important;
+
+    max-width: 0 !important;
+
+    flex: 0 0 0 !important;
+}
