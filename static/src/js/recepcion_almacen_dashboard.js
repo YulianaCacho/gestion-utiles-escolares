@@ -201,12 +201,29 @@ class RecepcionAlmacenDashboard extends Component {
     ev.target.value = cantidad;
   }
 
-  onKeydownCantidad(ev) {
+  onKeydownCantidad(lineaId, ev) {
     const teclasNoPermitidas = ["-", "+", "e", "E", ".", ","];
 
-    if (teclasNoPermitidas.includes(ev.key)) {
-      ev.preventDefault();
+    if (!teclasNoPermitidas.includes(ev.key)) {
+      return;
     }
+
+    ev.preventDefault();
+
+    const linea = this.state.detalle?.lineas?.find(
+      (item) => item.id === lineaId,
+    );
+
+    const producto = linea?.producto || "el producto";
+
+    this.notification.add(
+      `La cantidad de "${producto}" ` +
+        "debe ser un número entero, " +
+        "mayor o igual a cero.",
+      {
+        type: "warning",
+      },
+    );
   }
 
   getLineasParaGuardar() {

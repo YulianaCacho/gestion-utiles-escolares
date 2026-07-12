@@ -1375,11 +1375,99 @@ class RecepcionUtilesLinea(models.Model):
 
     observacion = fields.Char(string="Observación")
 
+    @api.onchange("cantidad_entregada")
+    def _onchange_advertir_cantidad_incorrecta(self):
+        """
+        Muestra una advertencia inmediata,
+        pero conserva el valor ingresado para
+        que el usuario pueda corregirlo.
+        """
+
+        for linea in self:
+
+            cantidad = float(
+                linea.cantidad_entregada or 0
+            )
+
+            cantidad_requerida = float(
+                linea.cantidad_esperada or 0
+            )
+
+            producto = (
+                linea.product_id.display_name
+                or "Producto sin nombre"
+            )
+
+            # Advertir cantidades negativas
+            if cantidad < 0:
+
+                return {
+                    "warning": {
+                        "title": (
+                            "Cantidad negativa"
+                        ),
+                        "message": (
+                            f"El producto '{producto}' "
+                            f"tiene la cantidad "
+                            f"{cantidad:g}.\n\n"
+                            "No se permiten cantidades "
+                            "menores que cero.\n\n"
+                            "Corrige el valor antes "
+                            "de guardar."
+                        ),
+                    }
+                }
+
+            # Advertir cantidades decimales
+            if not cantidad.is_integer():
+
+                return {
+                    "warning": {
+                        "title": (
+                            "Cantidad decimal"
+                        ),
+                        "message": (
+                            f"El producto '{producto}' "
+                            f"tiene la cantidad "
+                            f"{cantidad:g}.\n\n"
+                            "Solo se permiten números "
+                            "enteros.\n\n"
+                            "Corrige el valor antes "
+                            "de guardar."
+                        ),
+                    }
+                }
+
+            # Advertir cantidades mayores
+            if cantidad > cantidad_requerida:
+
+                return {
+                    "warning": {
+                        "title": (
+                            "Cantidad superior "
+                            "a la requerida"
+                        ),
+                        "message": (
+                            f"El producto '{producto}' "
+                            f"tiene la cantidad "
+                            f"{cantidad:g}, pero solo "
+                            f"requiere "
+                            f"{cantidad_requerida:g}.\n\n"
+                            "Corrige el valor antes "
+                            "de guardar."
+                        ),
+                    }
+                }
+
     @api.constrains(
         "cantidad_entregada",
         "cantidad_esperada"
     )
     def _check_cantidad_entregada_valida(self):
+        """
+        Impide guardar cantidades negativas,
+        decimales o superiores a la requerida.
+        """
 
         errores = []
 
@@ -1390,42 +1478,40 @@ class RecepcionUtilesLinea(models.Model):
                 or "Producto sin nombre"
             )
 
-            cantidad_entregada = float(
+            cantidad = float(
                 linea.cantidad_entregada or 0
             )
 
-            cantidad_esperada = float(
+            cantidad_requerida = float(
                 linea.cantidad_esperada or 0
             )
 
-            # No permitir negativos
-            if cantidad_entregada < 0:
-
-                errores.append(
-                    f"{producto}: no se permiten "
-                    f"cantidades negativas."
-                )
-
-            # No permitir decimales
-            elif not cantidad_entregada.is_integer():
-
-                errores.append(
-                    f"{producto}: la cantidad "
-                    f"{cantidad_entregada:g} no es válida. "
-                    f"Solo se permiten números enteros."
-                )
-
-            # No permitir cantidades mayores
-            elif (
-                cantidad_entregada
-                > cantidad_esperada
-            ):
+            # Cantidad negativa
+            if cantidad < 0:
 
                 errores.append(
                     f"{producto}: se ingresó "
-                    f"{cantidad_entregada:g}, pero "
-                    f"la cantidad máxima permitida es "
-                    f"{cantidad_esperada:g}."
+                    f"{cantidad:g}, pero no se "
+                    f"permiten cantidades negativas."
+                )
+
+            # Cantidad decimal
+            elif not cantidad.is_integer():
+
+                errores.append(
+                    f"{producto}: se ingresó "
+                    f"{cantidad:g}, pero solo se "
+                    f"permiten números enteros."
+                )
+
+            # Cantidad mayor
+            elif cantidad > cantidad_requerida:
+
+                errores.append(
+                    f"{producto}: se ingresó "
+                    f"{cantidad:g}, pero la cantidad "
+                    f"máxima permitida es "
+                    f"{cantidad_requerida:g}."
                 )
 
         if errores:
@@ -1436,12 +1522,13 @@ class RecepcionUtilesLinea(models.Model):
             )
 
             raise ValidationError(
-                "Existen cantidades incorrectas:\n\n"
+                "No se puede guardar la recepción "
+                "porque existen inconsistencias "
+                "en las cantidades:\n\n"
                 f"{detalle}\n\n"
-                "Ingrese únicamente números enteros "
-                "dentro del rango permitido."
+                "Corrige los productos indicados "
+                "y vuelve a guardar."
             )
-
     @api.depends("cantidad_esperada", "cantidad_entregada")
     def _compute_cantidad_faltante(self):
         for linea in self:
