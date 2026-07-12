@@ -226,7 +226,7 @@
                                 <td class="center" t-esc="linea.cantidad_requerida"/>
 
                                 <td>
-                                    <input class="o_rad_qty" type="number" min="0" step="1" inputmode="numeric"t-att-max="linea.cantidad_maxima" t-att-value="linea.cantidad_recibida" t-on-keydown=" (ev) => this.onKeydownCantidad( linea.id, ev )" t-on-input=" (ev) =>  this.onChangeCantidad(  linea.id, ev )" />
+                                    <input class="o_rad_qty" type="number" min="0" step="1" inputmode="numeric" t-att-max="linea.cantidad_maxima" t-att-value="linea.cantidad_recibida" t-on-keydown=" (ev) => this.onKeydownCantidad( linea.id, ev )" t-on-input=" (ev) =>  this.onChangeCantidad(  linea.id, ev )" />
                                 </td>
 
                                 <td>

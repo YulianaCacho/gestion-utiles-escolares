@@ -2,8 +2,10 @@
 
 <odoo>
 
-    <record id="view_recepcion_utiles_form_ia_inherit"
-            model="ir.ui.view">
+    <record
+        id="view_recepcion_utiles_form_ia_inherit"
+        model="ir.ui.view"
+    >
 
         <field name="name">
             recepcion.utiles.escolar.form.ia.inherit
@@ -13,20 +15,28 @@
             recepcion.utiles.escolar
         </field>
 
-        <field name="inherit_id"
-               ref="gestion_utiles_escolares.view_recepcion_utiles_escolar_form_limpio_almacen"/>
+        <field
+            name="inherit_id"
+            ref="gestion_utiles_escolares.view_recepcion_utiles_escolar_form_limpio_almacen"
+        />
 
         <field name="arch" type="xml">
 
-            <xpath expr="//header/button[@name='action_validar']"
-                   position="before">
+            <xpath
+                expr="//header/button[@name='action_validar']"
+                position="before"
+            >
 
                 <button
                     name="action_abrir_reconocimiento_ia"
                     string="Reconocer con IA"
                     type="object"
                     icon="fa-camera"
-                    class="btn-secondary"/>
+                    class="btn-secondary"
+                    invisible="
+                        tipo_entrada == 'compra_directa'
+                    "
+                />
 
             </xpath>
 

@@ -39,11 +39,11 @@
 
                     <!-- Volver al dashboard de recepciones -->
 
-                    <button name="action_volver_dashboard_recepcion" string="Volver" type="object" icon="fa-arrow-left" class="btn-secondary"/>
+                    <button name="%(gestion_utiles_escolares.action_recepcion_utiles_almacen_dashboard)d" string="Volver" type="action" icon="fa-arrow-left" class="btn-secondary" />
 
                     <button name="action_validar" string="Validar recepción" type="object" icon="fa-check" />
 
-                    <button name="action_enviar_productos_almacen" string="Enviar a almacén" type="object" icon="fa-truck" class="btn-primary" invisible="tipo_entrada == 'compra_directa' or estado != 'validado' or estado_almacen in ['enviado', 'sin_productos'] " />
+                    <button name="action_enviar_productos_almacen" string="Enviar a almacén" type="object" icon="fa-cloud-upload" class="btn-primary" invisible=" estado != 'validado' or estado_almacen in ['enviado', 'sin_productos'] " />
 
                     <field name="estado" widget="statusbar" statusbar_visible="borrador,incompleto,completo,validado" />
 
