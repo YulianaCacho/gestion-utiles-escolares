@@ -1,239 +1,1020 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <odoo>
 
     <!-- ===================================================== -->
     <!-- VISTA LISTA DE RECEPCIONES -->
     <!-- ===================================================== -->
 
-    <record id="view_recepcion_utiles_escolar_list" model="ir.ui.view">
+    <record
+        id="view_recepcion_utiles_escolar_list"
+        model="ir.ui.view"
+    >
+
         <field name="name">recepcion.utiles.escolar.list</field>
         <field name="model">recepcion.utiles.escolar</field>
+
         <field name="arch" type="xml">
+
             <list string="Recepciones de útiles">
-                <field name="name" string="Código de recepción" />
-                <field name="fecha" string="Fecha de recepción" />
-                <field name="matricula_id" string="Matrícula" />
-                <field name="estudiante_id" string="Estudiante" />
-                <field name="grado_escolar" string="Grado escolar" />
-                <field name="recibido_por_id" string="Registrado por" />
-                <field name="items_resumen" string="Ítems" />
-                <field name="estado_entrega" string="Estado de entrega" />
-                <field name="estado_visual" string="Estado" />
+
+                <field
+                    name="name"
+                    string="Código de recepción"
+                />
+
+                <field
+                    name="fecha"
+                    string="Fecha"
+                />
+
+                <field
+                    name="tipo_entrada"
+                    string="Tipo de entrada"
+                />
+
+                <field
+                    name="matricula_id"
+                    string="Matrícula"
+                />
+
+                <field
+                    name="estudiante_id"
+                    string="Estudiante"
+                />
+
+                <field
+                    name="grado_escolar"
+                    string="Grado escolar"
+                />
+
+                <field
+                    name="recibido_por_id"
+                    string="Registrado por"
+                />
+
+                <field
+                    name="items_resumen"
+                    string="Ítems"
+                />
+
+                <field
+                    name="estado_entrega"
+                    string="Estado de entrega"
+                />
+
+                <field
+                    name="estado_visual"
+                    string="Estado"
+                />
+
             </list>
+
         </field>
+
     </record>
 
 
     <!-- ===================================================== -->
-    <!-- FORMULARIO LIMPIO DE RECEPCIÓN DE ÚTILES -->
+    <!-- FORMULARIO PRINCIPAL -->
     <!-- ===================================================== -->
 
-    <record id="view_recepcion_utiles_escolar_form_limpio_almacen" model="ir.ui.view">
-        <field name="name">recepcion.utiles.escolar.form.limpio.almacen</field>
-        <field name="model">recepcion.utiles.escolar</field>
-        <field name="priority">5</field>
+    <record
+        id="view_recepcion_utiles_escolar_form_limpio_almacen"
+        model="ir.ui.view"
+    >
+
+        <field name="name">
+            recepcion.utiles.escolar.form.limpio.almacen
+        </field>
+
+        <field name="model">
+            recepcion.utiles.escolar
+        </field>
+
+        <field name="priority">
+            5
+        </field>
+
         <field name="arch" type="xml">
-            <form string="Recepción de útiles" class="o_recepcion_clean_form">
+
+            <form
+                string="Recepción de útiles"
+                class="o_recepcion_clean_form"
+            >
+
+                <!-- ================================================= -->
+                <!-- BOTONES -->
+                <!-- ================================================= -->
 
                 <header>
 
-                    <!-- Volver al dashboard de recepciones -->
+                    <!-- Volver -->
 
-                    <button name="%(gestion_utiles_escolares.action_recepcion_utiles_almacen_dashboard)d" string="Volver" type="action" icon="fa-arrow-left" class="btn-secondary" />
+                    <button
+                        name="%(gestion_utiles_escolares.action_recepcion_utiles_almacen_dashboard)d"
+                        string="Volver"
+                        type="action"
+                        icon="fa-arrow-left"
+                        class="btn-secondary"
+                    />
 
-                    <button name="action_validar" string="Validar recepción" type="object" icon="fa-check" />
 
-                    <button name="action_enviar_productos_almacen" string="Enviar a almacén" type="object" icon="fa-cloud-upload" class="btn-primary" invisible=" estado != 'validado' or estado_almacen in ['enviado', 'sin_productos'] " />
+                    <!-- Validar recepción o compra -->
 
-                    <field name="estado" widget="statusbar" statusbar_visible="borrador,incompleto,completo,validado" />
+                    <button
+                        name="action_validar"
+                        string="Validar recepción"
+                        type="object"
+                        icon="fa-check"
+                        invisible="
+                            tipo_entrada
+                            == 'traslado_interno'
+                        "
+                    />
+
+
+                    <!-- Validar traslado -->
+
+                    <button
+                        name="action_validar"
+                        string="Validar traslado"
+                        type="object"
+                        icon="fa-check"
+                        invisible="
+                            tipo_entrada
+                            != 'traslado_interno'
+                        "
+                    />
+
+
+                    <!-- Enviar recepción o compra al almacén -->
+
+                    <button
+                        name="action_enviar_productos_almacen"
+                        string="Enviar a almacén"
+                        type="object"
+                        icon="fa-cloud-upload"
+                        class="btn-primary"
+                        invisible=" tipo_entrada == 'traslado_interno' or estado != 'validado' or estado_almacen in [ 'enviado', 'sin_productos' ]  "
+                    />
+
+
+                    <!-- Ejecutar traslado interno -->
+
+                    <button
+                        name="action_ejecutar_traslado_interno"
+                        string="Realizar traslado"
+                        type="object"
+                        icon="fa-exchange"
+                        class="btn-primary"
+                        invisible="
+                            tipo_entrada
+                            != 'traslado_interno'
+                            or
+                            estado
+                            != 'validado'
+                            or
+                            traslado_ejecutado
+                        "
+                    />
+
+
+                    <!-- Estados -->
+
+                    <field
+                        name="estado"
+                        widget="statusbar"
+                        statusbar_visible="
+                            borrador,
+                            incompleto,
+                            completo,
+                            validado
+                        "
+                    />
 
                 </header>
 
+
                 <sheet>
 
-                    <field name="estado_almacen" invisible="1" />
+                    <!-- Campos técnicos ocultos -->
+
+                    <field
+                        name="estado_almacen"
+                        invisible="1"
+                    />
+
+                    <field
+                        name="traslado_ejecutado"
+                        invisible="1"
+                    />
+
+
+                    <!-- ================================================= -->
+                    <!-- TÍTULO -->
+                    <!-- ================================================= -->
 
                     <div class="o_recepcion_title_row">
+
                         <div class="o_recepcion_title_left">
+
                             <h1>
-                                <field name="name" readonly="1" nolabel="1" />
+
+                                <field
+                                    name="name"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
                             </h1>
+
                         </div>
+
+
                         <div class="o_recepcion_title_badge">
-                            <field name="estado" readonly="1" nolabel="1" widget="badge" />
+
+                            <field
+                                name="estado"
+                                readonly="1"
+                                nolabel="1"
+                                widget="badge"
+                            />
+
                         </div>
+
                     </div>
 
-                    <div class="o_recepcion_section_title">DATOS DE LA RECEPCIÓN</div>
+
+                    <!-- ================================================= -->
+                    <!-- TÍTULO DE LA SECCIÓN -->
+                    <!-- ================================================= -->
+
+                    <div
+                        class="o_recepcion_section_title"
+                        invisible="
+                            tipo_entrada
+                            == 'traslado_interno'
+                        "
+                    >
+
+                        DATOS DE LA RECEPCIÓN
+
+                    </div>
+
+
+                    <div
+                        class="o_recepcion_section_title"
+                        invisible="
+                            tipo_entrada
+                            != 'traslado_interno'
+                        "
+                    >
+
+                        DATOS DEL TRASLADO INTERNO
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- DATOS GENERALES -->
+                    <!-- ================================================= -->
 
                     <div class="o_recepcion_main_grid">
 
+
+                        <!-- PANEL IZQUIERDO -->
+
                         <div class="o_recepcion_left_panel">
 
-                            <div class="o_recepcion_field_row">
-                                <label for="fecha" string="Fecha de recepción" />
-                                <field name="fecha" nolabel="1" />
-                            </div>
+
+                            <!-- Fecha -->
 
                             <div class="o_recepcion_field_row">
-                                <label for="anio" string="Año escolar" />
-                                <field name="anio" readonly="1" nolabel="1" />
+
+                                <label
+                                    for="fecha"
+                                    string="Fecha"
+                                />
+
+                                <field
+                                    name="fecha"
+                                    nolabel="1"
+                                />
+
                             </div>
+
+
+                            <!-- Año -->
 
                             <div class="o_recepcion_field_row">
-                                <label for="tipo_entrada" string="Tipo de entrada" />
-                                <field name="tipo_entrada" nolabel="1" />
+
+                                <label
+                                    for="anio"
+                                    string="Año escolar"
+                                />
+
+                                <field
+                                    name="anio"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
                             </div>
 
-                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'recepcion_utiles'">
-                                <label for="matricula_id" string="Matrícula" />
-                                <field name="matricula_id" nolabel="1" options="{'no_create': True, 'no_open': False}" />
-                            </div>
 
-                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'recepcion_utiles'">
-                                <label for="estudiante_id" string="Estudiante" />
-                                <field name="estudiante_id" readonly="1" nolabel="1" />
-                            </div>
-
-                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'recepcion_utiles'">
-                                <label for="grado_escolar" string="Grado escolar" />
-                                <field name="grado_escolar" readonly="1" nolabel="1" />
-                            </div>
-
-                            <div class="o_recepcion_field_row" invisible="tipo_entrada != 'recepcion_utiles'">
-                                <label for="lista_id" string="Lista de útiles" />
-                                <field name="lista_id" readonly="1" nolabel="1" />
-                            </div>
+                            <!-- Tipo -->
 
                             <div class="o_recepcion_field_row">
-                                <label for="recibido_por_id" string="Recibido por" />
-                                <field name="recibido_por_id" readonly="1" nolabel="1" />
+
+                                <label
+                                    for="tipo_entrada"
+                                    string="Tipo de entrada"
+                                />
+
+                                <field
+                                    name="tipo_entrada"
+                                    nolabel="1"
+                                />
+
                             </div>
 
-                            <div class="o_recepcion_field_row" invisible=" tipo_entrada != 'compra_directa'   ">
 
-                                <label for="comprado_por_id" string="Comprado por" />
+                            <!-- Matrícula -->
 
-                                <field name="comprado_por_id" nolabel="1" required="
-            tipo_entrada
-            == 'compra_directa'
-        " options="{
-            'no_create': True,
-            'no_open': False
-        }" />
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'recepcion_utiles'
+                                "
+                            >
+
+                                <label
+                                    for="matricula_id"
+                                    string="Matrícula"
+                                />
+
+                                <field
+                                    name="matricula_id"
+                                    nolabel="1"
+                                    options="{
+                                        'no_create': True,
+                                        'no_open': False
+                                    }"
+                                />
+
+                            </div>
+
+
+                            <!-- Estudiante -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'recepcion_utiles'
+                                "
+                            >
+
+                                <label
+                                    for="estudiante_id"
+                                    string="Estudiante"
+                                />
+
+                                <field
+                                    name="estudiante_id"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <!-- Grado de recepción -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'recepcion_utiles'
+                                "
+                            >
+
+                                <label
+                                    for="grado_escolar"
+                                    string="Grado escolar"
+                                />
+
+                                <field
+                                    name="grado_escolar"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <!-- Lista -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'recepcion_utiles'
+                                "
+                            >
+
+                                <label
+                                    for="lista_id"
+                                    string="Lista de útiles"
+                                />
+
+                                <field
+                                    name="lista_id"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <!-- Registrado por -->
+
+                            <div class="o_recepcion_field_row">
+
+                                <label
+                                    for="recibido_por_id"
+                                    string="Registrado por"
+                                />
+
+                                <field
+                                    name="recibido_por_id"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <!-- ========================================= -->
+                            <!-- COMPRA DIRECTA -->
+                            <!-- ========================================= -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'compra_directa'
+                                "
+                            >
+
+                                <label
+                                    for="comprado_por_id"
+                                    string="Comprado por"
+                                />
+
+                                <field
+                                    name="comprado_por_id"
+                                    nolabel="1"
+                                    required="
+                                        tipo_entrada
+                                        == 'compra_directa'
+                                    "
+                                    options="{
+                                        'no_create': True,
+                                        'no_open': False
+                                    }"
+                                />
+
+                            </div>
+
+
+                            <!-- ========================================= -->
+                            <!-- TRASLADO INTERNO -->
+                            <!-- ========================================= -->
+
+                            <!-- Grado que entrega -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'traslado_interno'
+                                "
+                            >
+
+                                <label
+                                    for="grado_origen_traslado"
+                                    string="Grado que entrega"
+                                />
+
+                                <field
+                                    name="grado_origen_traslado"
+                                    nolabel="1"
+                                    required="
+                                        tipo_entrada
+                                        == 'traslado_interno'
+                                    "
+                                />
+
+                            </div>
+
+
+                            <!-- Grado que recibe -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'traslado_interno'
+                                "
+                            >
+
+                                <label
+                                    for="grado_destino_traslado"
+                                    string="Grado que recibe"
+                                />
+
+                                <field
+                                    name="grado_destino_traslado"
+                                    nolabel="1"
+                                    required="
+                                        tipo_entrada
+                                        == 'traslado_interno'
+                                    "
+                                />
+
+                            </div>
+
+
+                            <!-- Encargado -->
+
+                            <div
+                                class="o_recepcion_field_row"
+                                invisible="
+                                    tipo_entrada
+                                    != 'traslado_interno'
+                                "
+                            >
+
+                                <label
+                                    for="encargado_entrega_id"
+                                    string="
+                                        Persona encargada
+                                        de la entrega
+                                    "
+                                />
+
+                                <field
+                                    name="encargado_entrega_id"
+                                    nolabel="1"
+                                    required="
+                                        tipo_entrada
+                                        == 'traslado_interno'
+                                    "
+                                    options="{
+                                        'no_create': True,
+                                        'no_open': False
+                                    }"
+                                />
 
                             </div>
 
                         </div>
 
-                        <div class="o_recepcion_cards_grid" invisible="tipo_entrada != 'recepcion_utiles'">
+
+                        <!-- ================================================= -->
+                        <!-- TARJETAS DE RECEPCIÓN -->
+                        <!-- ================================================= -->
+
+                        <div
+                            class="o_recepcion_cards_grid"
+                            invisible="
+                                tipo_entrada
+                                != 'recepcion_utiles'
+                            "
+                        >
+
 
                             <div class="o_recepcion_card">
-                                <span class="o_form_label">TOTAL DE PRODUCTOS</span>
-                                <field name="total_productos" readonly="1" nolabel="1" />
-                            </div>
-
-                            <div class="o_recepcion_card">
-                                <span class="o_form_label">PRODUCTOS COMPLETOS</span>
-                                <field name="total_completos" readonly="1" nolabel="1" />
-                            </div>
-
-                            <div class="o_recepcion_card">
-                                <span class="o_form_label">PRODUCTOS FALTANTES</span>
-                                <field name="total_faltantes" readonly="1" nolabel="1" />
-                            </div>
-
-                            <div class="o_recepcion_card o_recepcion_card_progress">
 
                                 <span class="o_form_label">
-                                    PORCENTAJE DE AVANCE
+
+                                    TOTAL DE PRODUCTOS
+
                                 </span>
+
+                                <field
+                                    name="total_productos"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <div class="o_recepcion_card">
+
+                                <span class="o_form_label">
+
+                                    PRODUCTOS COMPLETOS
+
+                                </span>
+
+                                <field
+                                    name="total_completos"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <div class="o_recepcion_card">
+
+                                <span class="o_form_label">
+
+                                    PRODUCTOS FALTANTES
+
+                                </span>
+
+                                <field
+                                    name="total_faltantes"
+                                    readonly="1"
+                                    nolabel="1"
+                                />
+
+                            </div>
+
+
+                            <div
+                                class="
+                                    o_recepcion_card
+                                    o_recepcion_card_progress
+                                "
+                            >
+
+                                <span class="o_form_label">
+
+                                    PORCENTAJE DE AVANCE
+
+                                </span>
+
 
                                 <div class="o_recepcion_percent">
 
-                                    <field name="porcentaje_avance" readonly="1" nolabel="1" />
+                                    <field
+                                        name="porcentaje_avance"
+                                        readonly="1"
+                                        nolabel="1"
+                                    />
 
-                                    <span>%</span>
+                                    <span>
+                                        %
+                                    </span>
 
                                 </div>
 
-                                <div class="o_recepcion_progress_widget">
 
-                                    <field name="porcentaje_avance" widget="progressbar" readonly="1" nolabel="1" />
+                                <div
+                                    class="
+                                        o_recepcion_progress_widget
+                                    "
+                                >
+
+                                    <field
+                                        name="porcentaje_avance"
+                                        widget="progressbar"
+                                        readonly="1"
+                                        nolabel="1"
+                                    />
 
                                 </div>
 
                             </div>
 
-                            <div class="o_recepcion_card">
-                                <span class="o_form_label">ESTADO DE ENTREGA</span>
-                                <field name="estado_entrega" readonly="1" nolabel="1" widget="badge" />
-                            </div>
 
                             <div class="o_recepcion_card">
-                                <span class="o_form_label">ESTADO</span>
-                                <field name="estado_visual" readonly="1" nolabel="1" widget="badge" />
+
+                                <span class="o_form_label">
+
+                                    ESTADO DE ENTREGA
+
+                                </span>
+
+                                <field
+                                    name="estado_entrega"
+                                    readonly="1"
+                                    nolabel="1"
+                                    widget="badge"
+                                />
+
+                            </div>
+
+
+                            <div class="o_recepcion_card">
+
+                                <span class="o_form_label">
+
+                                    ESTADO
+
+                                </span>
+
+                                <field
+                                    name="estado_visual"
+                                    readonly="1"
+                                    nolabel="1"
+                                    widget="badge"
+                                />
+
                             </div>
 
                         </div>
 
                     </div>
 
+
+                    <!-- ================================================= -->
+                    <!-- PESTAÑAS -->
+                    <!-- ================================================= -->
+
                     <notebook>
-                        <page string="Productos recibidos" invisible=" tipo_entrada == 'compra_directa' ">
-                            <field name="linea_ids" nolabel="1" context="{'default_destino_recepcion': 'almacen'}">
-                                <list editable="bottom" create="tipo_entrada != 'recepcion_utiles'" delete="tipo_entrada != 'recepcion_utiles'" string="Productos recibidos">
 
-                                    <field name="product_id" string="Producto" force_save="1" readonly="parent.tipo_entrada == 'recepcion_utiles'"/>
-                                    <field name="categoria_id" string="Categoría" readonly="1" force_save="1"/>
-                                    <field name="cantidad_esperada" string="Cantidad esperada" readonly="1" force_save="1" digits="[16, 0]"/>
-                                    <field name="cantidad_entregada" string="Cantidad entregada" digits="[16, 0]" />
-                                    <field name="cantidad_faltante" string="Cantidad faltante" readonly="1" force_save="1" digits="[16, 0]" />
-                                    <field name="unidad_id" string="Unidad" readonly="1" force_save="1"/>
-                                    <field name="tipo_uso_escolar" string="Tipo de uso escolar" readonly="1" force_save="1"/>
-                                    <field name="estado_linea" string="Estado" readonly="1" force_save="1" widget="badge" decoration-success="estado_linea == 'completo'" decoration-danger="estado_linea == 'faltante'" decoration-muted="estado_linea == 'pendiente'" />
-                                    <field name="observacion" string="Observación" />
+
+                        <!-- ============================================= -->
+                        <!-- RECEPCIÓN NORMAL -->
+                        <!-- ============================================= -->
+
+                        <page
+                            string="Productos recibidos"
+                            invisible="
+                                tipo_entrada
+                                in [
+                                    'compra_directa',
+                                    'traslado_interno'
+                                ]
+                            "
+                        >
+
+                            <field
+                                name="linea_ids"
+                                nolabel="1"
+                                context="{
+                                    'default_destino_recepcion':
+                                        'almacen'
+                                }"
+                            >
+
+                                <list
+                                    editable="bottom"
+                                    create="
+                                        tipo_entrada
+                                        != 'recepcion_utiles'
+                                    "
+                                    delete="
+                                        tipo_entrada
+                                        != 'recepcion_utiles'
+                                    "
+                                    string="Productos recibidos"
+                                >
+
+                                    <field
+                                        name="product_id"
+                                        string="Producto"
+                                        force_save="1"
+                                        readonly="
+                                            parent.tipo_entrada
+                                            ==
+                                            'recepcion_utiles'
+                                        "
+                                    />
+
+                                    <field
+                                        name="categoria_id"
+                                        string="Categoría"
+                                        readonly="1"
+                                        force_save="1"
+                                    />
+
+                                    <field
+                                        name="cantidad_esperada"
+                                        string="Cantidad esperada"
+                                        readonly="1"
+                                        force_save="1"
+                                        digits="[16, 0]"
+                                    />
+
+                                    <field
+                                        name="cantidad_entregada"
+                                        string="Cantidad entregada"
+                                        digits="[16, 0]"
+                                    />
+
+                                    <field
+                                        name="cantidad_faltante"
+                                        string="Cantidad faltante"
+                                        readonly="1"
+                                        force_save="1"
+                                        digits="[16, 0]"
+                                    />
+
+                                    <field
+                                        name="unidad_id"
+                                        string="Unidad"
+                                        readonly="1"
+                                        force_save="1"
+                                    />
+
+                                    <field
+                                        name="tipo_uso_escolar"
+                                        string="Tipo de uso escolar"
+                                        readonly="1"
+                                        force_save="1"
+                                    />
+
+                                    <field
+                                        name="estado_linea"
+                                        string="Estado"
+                                        readonly="1"
+                                        force_save="1"
+                                        widget="badge"
+                                        decoration-success="
+                                            estado_linea
+                                            == 'completo'
+                                        "
+                                        decoration-danger="
+                                            estado_linea
+                                            == 'faltante'
+                                        "
+                                        decoration-muted="
+                                            estado_linea
+                                            == 'pendiente'
+                                        "
+                                    />
+
+                                    <field
+                                        name="observacion"
+                                        string="Observación"
+                                    />
 
                                 </list>
+
                             </field>
+
                         </page>
 
-                        <page string="Productos comprados" invisible="
-        tipo_entrada != 'compra_directa'
-    ">
 
-                            <field name="linea_compra_ids" nolabel="1" context="{
-                                                                            'default_destino_recepcion': 'almacen',
-                                                                            'default_cantidad_esperada': 0 }">
+                        <!-- ============================================= -->
+                        <!-- COMPRA DIRECTA -->
+                        <!-- ============================================= -->
 
-                                <list editable="bottom" create="1" delete="1" string="Productos comprados">
+                        <page
+                            string="Productos comprados"
+                            invisible="
+                                tipo_entrada
+                                != 'compra_directa'
+                            "
+                        >
 
-                                    <field name="product_id" string="Producto" options="{
-                    'no_create': True,
-                    'no_open': False
-                }" />
+                            <field
+                                name="linea_compra_ids"
+                                nolabel="1"
+                                context="{
+                                    'default_destino_recepcion':
+                                        'almacen',
+                                    'default_cantidad_esperada':
+                                        0
+                                }"
+                            >
 
-                                    <field name="cantidad_entregada" string="Cantidad comprada" digits="[16, 0]" />
+                                <list
+                                    editable="bottom"
+                                    create="1"
+                                    delete="1"
+                                    string="Productos comprados"
+                                >
 
-                                    <field name="unidad_id" string="Unidad" required="1" options="{
-                    'no_create': True,
-                    'no_open': False
-                }" />
+                                    <field
+                                        name="product_id"
+                                        string="Producto"
+                                        options="{
+                                            'no_create': True,
+                                            'no_open': False
+                                        }"
+                                    />
+
+                                    <field
+                                        name="cantidad_entregada"
+                                        string="Cantidad comprada"
+                                        digits="[16, 0]"
+                                    />
+
+                                    <field
+                                        name="unidad_id"
+                                        string="Unidad"
+                                        required="1"
+                                        options="{
+                                            'no_create': True,
+                                            'no_open': False
+                                        }"
+                                    />
 
                                 </list>
 
                             </field>
 
                         </page>
+
+
+                        <!-- ============================================= -->
+                        <!-- TRASLADO INTERNO -->
+                        <!-- ============================================= -->
+
+                        <page
+                            string="Productos trasladados"
+                            invisible="tipo_entrada != 'traslado_interno' "
+                        >
+
+                            <field
+                                name="linea_traslado_ids"
+                                nolabel="1"
+                                context="{
+                                    'default_cantidad_esperada':
+                                        0,
+                                    'default_destino_recepcion':
+                                        'almacen'
+                                }"
+                            >
+
+                                <list
+                                    editable="bottom"
+                                    create="1"
+                                    delete="1"
+                                    string="Productos trasladados"
+                                >
+
+                                    <field
+                                        name="product_id"
+                                        string="Producto"
+                                        options="{
+                                            'no_create': True,
+                                            'no_open': False
+                                        }"
+                                    />
+
+                                    <field
+                                        name="stock_disponible_traslado                                        "
+                                        string="Stock disponible"
+                                        readonly="1"
+                                        digits="[16, 0]"
+                                    />
+
+                                    <field
+                                        name="cantidad_entregada"
+                                        string="Cantidad saliente"
+                                        digits="[16, 0]"
+                                    />
+
+                                    <field
+                                        name="unidad_id"
+                                        string="Unidad"
+                                        readonly="1"
+                                        force_save="1"
+                                    />
+
+                                </list>
+
+                            </field>
+
+                        </page>
+
+
+                        <!-- ============================================= -->
+                        <!-- OBSERVACIONES -->
+                        <!-- ============================================= -->
 
                         <page string="Observaciones">
-                            <field name="observacion" nolabel="1" placeholder="Escribe una observación general de la recepción..." />
+
+                            <field
+                                name="observacion"
+                                nolabel="1"
+                                placeholder="
+                                    Escribe una observación
+                                    general...
+                                "
+                            />
+
                         </page>
+
                     </notebook>
 
                 </sheet>
+
             </form>
+
         </field>
+
     </record>
 
 
@@ -241,15 +1022,52 @@
     <!-- ACCIÓN NORMAL DE RECEPCIONES -->
     <!-- ===================================================== -->
 
-    <record id="action_recepcion_utiles_almacen" model="ir.actions.act_window">
+    <record
+        id="action_recepcion_utiles_almacen"
+        model="ir.actions.act_window"
+    >
+
         <field name="name">Recepción de útiles</field>
+
         <field name="res_model">recepcion.utiles.escolar</field>
+
         <field name="view_mode">list,form</field>
-        <field name="view_ids" eval="[
-            (5, 0, 0),
-            (0, 0, {'view_mode': 'list', 'view_id': ref('view_recepcion_utiles_escolar_list')}),
-            (0, 0, {'view_mode': 'form', 'view_id': ref('view_recepcion_utiles_escolar_form_limpio_almacen')})
-        ]" />
+
+        <field
+            name="view_ids"
+            eval="[
+                (5, 0, 0),
+
+                (
+                    0,
+                    0,
+                    {
+                        'view_mode':
+                            'list',
+
+                        'view_id':
+                            ref(
+                                'view_recepcion_utiles_escolar_list'
+                            )
+                    }
+                ),
+
+                (
+                    0,
+                    0,
+                    {
+                        'view_mode':
+                            'form',
+
+                        'view_id':
+                            ref(
+                                'view_recepcion_utiles_escolar_form_limpio_almacen'
+                            )
+                    }
+                )
+            ]"
+        />
+
     </record>
 
 </odoo>

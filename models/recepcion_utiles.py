@@ -116,6 +116,69 @@ class RecepcionUtilesEscolar(models.Model):
         ],
         ondelete="restrict"
     )
+    
+    grado_origen_traslado = fields.Selection(
+        [
+            ("inicial_3", "Inicial 3 años"),
+            ("inicial_4", "Inicial 4 años"),
+            ("inicial_5", "Inicial 5 años"),
+            ("1er_grado", "1er grado"),
+            ("2do_grado", "2do grado"),
+            ("3er_grado", "3er grado"),
+            ("4to_grado", "4to grado"),
+            ("5to_grado", "5to grado"),
+            ("6to_grado", "6to grado"),
+        ],
+        string="Grado que entrega"
+    )
+
+    grado_destino_traslado = fields.Selection(
+        [
+            ("inicial_3", "Inicial 3 años"),
+            ("inicial_4", "Inicial 4 años"),
+            ("inicial_5", "Inicial 5 años"),
+            ("1er_grado", "1er grado"),
+            ("2do_grado", "2do grado"),
+            ("3er_grado", "3er grado"),
+            ("4to_grado", "4to grado"),
+            ("5to_grado", "5to grado"),
+            ("6to_grado", "6to grado"),
+        ],
+        string="Grado que recibe"
+    )
+
+    encargado_entrega_id = fields.Many2one(
+        "res.partner",
+        string="Persona encargada de la entrega",
+        domain=[
+            (
+                "tipo_contacto_escolar",
+                "=",
+                "personal"
+            )
+        ],
+        ondelete="restrict"
+    )
+
+    traslado_ejecutado = fields.Boolean(
+        string="Traslado realizado",
+        default=False,
+        readonly=True,
+        copy=False
+    )
+
+    fecha_traslado = fields.Datetime(
+        string="Fecha del traslado",
+        readonly=True,
+        copy=False
+    )
+
+    usuario_traslado_id = fields.Many2one(
+        "res.users",
+        string="Usuario que realizó el traslado",
+        readonly=True,
+        copy=False
+    )
 
     linea_ids = fields.One2many(
         "recepcion.utiles.linea",
@@ -127,6 +190,12 @@ class RecepcionUtilesEscolar(models.Model):
         "recepcion.utiles.linea",
         "recepcion_id",
         string="Productos comprados"
+    )
+    
+    linea_traslado_ids = fields.One2many(
+        "recepcion.utiles.linea",
+        "recepcion_id",
+        string="Productos trasladados"
     )
 
     movimiento_almacen_ids = fields.One2many(
@@ -938,15 +1007,259 @@ class RecepcionUtilesEscolar(models.Model):
                 )
 
         return True
+    
+    def _stock_disponible_para_traslado(
+        self,
+        producto
+    ):
 
-    def action_validar(self):
+        self.ensure_one()
 
-        self._ensure_matricula_activa_para_recepcion()
+        if (
+            not producto
+            or
+            not self.grado_origen_traslado
+        ):
+            return 0.0
+
+        dominio = [
+            (
+                "product_id",
+                "=",
+                producto.id
+            ),
+            (
+                "grado_escolar",
+                "=",
+                self.grado_origen_traslado
+            ),
+        ]
+
+        if self.anio_escolar_id:
+
+            dominio.append(
+                (
+                    "anio_escolar_id",
+                    "=",
+                    self.anio_escolar_id.id
+                )
+            )
+
+        movimientos = self.env[
+            "almacen.utiles.movimiento"
+        ].search(
+            dominio
+        )
+
+        entradas = sum(
+            movimientos.filtered(
+                lambda movimiento:
+                    movimiento.tipo_movimiento
+                    == "entrada"
+            ).mapped(
+                "cantidad"
+            )
+        )
+
+        salidas = sum(
+            movimientos.filtered(
+                lambda movimiento:
+                    movimiento.tipo_movimiento
+                    == "salida"
+            ).mapped(
+                "cantidad"
+            )
+        )
+
+        return entradas - salidas
+    
+    def _validar_traslado_interno(self):
 
         for rec in self:
 
+            errores = []
+
+            if not rec.grado_origen_traslado:
+
+                errores.append(
+                    "Debe seleccionar el grado "
+                    "que entrega los útiles."
+                )
+
+            if not rec.grado_destino_traslado:
+
+                errores.append(
+                    "Debe seleccionar el grado "
+                    "que recibe los útiles."
+                )
+
+            if (
+                rec.grado_origen_traslado
+                and
+                rec.grado_destino_traslado
+                and
+                rec.grado_origen_traslado
+                ==
+                rec.grado_destino_traslado
+            ):
+
+                errores.append(
+                    "El grado que entrega y el "
+                    "grado que recibe no pueden "
+                    "ser el mismo."
+                )
+
+            if not rec.encargado_entrega_id:
+
+                errores.append(
+                    "Debe seleccionar a la persona "
+                    "encargada de la entrega."
+                )
+
+            if not rec.linea_traslado_ids:
+
+                errores.append(
+                    "Debe agregar al menos un "
+                    "producto al traslado."
+                )
+
+            cantidades_por_producto = {}
+
+            for linea in rec.linea_traslado_ids:
+
+                producto = linea.product_id
+
+                if not producto:
+
+                    errores.append(
+                        "Existe una línea sin "
+                        "producto seleccionado."
+                    )
+
+                    continue
+
+                cantidad = float(
+                    linea.cantidad_entregada
+                    or 0
+                )
+
+                nombre = (
+                    producto.display_name
+                    or
+                    "Producto sin nombre"
+                )
+
+                if cantidad <= 0:
+
+                    errores.append(
+                        f"{nombre}: la cantidad "
+                        f"saliente debe ser mayor "
+                        f"a cero."
+                    )
+
+                elif not cantidad.is_integer():
+
+                    errores.append(
+                        f"{nombre}: la cantidad "
+                        f"{cantidad:g} contiene "
+                        f"decimales. Solo se "
+                        f"permiten números enteros."
+                    )
+
+                cantidades_por_producto[
+                    producto.id
+                ] = (
+                    cantidades_por_producto.get(
+                        producto.id,
+                        0
+                    )
+                    +
+                    cantidad
+                )
+
+            for (
+                producto_id,
+                cantidad_total
+            ) in cantidades_por_producto.items():
+
+                producto = self.env[
+                    "product.product"
+                ].browse(
+                    producto_id
+                )
+
+                stock = (
+                    rec
+                    ._stock_disponible_para_traslado(
+                        producto
+                    )
+                )
+
+                nombre = (
+                    producto.display_name
+                    or
+                    "Producto sin nombre"
+                )
+
+                if stock <= 0:
+
+                    errores.append(
+                        f"{nombre}: el producto "
+                        f"no tiene stock disponible "
+                        f"en el grado que entrega."
+                    )
+
+                elif cantidad_total > stock:
+
+                    errores.append(
+                        f"{nombre}: se solicitó "
+                        f"trasladar "
+                        f"{cantidad_total:g}, "
+                        f"pero el stock disponible "
+                        f"es {stock:g}."
+                    )
+
+            if errores:
+
+                detalle = "\n".join(
+                    f"• {error}"
+                    for error in errores
+                )
+
+                raise ValidationError(
+                    "No se puede validar el "
+                    "traslado porque existen "
+                    "inconsistencias:"
+                    "\n\n"
+                    f"{detalle}"
+                    "\n\n"
+                    "Corrija los datos indicados "
+                    "y vuelva a validar."
+                )
+
+        return True
+
+    def action_validar(self):
+
+        for rec in self:
+
+            # Traslado interno
+            if (
+                rec.tipo_entrada
+                == "traslado_interno"
+            ):
+
+                rec._validar_traslado_interno()
+
+                rec.estado = "validado"
+
+                continue
+
             # Compra directa
-            if rec.tipo_entrada == "compra_directa":
+            if (
+                rec.tipo_entrada
+                == "compra_directa"
+            ):
 
                 rec._validar_compra_directa()
 
@@ -955,11 +1268,199 @@ class RecepcionUtilesEscolar(models.Model):
                 continue
 
             # Recepción por matrícula
+            rec._ensure_matricula_activa_para_recepcion()
+
             rec._validar_cantidades_recepcion()
 
             rec.action_calcular_faltantes()
 
             rec.estado = "validado"
+        
+    def action_ejecutar_traslado_interno(self):
+
+        Movimiento = self.env[
+            "almacen.utiles.movimiento"
+        ]
+
+        grados = dict(
+            self.env[
+                "matricula.escolar"
+            ]._fields[
+                "grado_escolar"
+            ].selection
+        )
+
+        for rec in self:
+
+            if (
+                rec.tipo_entrada
+                != "traslado_interno"
+            ):
+
+                raise UserError(
+                    "Esta operación solo está "
+                    "disponible para traslados "
+                    "internos."
+                )
+
+            if rec.estado != "validado":
+
+                raise UserError(
+                    "Primero debe validar el "
+                    "traslado."
+                )
+
+            if rec.traslado_ejecutado:
+
+                raise UserError(
+                    "Este traslado ya fue "
+                    "realizado."
+                )
+
+            rec._validar_traslado_interno()
+
+            grado_origen_texto = grados.get(
+                rec.grado_origen_traslado,
+                rec.grado_origen_traslado
+            )
+
+            grado_destino_texto = grados.get(
+                rec.grado_destino_traslado,
+                rec.grado_destino_traslado
+            )
+
+            for linea in rec.linea_traslado_ids:
+
+                cantidad = (
+                    linea.cantidad_entregada
+                )
+
+                valores_comunes = {
+
+                    "anio_escolar_id":
+                        rec.anio_escolar_id.id
+                        if rec.anio_escolar_id
+                        else False,
+
+                    "recepcion_id":
+                        rec.id,
+
+                    "product_id":
+                        linea.product_id.id,
+
+                    "cantidad":
+                        cantidad,
+
+                    "unidad_id":
+                        linea.unidad_id.id
+                        if linea.unidad_id
+                        else False,
+
+                    "categoria_id":
+                        linea.categoria_id.id
+                        if linea.categoria_id
+                        else False,
+
+                    "responsable_id":
+                        self.env.user.id,
+                }
+
+                valores_salida = {
+                    **valores_comunes,
+
+                    "tipo_movimiento":
+                        "salida",
+
+                    "grado_escolar":
+                        rec.grado_origen_traslado,
+
+                    "destino":
+                        (
+                            "Traslado interno hacia "
+                            f"{grado_destino_texto}"
+                        ),
+
+                    "observacion":
+                        (
+                            f"Salida por traslado "
+                            f"interno {rec.name}. "
+                            f"Entrega: "
+                            f"{rec.encargado_entrega_id.name}. "
+                            f"Origen: "
+                            f"{grado_origen_texto}. "
+                            f"Destino: "
+                            f"{grado_destino_texto}."
+                        ),
+                }
+
+                Movimiento.create(
+                    valores_salida
+                )
+
+                valores_entrada = {
+                    **valores_comunes,
+
+                    "tipo_movimiento":
+                        "entrada",
+
+                    "grado_escolar":
+                        rec.grado_destino_traslado,
+
+                    "destino":
+                        grado_destino_texto,
+
+                    "observacion":
+                        (
+                            f"Entrada por traslado "
+                            f"interno {rec.name}. "
+                            f"Origen: "
+                            f"{grado_origen_texto}. "
+                            f"Destino: "
+                            f"{grado_destino_texto}."
+                        ),
+                }
+
+                Movimiento.create(
+                    valores_entrada
+                )
+
+            rec.write({
+
+                "traslado_ejecutado":
+                    True,
+
+                "fecha_traslado":
+                    fields.Datetime.now(),
+
+                "usuario_traslado_id":
+                    self.env.user.id,
+            })
+
+        return {
+            "type":
+                "ir.actions.client",
+
+            "tag":
+                "display_notification",
+
+            "params": {
+
+                "title":
+                    "Traslado realizado",
+
+                "message":
+                    (
+                        "Los productos fueron "
+                        "trasladados correctamente."
+                    ),
+
+                "type":
+                    "success",
+
+                "sticky":
+                    False,
+            }
+        }
 
     def action_enviar_productos_almacen(self):
         self._ensure_matricula_activa_para_recepcion()
@@ -992,6 +1493,12 @@ class RecepcionUtilesEscolar(models.Model):
                     "anio_escolar_id":
                         rec.anio_escolar_id.id
                         if rec.anio_escolar_id
+                        else False,
+                    "grado_escolar":
+                        rec.grado_escolar
+                        if
+                        rec.tipo_entrada
+                        == "recepcion_utiles"
                         else False,
                     "recepcion_id": rec.id,
                     "product_id": linea.product_id.id,
@@ -1467,6 +1974,14 @@ class RecepcionUtilesLinea(models.Model):
         string="Cantidad entregada",
         default=0
     )
+    
+    stock_disponible_traslado = fields.Float(
+        string="Stock disponible",
+        compute=(
+            "_compute_stock_disponible_traslado"
+        ),
+        digits=(16, 0)
+    )
 
     cantidad_faltante = fields.Float(
         string="Cantidad faltante",
@@ -1528,6 +2043,128 @@ class RecepcionUtilesLinea(models.Model):
     )
 
     observacion = fields.Char(string="Observación")
+
+    @api.depends(
+        "product_id",
+        "recepcion_id.grado_origen_traslado",
+        "recepcion_id.anio_escolar_id"
+    )
+    def _compute_stock_disponible_traslado(
+        self
+    ):
+
+        for linea in self:
+
+            if (
+                not linea.product_id
+                or
+                not linea.recepcion_id
+                or
+                linea.recepcion_id.tipo_entrada
+                != "traslado_interno"
+            ):
+
+                linea.stock_disponible_traslado = 0
+
+                continue
+
+            linea.stock_disponible_traslado = (
+                linea.recepcion_id
+                ._stock_disponible_para_traslado(
+                    linea.product_id
+                )
+            )
+
+
+    @api.onchange("product_id")
+    def _onchange_producto_traslado(self):
+
+        for linea in self:
+
+            recepcion = linea.recepcion_id
+
+            if (
+                not recepcion
+                or
+                recepcion.tipo_entrada
+                != "traslado_interno"
+                or
+                not linea.product_id
+            ):
+
+                continue
+
+            linea.unidad_id = (
+                linea.product_id.uom_id
+            )
+
+            linea.categoria_id = (
+                linea.product_id.categ_id
+            )
+
+            stock = (
+                recepcion
+                ._stock_disponible_para_traslado(
+                    linea.product_id
+                )
+            )
+
+            if stock <= 0:
+
+                return {
+                    "warning": {
+
+                        "title":
+                            "Producto sin stock",
+
+                        "message":
+                            (
+                                "El producto "
+                                f"'{linea.product_id.display_name}' "
+                                "no tiene stock "
+                                "disponible en el "
+                                "grado que entrega."
+                            ),
+                    }
+                }
+                
+    @api.constrains(
+        "cantidad_entregada"
+    )
+    def _check_cantidad_traslado_entera(
+        self
+    ):
+
+        for linea in self:
+
+            if (
+                not linea.recepcion_id
+                or
+                linea.recepcion_id.tipo_entrada
+                != "traslado_interno"
+            ):
+
+                continue
+
+            cantidad = float(
+                linea.cantidad_entregada
+                or 0
+            )
+
+            if cantidad < 0:
+
+                raise ValidationError(
+                    "La cantidad saliente no "
+                    "puede ser negativa."
+                )
+
+            if not cantidad.is_integer():
+
+                raise ValidationError(
+                    "La cantidad saliente debe "
+                    "ser un número entero. "
+                    "No se permiten decimales."
+                )
 
     @api.onchange("cantidad_entregada")
     def _onchange_advertir_cantidad_incorrecta(self):
