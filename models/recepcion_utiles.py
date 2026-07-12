@@ -952,10 +952,6 @@ class RecepcionUtilesEscolar(models.Model):
 
                 rec.estado = "validado"
 
-                # Registrar automáticamente
-                # los productos en almacén
-                rec.action_enviar_productos_almacen()
-
                 continue
 
             # Recepción por matrícula
