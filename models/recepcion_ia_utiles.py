@@ -108,141 +108,652 @@ class RecepcionUtilesEscolarIA(models.Model):
         }
 
     @api.model
-    def obtener_candidatos_ia_recepcion(self, recepcion_id, detection):
-        recepcion = self.browse(int(recepcion_id)).exists()
+    def obtener_candidatos_ia_recepcion(
+        self,
+        recepcion_id,
+        detection,
+    ):
+
+        recepcion = self.browse(
+            int(
+                recepcion_id
+            )
+        ).exists()
 
         if not recepcion:
-            raise UserError("No se encontró la recepción seleccionada.")
+
+            raise UserError(
+                "No se encontró la "
+                "recepción seleccionada."
+            )
 
         if not recepcion.linea_ids:
-            raise UserError("Primero debes cargar la lista de útiles del alumno.")
 
-        detection = detection or {}
-        ia_class = self._ia_normalizar_clase(
-            detection.get("ia_class") or detection.get("label") or ""
-        )
-
-        confidence = float(detection.get("confidence") or 0)
-        label = detection.get("label") or ia_class.replace("_", " ").title()
-
-        lineas_con_clase_configurada = recepcion.linea_ids.filtered(
-            lambda linea: linea.product_id.product_tmpl_id.ia_clase_util == ia_class
-        )
-
-        if lineas_con_clase_configurada:
-            lineas_candidatas = lineas_con_clase_configurada
-        else:
-            lineas_candidatas = recepcion.linea_ids.filtered(
-                lambda linea: self._ia_producto_coincide_con_clase(linea.product_id, ia_class)
+            raise UserError(
+                "Primero debes cargar la "
+                "lista de útiles del alumno."
             )
 
-        candidatos = []
 
-        for linea in lineas_candidatas:
-            faltante = float(linea.cantidad_faltante or 0)
-            esperado = float(linea.cantidad_esperada or 0)
-            entregado = float(linea.cantidad_entregada or 0)
+        # ----------------------------------------------------
+        # DATOS DE LA DETECCIÓN
+        # ----------------------------------------------------
 
-            candidatos.append({
-                "linea_id": linea.id,
-                "product_id": linea.product_id.id,
-                "producto": linea.product_id.display_name,
-                "cantidad_esperada": esperado,
-                "cantidad_entregada": entregado,
-                "cantidad_faltante": faltante,
-                "estado_linea": linea.estado_linea,
-                "is_complete": faltante <= 0,
-            })
+        detection = detection or {}
 
-        candidato_disponible = next(
-            (item for item in candidatos if not item["is_complete"]),
-            False,
+        ia_class = (
+            self
+            ._ia_normalizar_clase(
+                detection.get(
+                    "ia_class"
+                )
+                or
+                detection.get(
+                    "label"
+                )
+                or
+                ""
+            )
         )
 
-        cantidad_sugerida = 1
-        max_quantity = 1
+        confidence = float(
+            detection.get(
+                "confidence"
+            )
+            or
+            0
+        )
+
+        label = (
+            detection.get(
+                "label"
+            )
+            or
+            ia_class.replace(
+                "_",
+                " "
+            ).title()
+        )
+
+
+        # ----------------------------------------------------
+        # BUSCAR PRODUCTOS RELACIONADOS
+        # ----------------------------------------------------
+
+        lineas_con_clase = (
+            recepcion.linea_ids.filtered(
+                lambda linea:
+                    self
+                    ._ia_normalizar_clase(
+                        linea
+                        .product_id
+                        .product_tmpl_id
+                        .ia_clase_util
+                        or
+                        ""
+                    )
+                    ==
+                    ia_class
+            )
+        )
+
+
+        # Se prioriza la clase IA configurada.
+        # Solo se usa coincidencia por nombre
+        # cuando ningún producto tiene la clase.
+        if lineas_con_clase:
+
+            lineas_relacionadas = (
+                lineas_con_clase
+            )
+
+        else:
+
+            lineas_relacionadas = (
+                recepcion.linea_ids.filtered(
+                    lambda linea:
+                        self
+                        ._ia_producto_coincide_con_clase(
+                            linea.product_id,
+                            ia_class,
+                        )
+                )
+            )
+
+
+        # ----------------------------------------------------
+        # SOLO PRODUCTOS PENDIENTES Y SIN DUPLICADOS
+        # ----------------------------------------------------
+
+        candidatos_por_producto = {}
+
+
+        for linea in lineas_relacionadas:
+
+            esperado = float(
+                linea.cantidad_esperada
+                or
+                0
+            )
+
+            entregado = float(
+                linea.cantidad_entregada
+                or
+                0
+            )
+
+            faltante = float(
+                linea.cantidad_faltante
+                or
+                0
+            )
+
+
+            # No mostrar líneas sin cantidad
+            # esperada.
+            if esperado <= 0:
+
+                continue
+
+
+            # No mostrar productos completos.
+            if faltante <= 0:
+
+                continue
+
+
+            producto_id = (
+                linea.product_id.id
+            )
+
+
+            candidato = {
+
+                "linea_id":
+                    linea.id,
+
+                "product_id":
+                    producto_id,
+
+                "producto":
+                    linea
+                    .product_id
+                    .display_name,
+
+                "cantidad_esperada":
+                    esperado,
+
+                "cantidad_entregada":
+                    entregado,
+
+                "cantidad_faltante":
+                    faltante,
+
+                "estado_linea":
+                    linea.estado_linea,
+
+                "is_complete":
+                    False,
+            }
+
+
+            # Si el mismo producto aparece
+            # varias veces, conservar únicamente
+            # la línea pendiente con mayor
+            # cantidad faltante.
+            candidato_actual = (
+                candidatos_por_producto
+                .get(
+                    producto_id
+                )
+            )
+
+
+            if (
+                not candidato_actual
+                or
+                faltante
+                >
+                candidato_actual[
+                    "cantidad_faltante"
+                ]
+            ):
+
+                candidatos_por_producto[
+                    producto_id
+                ] = candidato
+
+
+        candidatos = sorted(
+            candidatos_por_producto
+            .values(),
+
+            key=lambda item:
+                item[
+                    "producto"
+                ],
+        )
+
+
+        candidato_disponible = (
+            candidatos[0]
+            if
+            candidatos
+            else
+            False
+        )
+
 
         if candidato_disponible:
-            max_quantity = max(candidato_disponible["cantidad_faltante"], 1)
-            cantidad_sugerida = min(1, max_quantity)
 
-        return {
-            "success": True,
-            "label": label,
-            "ia_class": ia_class,
-            "confidence": confidence,
-            "candidatos": candidatos,
-            "selected_line_id": candidato_disponible["linea_id"] if candidato_disponible else False,
-            "cantidad_sugerida": cantidad_sugerida,
-            "max_quantity": max_quantity,
-            "message": "Candidatos encontrados." if candidatos else "No se encontraron productos candidatos en la lista del alumno.",
-        }
+            cantidad_sugerida = 1
 
-    @api.model
-    def aplicar_verificacion_ia_recepcion(self, recepcion_id, linea_id, cantidad, detection):
-        recepcion = self.browse(int(recepcion_id)).exists()
-
-        if not recepcion:
-            raise UserError("No se encontró la recepción seleccionada.")
-
-        if "estado" in recepcion._fields and recepcion.estado == "validado":
-            raise UserError("La recepción ya está validada. No se puede modificar con IA.")
-
-        linea = recepcion.linea_ids.filtered(lambda item: item.id == int(linea_id))[:1]
-
-        if not linea:
-            raise UserError("El producto seleccionado no pertenece a esta recepción.")
-
-        try:
-            cantidad = float(cantidad or 0)
-        except Exception:
-            cantidad = 0
-
-        if cantidad <= 0:
-            raise UserError("La cantidad debe ser mayor a cero.")
-
-        faltante = float(linea.cantidad_faltante or 0)
-
-        if faltante <= 0:
-            raise UserError("Este producto ya se encuentra completo en la recepción.")
-
-        if cantidad > faltante:
-            raise UserError(
-                "La cantidad ingresada supera la cantidad faltante. "
-                "Faltante actual: %.2f" % faltante
+            max_quantity = int(
+                candidato_disponible[
+                    "cantidad_faltante"
+                ]
             )
 
-        detection = detection or {}
-        label = detection.get("label") or ""
-        ia_class = detection.get("ia_class") or ""
-        confidence = float(detection.get("confidence") or 0)
+            mensaje = (
+                "Se encontraron productos "
+                "pendientes relacionados con "
+                "la clase detectada."
+            )
 
-        nueva_cantidad = float(linea.cantidad_entregada or 0) + cantidad
 
-        observacion_ia = "Verificado con IA: %s [%s] (%.2f%%) - Cantidad: %.2f" % (
-            label,
-            ia_class,
-            confidence,
-            cantidad,
+        elif lineas_relacionadas:
+
+            cantidad_sugerida = 0
+
+            max_quantity = 0
+
+            mensaje = (
+                "Todos los productos "
+                "relacionados con la clase "
+                "detectada ya se encuentran "
+                "completos."
+            )
+
+
+        else:
+
+            cantidad_sugerida = 0
+
+            max_quantity = 0
+
+            mensaje = (
+                "No se encontraron productos "
+                "relacionados con la clase "
+                "detectada en la lista del "
+                "alumno."
+            )
+
+
+        return {
+
+            "success":
+                True,
+
+            "label":
+                label,
+
+            "ia_class":
+                ia_class,
+
+            "confidence":
+                confidence,
+
+            "candidatos":
+                candidatos,
+
+            "selected_line_id":
+                (
+                    candidato_disponible[
+                        "linea_id"
+                    ]
+                    if
+                    candidato_disponible
+                    else
+                    False
+                ),
+
+            "cantidad_sugerida":
+                cantidad_sugerida,
+
+            "max_quantity":
+                max_quantity,
+
+            "message":
+                mensaje,
+        }
+
+
+    @api.model
+    def aplicar_verificacion_ia_recepcion(
+        self,
+        recepcion_id,
+        linea_id,
+        cantidad,
+        detection,
+    ):
+
+        recepcion = self.browse(
+            int(
+                recepcion_id
+            )
+        ).exists()
+
+
+        if not recepcion:
+
+            raise UserError(
+                "No se encontró la "
+                "recepción seleccionada."
+            )
+
+
+        if (
+            "estado"
+            in
+            recepcion._fields
+            and
+            recepcion.estado
+            ==
+            "validado"
+        ):
+
+            raise UserError(
+                "La recepción ya está "
+                "validada. No se puede "
+                "modificar con IA."
+            )
+
+
+        linea = (
+            recepcion.linea_ids.filtered(
+                lambda item:
+                    item.id
+                    ==
+                    int(
+                        linea_id
+                    )
+            )[:1]
         )
 
-        if linea.observacion:
-            observacion_ia = linea.observacion + " | " + observacion_ia
 
-        linea.write({
-            "cantidad_entregada": nueva_cantidad,
-            "observacion": observacion_ia,
-        })
+        if not linea:
+
+            raise UserError(
+                "El producto seleccionado "
+                "no pertenece a esta "
+                "recepción."
+            )
+
+
+        # ----------------------------------------------------
+        # VALIDAR LA CANTIDAD
+        # ----------------------------------------------------
+
+        try:
+
+            cantidad = float(
+                cantidad
+                or
+                0
+            )
+
+        except (
+            TypeError,
+            ValueError,
+        ):
+
+            cantidad = 0
+
+
+        if cantidad <= 0:
+
+            raise UserError(
+                "La cantidad debe ser "
+                "mayor que cero."
+            )
+
+
+        if not cantidad.is_integer():
+
+            raise UserError(
+                "La cantidad debe ser un "
+                "número entero. No se "
+                "permiten decimales."
+            )
+
+
+        cantidad_entera = int(
+            cantidad
+        )
+
+
+        esperado = float(
+            linea.cantidad_esperada
+            or
+            0
+        )
+
+
+        if esperado <= 0:
+
+            raise UserError(
+                "El producto seleccionado "
+                "no tiene una cantidad "
+                "esperada válida."
+            )
+
+
+        faltante = float(
+            linea.cantidad_faltante
+            or
+            0
+        )
+
+
+        if faltante <= 0:
+
+            raise UserError(
+                "Este producto ya se "
+                "encuentra completo en la "
+                "recepción."
+            )
+
+
+        if (
+            cantidad_entera
+            >
+            faltante
+        ):
+
+            raise UserError(
+                "La cantidad ingresada "
+                "supera la cantidad "
+                "faltante."
+                "\n\n"
+                f"Cantidad faltante: "
+                f"{faltante:g}"
+            )
+
+
+        # ----------------------------------------------------
+        # VALIDAR QUE EL PRODUCTO CORRESPONDA
+        # A LA CLASE DETECTADA
+        # ----------------------------------------------------
+
+        detection = detection or {}
+
+
+        ia_class = (
+            self
+            ._ia_normalizar_clase(
+                detection.get(
+                    "ia_class"
+                )
+                or
+                detection.get(
+                    "label"
+                )
+                or
+                ""
+            )
+        )
+
+
+        if not ia_class:
+
+            raise UserError(
+                "No se recibió una clase "
+                "válida desde el modelo IA."
+            )
+
+
+        clase_configurada = (
+            self
+            ._ia_normalizar_clase(
+                linea
+                .product_id
+                .product_tmpl_id
+                .ia_clase_util
+                or
+                ""
+            )
+        )
+
+
+        if clase_configurada:
+
+            producto_coincide = (
+                clase_configurada
+                ==
+                ia_class
+            )
+
+        else:
+
+            producto_coincide = (
+                self
+                ._ia_producto_coincide_con_clase(
+                    linea.product_id,
+                    ia_class,
+                )
+            )
+
+
+        if not producto_coincide:
+
+            raise UserError(
+                "El producto seleccionado "
+                "no corresponde con la "
+                "clase detectada por la IA."
+            )
+
+
+        # ----------------------------------------------------
+        # REGISTRAR LA ENTREGA
+        # ----------------------------------------------------
+
+        label = (
+            detection.get(
+                "label"
+            )
+            or
+            ia_class
+        )
+
+
+        confidence = float(
+            detection.get(
+                "confidence"
+            )
+            or
+            0
+        )
+
+
+        nueva_cantidad = (
+            float(
+                linea.cantidad_entregada
+                or
+                0
+            )
+            +
+            cantidad_entera
+        )
+
+
+        observacion_ia = (
+            "Verificado con IA: "
+            f"{label} "
+            f"[{ia_class}] "
+            f"({confidence:.2f}%) "
+            f"- Cantidad: "
+            f"{cantidad_entera}"
+        )
+
+
+        if linea.observacion:
+
+            observacion_ia = (
+                linea.observacion
+                +
+                " | "
+                +
+                observacion_ia
+            )
+
+
+        linea.write(
+            {
+
+                "cantidad_entregada":
+                    nueva_cantidad,
+
+                "observacion":
+                    observacion_ia,
+            }
+        )
+
 
         recepcion.action_calcular_faltantes()
 
+
         return {
-            "success": True,
-            "message": "Producto marcado como verificado.",
-            "producto": linea.product_id.display_name,
-            "cantidad_marcada": cantidad,
-            "cantidad_entregada": linea.cantidad_entregada,
-            "cantidad_esperada": linea.cantidad_esperada,
-            "cantidad_faltante": linea.cantidad_faltante,
-            "estado_linea": linea.estado_linea,
+
+            "success":
+                True,
+
+            "message":
+                (
+                    "Producto marcado "
+                    "como verificado."
+                ),
+
+            "producto":
+                linea
+                .product_id
+                .display_name,
+
+            "cantidad_marcada":
+                cantidad_entera,
+
+            "cantidad_entregada":
+                linea
+                .cantidad_entregada,
+
+            "cantidad_esperada":
+                linea
+                .cantidad_esperada,
+
+            "cantidad_faltante":
+                linea
+                .cantidad_faltante,
+
+            "estado_linea":
+                linea
+                .estado_linea,
         }
