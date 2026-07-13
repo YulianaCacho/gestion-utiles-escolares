@@ -1,126 +1,557 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <odoo>
 
-    <record id="view_salida_almacen_utiles_list" model="ir.ui.view">
+
+    <!-- ===================================================== -->
+    <!-- VISTA LISTA DE ENTREGAS -->
+    <!-- ===================================================== -->
+
+    <record
+        id="view_salida_almacen_utiles_list"
+        model="ir.ui.view"
+    >
+
         <field name="name">salida.almacen.utiles.list</field>
+
         <field name="model">salida.almacen.utiles</field>
+
         <field name="arch" type="xml">
-            <list string="Entregas" class="o_entregas_clean_list">
-                <field name="name" string="Código de entrega" widget="badge" decoration-success="estado == 'validado'"/>
-                <field name="fecha_salida"/>
-                <field name="anio_escolar_id"/>
-                <field name="responsable_id"/>
-                <field name="miss_id" string="Docente / Auxiliar que recibe" widget="many2one_avatar"/>
-                <field name="grado_escolar"/>
-                <field name="total_productos"/>
-                <field name="total_cantidad"/>
-                <field name="estado" string="Estado" widget="badge" decoration-success="estado == 'validado'" decoration-warning="estado == 'borrador'"/>
+
+            <list
+                string="Entregas"
+                class="o_entregas_clean_list"
+            >
+
+                <field
+                    name="name"
+                    string="Código de entrega"
+                    widget="badge"
+                    decoration-success="
+                        estado == 'validado'
+                    "
+                />
+
+                <field
+                    name="fecha_salida"
+                />
+
+                <field
+                    name="anio_escolar_id"
+                />
+
+                <field
+                    name="responsable_id"
+                    string="Quién entrega"
+                />
+
+                <field
+                    name="miss_id"
+                    string="
+                        Docente / auxiliar que recibe
+                    "
+                    widget="many2one_avatar"
+                />
+
+                <field
+                    name="grado_escolar"
+                />
+
+                <field
+                    name="total_productos"
+                />
+
+                <field
+                    name="total_cantidad"
+                />
+
+                <field
+                    name="estado"
+                    string="Estado"
+                    widget="badge"
+                    decoration-success="
+                        estado == 'validado'
+                    "
+                    decoration-warning="
+                        estado == 'borrador'
+                    "
+                />
+
             </list>
+
         </field>
+
     </record>
 
-    <record id="view_salida_almacen_utiles_form" model="ir.ui.view">
-        <field name="name">salida.almacen.utiles.form</field>
-        <field name="model">salida.almacen.utiles</field>
-        <field name="arch" type="xml">
-            <form string="Entrega de almacén">
-                <header>
-                    <button name="action_validar_salida" type="object" string="Validar entrega" class="btn-primary" invisible="estado == 'validado'"/>
 
-                    <field name="estado" widget="statusbar" statusbar_visible="borrador,validado"/>
+    <!-- ===================================================== -->
+    <!-- VISTA FORMULARIO -->
+    <!-- ===================================================== -->
+
+    <record
+        id="view_salida_almacen_utiles_form"
+        model="ir.ui.view"
+    >
+
+        <field name="name">
+            salida.almacen.utiles.form
+        </field>
+
+        <field name="model">
+            salida.almacen.utiles
+        </field>
+
+        <field name="arch" type="xml">
+
+            <form
+                string="Entrega de almacén"
+            >
+
+
+                <!-- ========================================= -->
+                <!-- ENCABEZADO -->
+                <!-- ========================================= -->
+
+                <header>
+
+                    <button
+                        name="action_validar_salida"
+                        type="object"
+                        string="Validar entrega"
+                        class="btn-primary"
+                        invisible="
+                            estado == 'validado'
+                        "
+                    />
+
+                    <field
+                        name="estado"
+                        widget="statusbar"
+                        statusbar_visible="
+                            borrador,
+                            validado
+                        "
+                    />
+
                 </header>
 
+
                 <sheet>
+
+
+                    <!-- ===================================== -->
+                    <!-- TÍTULO -->
+                    <!-- ===================================== -->
+
                     <div class="oe_title">
+
                         <h1>
-                            <field name="name"/>
+
+                            <field
+                                name="name"
+                                readonly="1"
+                            />
+
                         </h1>
+
                     </div>
 
-                    <group string="Datos de la entrega">
-                        <group>
-                            <field name="fecha_salida"/>
-                            <field name="anio_escolar_id"/>
-                            <field name="responsable_id"/>
-                            <field name="user_id"/>
-                        </group>
+
+                    <!-- ===================================== -->
+                    <!-- DATOS -->
+                    <!-- ===================================== -->
+
+                    <group
+                        string="
+                            Datos de la entrega
+                        "
+                    >
+
+
+                        <!-- COLUMNA IZQUIERDA -->
 
                         <group>
-                            <field name="miss_id" options="{
-                                    'no_create': True,
-                                    'no_open': False
-                                }" />
-                            <field name="grado_escolar"/>
-                            <field name="total_productos"/>
-                            <field name="total_cantidad"/>
+
+
+                            <field
+                                name="fecha_salida"
+                                readonly="
+                                    estado
+                                    ==
+                                    'validado'
+                                "
+                            />
+
+
+                            <!-- Año automático -->
+
+                            <field
+                                name="anio_escolar_id"
+                                readonly="1"
+                                force_save="1"
+                                options="{
+                                    'no_create':
+                                        True,
+
+                                    'no_open':
+                                        True
+                                }"
+                            />
+
+
+                            <!-- Directora / coordinadora /
+                                 secretaria / promotora -->
+
+                            <field
+                                name="responsable_id"
+                                readonly="
+                                    estado
+                                    ==
+                                    'validado'
+                                "
+                                options="{
+                                    'no_create':
+                                        True,
+
+                                    'no_open':
+                                        False
+                                }"
+                            />
+
+
+                            <field
+                                name="user_id"
+                                readonly="1"
+                            />
+
                         </group>
+
+
+                        <!-- COLUMNA DERECHA -->
+
+                        <group>
+
+
+                            <!-- Solo docente o auxiliar -->
+
+                            <field
+                                name="miss_id"
+                                readonly="
+                                    estado
+                                    ==
+                                    'validado'
+                                "
+                                options="{
+                                    'no_create':
+                                        True,
+
+                                    'no_open':
+                                        False
+                                }"
+                            />
+
+
+                            <field
+                                name="grado_escolar"
+                                readonly="
+                                    estado
+                                    ==
+                                    'validado'
+                                "
+                            />
+
+
+                            <field
+                                name="total_productos"
+                                readonly="1"
+                            />
+
+
+                            <field
+                                name="total_cantidad"
+                                readonly="1"
+                            />
+
+                        </group>
+
                     </group>
 
+
+                    <!-- ===================================== -->
+                    <!-- PESTAÑAS -->
+                    <!-- ===================================== -->
+
                     <notebook>
-                        <page string="Productos entregados">
-                            <field name="linea_ids" readonly=" estado == 'validado' ">
 
-                                <list editable="bottom" string="Productos entregados">
 
-                                    <field name="product_id" string="Producto" options="{ 'no_create': True, 'no_open': False  }" />
+                        <!-- PRODUCTOS -->
 
-                                    <field name="categoria_id" string="Categoría" readonly="1" />
+                        <page
+                            string="
+                                Productos entregados
+                            "
+                        >
 
-                                    <field name="stock_disponible" string="Stock disponible" readonly="1" digits="[16, 0]" />
+                            <field
+                                name="linea_ids"
+                                readonly="
+                                    estado
+                                    ==
+                                    'validado'
+                                "
+                            >
 
-                                    <field name="cantidad" string="Cantidad entregada" />
+                                <list
+                                    editable="bottom"
+                                    string="
+                                        Productos entregados
+                                    "
+                                >
 
-                                    <field name="unidad_id" string="Unidad" readonly="1" />
 
-                                    <field name="observacion" string="Observación" />
+                                    <field
+                                        name="product_id"
+                                        string="Producto"
+                                        options="{
+                                            'no_create':
+                                                True,
+
+                                            'no_open':
+                                                False
+                                        }"
+                                    />
+
+
+                                    <field
+                                        name="categoria_id"
+                                        string="Categoría"
+                                        readonly="1"
+                                    />
+
+
+                                    <field
+                                        name="stock_disponible"
+                                        string="
+                                            Stock disponible
+                                        "
+                                        readonly="1"
+                                        digits="[16, 0]"
+                                        decoration-danger="
+                                            stock_disponible
+                                            &lt;=
+                                            0
+                                        "
+                                    />
+
+
+                                    <field
+                                        name="cantidad"
+                                        string="
+                                            Cantidad entregada
+                                        "
+                                    />
+
+
+                                    <field
+                                        name="unidad_id"
+                                        string="Unidad"
+                                        readonly="1"
+                                    />
+
+
+                                    <field
+                                        name="observacion"
+                                        string="Observación"
+                                    />
 
                                 </list>
 
                             </field>
+
                         </page>
 
-                        <page string="Observación">
-                            <field name="observacion"/>
+
+                        <!-- OBSERVACIÓN -->
+
+                        <page
+                            string="Observación"
+                        >
+
+                            <field
+                                name="observacion"
+                                readonly="
+                                    estado
+                                    ==
+                                    'validado'
+                                "
+                            />
+
                         </page>
+
                     </notebook>
+
                 </sheet>
+
             </form>
+
         </field>
+
     </record>
 
-    <record id="view_salida_almacen_utiles_search" model="ir.ui.view">
+
+    <!-- ===================================================== -->
+    <!-- VISTA DE BÚSQUEDA -->
+    <!-- ===================================================== -->
+
+    <record
+        id="view_salida_almacen_utiles_search"
+        model="ir.ui.view"
+    >
+
         <field name="name">salida.almacen.utiles.search</field>
+
         <field name="model">salida.almacen.utiles</field>
+
         <field name="arch" type="xml">
-            <search string="Buscar entregas de almacén">
-                <field name="name"/>
-                <field name="responsable_id"/>
-                <field name="miss_id"/>
-                <field name="grado_escolar"/>
-                <field name="estado"/>
 
-                <filter name="filtro_borrador" string="Borrador" domain="[('estado','=','borrador')]"/>
+            <search
+                string="
+                    Buscar entregas de almacén
+                "
+            >
 
-                <filter name="filtro_validado" string="Validado" domain="[('estado','=','validado')]"/>
+                <field
+                    name="name"
+                />
+
+                <field
+                    name="responsable_id"
+                />
+
+                <field
+                    name="miss_id"
+                />
+
+                <field
+                    name="grado_escolar"
+                />
+
+                <field
+                    name="estado"
+                />
+
+
+                <filter
+                    name="filtro_borrador"
+                    string="Borrador"
+                    domain="[
+                        (
+                            'estado',
+                            '=',
+                            'borrador'
+                        )
+                    ]"
+                />
+
+
+                <filter
+                    name="filtro_validado"
+                    string="Validado"
+                    domain="[
+                        (
+                            'estado',
+                            '=',
+                            'validado'
+                        )
+                    ]"
+                />
+
 
                 <separator/>
 
-                <filter name="grupo_grado" string="Agrupar por grado" context="{'group_by':'grado_escolar'}"/>
 
-                <filter name="grupo_miss" string="Agrupar por receptor" context="{'group_by':'miss_id'}"/>
+                <filter
+                    name="grupo_grado"
+                    string="
+                        Agrupar por grado
+                    "
+                    context="{
+                        'group_by':
+                            'grado_escolar'
+                    }"
+                />
 
-                <filter name="grupo_responsable" string="Agrupar por responsable" context="{'group_by':'responsable_id'}"/>
+
+                <filter
+                    name="grupo_miss"
+                    string="
+                        Agrupar por receptor
+                    "
+                    context="{
+                        'group_by':
+                            'miss_id'
+                    }"
+                />
+
+
+                <filter
+                    name="grupo_responsable"
+                    string="
+                        Agrupar por responsable
+                    "
+                    context="{
+                        'group_by':
+                            'responsable_id'
+                    }"
+                />
+
             </search>
+
         </field>
+
     </record>
 
-    <record id="action_salida_almacen_utiles" model="ir.actions.act_window">
+
+    <!-- ===================================================== -->
+    <!-- ACCIÓN -->
+    <!-- ===================================================== -->
+
+    <record
+        id="action_salida_almacen_utiles"
+        model="ir.actions.act_window"
+    >
+
         <field name="name">Entregas</field>
+
         <field name="res_model">salida.almacen.utiles</field>
+
         <field name="view_mode">list,form</field>
-        <field name="search_view_id" ref="view_salida_almacen_utiles_search"/>
+
+        <field
+            name="search_view_id"
+            ref="
+                view_salida_almacen_utiles_search
+            "
+        />
+
     </record>
 
-    <menuitem id="menu_salida_almacen_utiles" name="↥ Entregas" parent="menu_almacen_utiles_root" action="action_salida_almacen_utiles" sequence="20"/>
+
+    <!-- ===================================================== -->
+    <!-- MENÚ -->
+    <!-- ===================================================== -->
+
+    <menuitem
+        id="menu_salida_almacen_utiles"
+        name="↥ Entregas"
+        parent="
+            menu_almacen_utiles_root
+        "
+        action="
+            action_salida_almacen_utiles
+        "
+        sequence="20"
+    />
+
 
 </odoo>
