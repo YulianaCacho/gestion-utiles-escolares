@@ -11,7 +11,16 @@
                 <field name="anio_anterior_id"/>
                 <field name="fecha_inicio"/>
                 <field name="fecha_fin"/>
+                <field
+                    name="es_anio_prueba"
+                    string="Año de prueba"
+                />
                 <field name="estado"/>
+                <field
+                    name="es_anio_prueba"
+                    string="Año de prueba"
+                    optional="show"
+                />
                 <field name="total_matriculas"/>
                 <field name="total_listas"/>
                 <field name="total_movimientos"/>

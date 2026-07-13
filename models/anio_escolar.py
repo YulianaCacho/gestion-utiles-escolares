@@ -57,6 +57,18 @@ class AnioEscolar(models.Model):
         string="Observación",
     )
 
+    es_anio_prueba = fields.Boolean(
+        string="Año de prueba",
+        default=False,
+        copy=False,
+        help=(
+            "Activa esta opción únicamente en años "
+            "creados para realizar pruebas. "
+            "Los años de prueba podrán restablecerse "
+            "y eliminarse junto con sus datos."
+        ),
+    )
+
 
     # ========================================================
     # NOMBRE
