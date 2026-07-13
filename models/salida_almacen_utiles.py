@@ -64,7 +64,6 @@ class SalidaAlmacenUtiles(models.Model):
         string="Quién entrega",
         required=True,
         domain=[
-            ("tipo_contacto_escolar", "=", "personal"),
             (
                 "cargo_institucional",
                 "in",
@@ -79,7 +78,6 @@ class SalidaAlmacenUtiles(models.Model):
         string="Docente / auxiliar que recibe",
         required=True,
         domain=[
-            ("tipo_contacto_escolar", "=", "personal"),
             (
                 "cargo_institucional",
                 "in",
@@ -148,6 +146,61 @@ class SalidaAlmacenUtiles(models.Model):
 
 
     # ========================================================
+    # AÑO ESCOLAR ACTIVO
+    # ========================================================
+
+    @api.model
+    def _get_anio_escolar_activo(self):
+
+        return self.env[
+            "anio.escolar"
+        ].search(
+            [
+                (
+                    "estado",
+                    "=",
+                    "activo",
+                ),
+            ],
+            limit=1,
+        )
+
+
+    @api.model
+    def default_get(
+        self,
+        fields_list,
+    ):
+
+        valores = super().default_get(
+            fields_list
+        )
+
+        if (
+            "anio_escolar_id"
+            in
+            fields_list
+        ):
+
+            anio_activo = (
+                self
+                ._get_anio_escolar_activo()
+            )
+
+            valores[
+                "anio_escolar_id"
+            ] = (
+                anio_activo.id
+                if
+                anio_activo
+                else
+                False
+            )
+
+        return valores
+
+
+    # ========================================================
     # MÉTODOS COMPUTADOS
     # ========================================================
 
@@ -175,14 +228,41 @@ class SalidaAlmacenUtiles(models.Model):
     # ========================================================
 
     @api.model_create_multi
-    def create(self, vals_list):
+    def create(
+        self,
+        vals_list,
+    ):
+
+        anio_activo = (
+            self
+            ._get_anio_escolar_activo()
+        )
+
+        if not anio_activo:
+
+            raise ValidationError(
+                "No existe un año escolar "
+                "activo.\n\n"
+                "Active un año escolar antes "
+                "de registrar una entrega."
+            )
 
         for vals in vals_list:
 
-            if vals.get(
-                "name",
-                "Nueva",
-            ) == "Nueva":
+            # Toda entrega nueva utiliza
+            # obligatoriamente el año activo.
+            vals[
+                "anio_escolar_id"
+            ] = anio_activo.id
+
+            if (
+                vals.get(
+                    "name",
+                    "Nueva",
+                )
+                ==
+                "Nueva"
+            ):
 
                 vals["name"] = (
                     self.env[
@@ -203,7 +283,9 @@ class SalidaAlmacenUtiles(models.Model):
     # ONCHANGE
     # ========================================================
 
-    @api.onchange("miss_id")
+    @api.onchange(
+        "miss_id"
+    )
     def _onchange_miss_id(self):
 
         for rec in self:
@@ -211,57 +293,104 @@ class SalidaAlmacenUtiles(models.Model):
             if (
                 rec.miss_id
                 and
-                rec.miss_id.grado_escolar
+                rec.miss_id
+                .grado_escolar
             ):
 
                 rec.grado_escolar = (
-                    rec.miss_id.grado_escolar
+                    rec.miss_id
+                    .grado_escolar
                 )
 
             elif not rec.miss_id:
 
-                rec.grado_escolar = False
+                rec.grado_escolar = (
+                    False
+                )
 
 
     # ========================================================
-    # VALIDACIÓN DEL RECEPTOR
+    # VALIDACIONES DE PERSONAS
     # ========================================================
 
     def _receptor_es_valido(self):
 
         self.ensure_one()
 
-        if not self.miss_id:
-
-            return False
-
-        return (
-            self.miss_id.tipo_contacto_escolar
-            ==
-            "personal"
+        return bool(
+            self.miss_id
             and
-            self.miss_id.cargo_institucional
+            self.miss_id
+            .cargo_institucional
             in
             CARGOS_QUE_RECIBEN
         )
 
 
-    @api.constrains("miss_id")
-    def _check_receptor_permitido(self):
+    def _responsable_es_valido(self):
+
+        self.ensure_one()
+
+        return bool(
+            self.responsable_id
+            and
+            self.responsable_id
+            .cargo_institucional
+            in
+            CARGOS_QUE_ENTREGAN
+        )
+
+
+    @api.constrains(
+        "miss_id"
+    )
+    def _check_receptor_permitido(
+        self
+    ):
 
         for rec in self:
 
             if (
                 rec.miss_id
                 and
-                not rec._receptor_es_valido()
+                not
+                rec._receptor_es_valido()
             ):
 
                 raise ValidationError(
-                    "La persona que recibe debe "
-                    "pertenecer al personal de la "
-                    "institución y tener el cargo "
-                    "de Docente o Auxiliar."
+                    "La persona que recibe "
+                    "debe tener el cargo de "
+                    "Docente o Auxiliar de "
+                    "recepción."
+                )
+
+
+    @api.constrains(
+        "responsable_id"
+    )
+    def _check_persona_que_entrega(
+        self
+    ):
+
+        for rec in self:
+
+            if (
+                rec.responsable_id
+                and
+                not
+                rec._responsable_es_valido()
+            ):
+
+                raise ValidationError(
+                    "La persona que realiza "
+                    "la entrega debe tener "
+                    "uno de los siguientes "
+                    "cargos:"
+                    "\n\n"
+                    "• Directora\n"
+                    "• Coordinadora\n"
+                    "• Secretaria\n"
+                    "• Promotora"
                 )
 
 
@@ -294,7 +423,9 @@ class SalidaAlmacenUtiles(models.Model):
                 (
                     "anio_escolar_id",
                     "=",
-                    self.anio_escolar_id.id,
+                    self
+                    .anio_escolar_id
+                    .id,
                 )
             )
 
@@ -315,7 +446,8 @@ class SalidaAlmacenUtiles(models.Model):
             )
 
             if (
-                movimiento.tipo_movimiento
+                movimiento
+                .tipo_movimiento
                 ==
                 "entrada"
             ):
@@ -323,7 +455,8 @@ class SalidaAlmacenUtiles(models.Model):
                 stock += cantidad
 
             elif (
-                movimiento.tipo_movimiento
+                movimiento
+                .tipo_movimiento
                 ==
                 "salida"
             ):
@@ -331,7 +464,8 @@ class SalidaAlmacenUtiles(models.Model):
                 stock -= cantidad
 
             elif (
-                movimiento.tipo_movimiento
+                movimiento
+                .tipo_movimiento
                 ==
                 "ajuste"
             ):
@@ -345,33 +479,77 @@ class SalidaAlmacenUtiles(models.Model):
     # VALIDACIONES DE LA ENTREGA
     # ========================================================
 
-    def _validar_datos_generales(self):
+    def _validar_datos_generales(
+        self
+    ):
 
         self.ensure_one()
 
         errores = []
 
+
+        if not self.anio_escolar_id:
+
+            errores.append(
+                "No existe un año escolar "
+                "activo asociado a la "
+                "entrega."
+            )
+
+        elif (
+            self.anio_escolar_id
+            .estado
+            !=
+            "activo"
+        ):
+
+            errores.append(
+                "La entrega debe "
+                "registrarse en el año "
+                "escolar activo."
+            )
+
+
         if not self.responsable_id:
 
             errores.append(
-                "Debe seleccionar a la persona "
-                "que realiza la entrega."
+                "Debe seleccionar a la "
+                "persona que realiza la "
+                "entrega."
             )
+
+        elif not (
+            self
+            ._responsable_es_valido()
+        ):
+
+            errores.append(
+                "La persona que entrega "
+                "debe ser Directora, "
+                "Coordinadora, Secretaria "
+                "o Promotora."
+            )
+
 
         if not self.miss_id:
 
             errores.append(
-                "Debe seleccionar al docente "
-                "o auxiliar que recibe."
+                "Debe seleccionar al "
+                "docente o auxiliar que "
+                "recibe."
             )
 
-        elif not self._receptor_es_valido():
+        elif not (
+            self
+            ._receptor_es_valido()
+        ):
 
             errores.append(
-                "La persona que recibe debe "
-                "tener el cargo de Docente "
-                "o Auxiliar."
+                "La persona que recibe "
+                "debe ser Docente o "
+                "Auxiliar de recepción."
             )
+
 
         if not self.grado_escolar:
 
@@ -380,23 +558,27 @@ class SalidaAlmacenUtiles(models.Model):
                 "que recibe los útiles."
             )
 
+
         if not self.linea_ids:
 
             errores.append(
-                "Debe agregar al menos un "
-                "producto."
+                "Debe agregar al menos "
+                "un producto."
             )
 
         return errores
 
 
-    def _validar_productos_y_stock(self):
+    def _validar_productos_y_stock(
+        self
+    ):
 
         self.ensure_one()
 
         errores = []
 
         cantidades_por_producto = {}
+
 
         for linea in self.linea_ids:
 
@@ -409,8 +591,10 @@ class SalidaAlmacenUtiles(models.Model):
 
                 continue
 
+
             producto = (
-                linea.product_id.display_name
+                linea.product_id
+                .display_name
                 or
                 "Producto sin nombre"
             )
@@ -421,31 +605,39 @@ class SalidaAlmacenUtiles(models.Model):
                 0
             )
 
+
             if cantidad <= 0:
 
                 errores.append(
-                    f"{producto}: la cantidad "
-                    "entregada debe ser mayor "
-                    "que cero."
+                    f"{producto}: la "
+                    "cantidad entregada "
+                    "debe ser mayor que "
+                    "cero."
                 )
 
                 continue
 
-            if not cantidad.is_integer():
+
+            if not (
+                cantidad.is_integer()
+            ):
 
                 errores.append(
-                    f"{producto}: la cantidad "
-                    f"{cantidad:g} contiene "
-                    "decimales. Solo se permiten "
+                    f"{producto}: la "
+                    f"cantidad {cantidad:g} "
+                    "contiene decimales. "
+                    "Solo se permiten "
                     "números enteros."
                 )
 
                 continue
 
+
             cantidades_por_producto[
                 linea.product_id.id
             ] = (
-                cantidades_por_producto.get(
+                cantidades_por_producto
+                .get(
                     linea.product_id.id,
                     0,
                 )
@@ -457,7 +649,10 @@ class SalidaAlmacenUtiles(models.Model):
         for (
             producto_id,
             cantidad_solicitada,
-        ) in cantidades_por_producto.items():
+        ) in (
+            cantidades_por_producto
+            .items()
+        ):
 
             producto = self.env[
                 "product.product"
@@ -466,7 +661,8 @@ class SalidaAlmacenUtiles(models.Model):
             )
 
             stock_disponible = (
-                self._stock_disponible_producto(
+                self
+                ._stock_disponible_producto(
                     producto
                 )
             )
@@ -477,14 +673,17 @@ class SalidaAlmacenUtiles(models.Model):
                 "Producto sin nombre"
             )
 
+
             if stock_disponible <= 0:
 
                 errores.append(
                     f"{nombre_producto}: "
                     "el producto no tiene "
-                    "stock disponible. No se "
-                    "puede registrar la salida."
+                    "stock disponible. "
+                    "No se puede registrar "
+                    "la salida."
                 )
+
 
             elif (
                 cantidad_solicitada
@@ -518,8 +717,9 @@ class SalidaAlmacenUtiles(models.Model):
         )
 
         raise ValidationError(
-            "No se puede validar la entrega "
-            "porque existen inconsistencias:"
+            "No se puede validar la "
+            "entrega porque existen "
+            "inconsistencias:"
             "\n\n"
             f"{detalle}"
             "\n\n"
@@ -552,13 +752,7 @@ class SalidaAlmacenUtiles(models.Model):
                 "salida",
 
             "anio_escolar_id":
-                (
-                    self.anio_escolar_id.id
-                    if
-                    self.anio_escolar_id
-                    else
-                    False
-                ),
+                self.anio_escolar_id.id,
 
             "salida_almacen_id":
                 self.id,
@@ -602,8 +796,8 @@ class SalidaAlmacenUtiles(models.Model):
 
             "observacion":
                 (
-                    f"Entrega registrada en "
-                    f"{self.name}. "
+                    f"Entrega registrada "
+                    f"en {self.name}. "
                     f"Entrega: "
                     f"{self.responsable_id.name}. "
                     f"Recibe: "
@@ -624,7 +818,9 @@ class SalidaAlmacenUtiles(models.Model):
     # ACCIÓN: VALIDAR ENTREGA
     # ========================================================
 
-    def action_validar_salida(self):
+    def action_validar_salida(
+        self
+    ):
 
         for rec in self:
 
@@ -639,15 +835,21 @@ class SalidaAlmacenUtiles(models.Model):
                     "validada."
                 )
 
+
             errores = []
 
-            errores.extend(
-                rec._validar_datos_generales()
-            )
 
             errores.extend(
-                rec._validar_productos_y_stock()
+                rec
+                ._validar_datos_generales()
             )
+
+
+            errores.extend(
+                rec
+                ._validar_productos_y_stock()
+            )
+
 
             rec._mostrar_errores_validacion(
                 errores
@@ -684,9 +886,11 @@ class SalidaAlmacenUtiles(models.Model):
 
                 "message":
                     (
-                        "La salida fue registrada "
-                        "correctamente y ya aparece "
-                        "en la línea de tiempo."
+                        "La salida fue "
+                        "registrada "
+                        "correctamente y "
+                        "ya aparece en la "
+                        "línea de tiempo."
                     ),
 
                 "type":
@@ -702,9 +906,13 @@ class SalidaAlmacenUtiles(models.Model):
 # LÍNEAS DE LA ENTREGA
 # ============================================================
 
-class SalidaAlmacenUtilesLinea(models.Model):
+class SalidaAlmacenUtilesLinea(
+    models.Model
+):
 
-    _name = "salida.almacen.utiles.linea"
+    _name = (
+        "salida.almacen.utiles.linea"
+    )
 
     _description = (
         "Detalle de entrega de útiles "
@@ -751,7 +959,9 @@ class SalidaAlmacenUtilesLinea(models.Model):
 
     stock_disponible = fields.Float(
         string="Stock disponible",
-        compute="_compute_stock_disponible",
+        compute=(
+            "_compute_stock_disponible"
+        ),
     )
 
     observacion = fields.Char(
@@ -767,7 +977,9 @@ class SalidaAlmacenUtilesLinea(models.Model):
         "product_id",
         "salida_id.anio_escolar_id",
     )
-    def _compute_stock_disponible(self):
+    def _compute_stock_disponible(
+        self
+    ):
 
         for linea in self:
 
@@ -781,8 +993,10 @@ class SalidaAlmacenUtilesLinea(models.Model):
 
                 continue
 
+
             linea.stock_disponible = (
-                linea.salida_id
+                linea
+                .salida_id
                 ._stock_disponible_producto(
                     linea.product_id
                 )
@@ -793,8 +1007,12 @@ class SalidaAlmacenUtilesLinea(models.Model):
     # ADVERTENCIA AL ELEGIR PRODUCTO
     # ========================================================
 
-    @api.onchange("product_id")
-    def _onchange_producto_stock(self):
+    @api.onchange(
+        "product_id"
+    )
+    def _onchange_producto_stock(
+        self
+    ):
 
         for linea in self:
 
@@ -806,12 +1024,15 @@ class SalidaAlmacenUtilesLinea(models.Model):
 
                 continue
 
+
             stock_disponible = (
-                linea.salida_id
+                linea
+                .salida_id
                 ._stock_disponible_producto(
                     linea.product_id
                 )
             )
+
 
             if stock_disponible <= 0:
 
@@ -827,9 +1048,10 @@ class SalidaAlmacenUtilesLinea(models.Model):
                                 "El producto "
                                 f"'{linea.product_id.display_name}' "
                                 "no tiene stock "
-                                "disponible. No se "
-                                "puede registrar "
-                                "una salida."
+                                "disponible. "
+                                "No se puede "
+                                "registrar una "
+                                "salida."
                             ),
                     },
                 }
@@ -839,8 +1061,12 @@ class SalidaAlmacenUtilesLinea(models.Model):
     # ADVERTENCIAS DE CANTIDAD
     # ========================================================
 
-    @api.onchange("cantidad")
-    def _onchange_cantidad(self):
+    @api.onchange(
+        "cantidad"
+    )
+    def _onchange_cantidad(
+        self
+    ):
 
         for linea in self:
 
@@ -862,15 +1088,18 @@ class SalidaAlmacenUtilesLinea(models.Model):
 
                         "message":
                             (
-                                "La cantidad entregada "
-                                "debe ser mayor que "
+                                "La cantidad "
+                                "entregada debe "
+                                "ser mayor que "
                                 "cero."
                             ),
                     },
                 }
 
 
-            if not cantidad.is_integer():
+            if not (
+                cantidad.is_integer()
+            ):
 
                 return {
 
@@ -884,7 +1113,8 @@ class SalidaAlmacenUtilesLinea(models.Model):
                                 "Solo se permiten "
                                 "números enteros. "
                                 "No se permiten "
-                                "cantidades decimales."
+                                "cantidades "
+                                "decimales."
                             ),
                     },
                 }
@@ -897,11 +1127,13 @@ class SalidaAlmacenUtilesLinea(models.Model):
             ):
 
                 stock_disponible = (
-                    linea.salida_id
+                    linea
+                    .salida_id
                     ._stock_disponible_producto(
                         linea.product_id
                     )
                 )
+
 
                 if (
                     cantidad
@@ -918,7 +1150,7 @@ class SalidaAlmacenUtilesLinea(models.Model):
 
                             "message":
                                 (
-                                    f"La cantidad "
+                                    "La cantidad "
                                     f"ingresada es "
                                     f"{cantidad:g}, "
                                     "pero el stock "
@@ -938,7 +1170,9 @@ class SalidaAlmacenUtilesLinea(models.Model):
         "product_id",
         "salida_id",
     )
-    def _check_cantidad(self):
+    def _check_cantidad(
+        self
+    ):
 
         for linea in self:
 
@@ -946,11 +1180,13 @@ class SalidaAlmacenUtilesLinea(models.Model):
 
                 continue
 
+
             cantidad = float(
                 linea.cantidad
                 or
                 0
             )
+
 
             if cantidad <= 0:
 
@@ -959,34 +1195,44 @@ class SalidaAlmacenUtilesLinea(models.Model):
                     "debe ser mayor que cero."
                 )
 
-            if not cantidad.is_integer():
+
+            if not (
+                cantidad.is_integer()
+            ):
 
                 raise ValidationError(
                     "La cantidad entregada "
-                    "debe ser un número entero. "
-                    "No se permiten decimales."
+                    "debe ser un número "
+                    "entero. No se permiten "
+                    "decimales."
                 )
+
 
             if not linea.salida_id:
 
                 continue
 
+
             stock_disponible = (
-                linea.salida_id
+                linea
+                .salida_id
                 ._stock_disponible_producto(
                     linea.product_id
                 )
             )
 
+
             if stock_disponible <= 0:
 
                 raise ValidationError(
-                    f"El producto "
+                    "El producto "
                     f"'{linea.product_id.display_name}' "
-                    "no tiene stock disponible. "
+                    "no tiene stock "
+                    "disponible. "
                     "No se puede registrar "
                     "una salida."
                 )
+
 
             if (
                 cantidad
@@ -995,14 +1241,14 @@ class SalidaAlmacenUtilesLinea(models.Model):
             ):
 
                 raise ValidationError(
-                    "No hay stock suficiente "
-                    f"para "
+                    "No hay stock "
+                    "suficiente para "
                     f"'{linea.product_id.display_name}'."
                     "\n\n"
-                    f"Stock disponible: "
+                    "Stock disponible: "
                     f"{stock_disponible:g}"
                     "\n"
-                    f"Cantidad solicitada: "
+                    "Cantidad solicitada: "
                     f"{cantidad:g}"
                 )
 
@@ -1011,9 +1257,13 @@ class SalidaAlmacenUtilesLinea(models.Model):
 # RELACIÓN CON MOVIMIENTOS DE ALMACÉN
 # ============================================================
 
-class AlmacenUtilesMovimiento(models.Model):
+class AlmacenUtilesMovimiento(
+    models.Model
+):
 
-    _inherit = "almacen.utiles.movimiento"
+    _inherit = (
+        "almacen.utiles.movimiento"
+    )
 
 
     salida_almacen_id = fields.Many2one(
