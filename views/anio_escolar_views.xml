@@ -29,7 +29,12 @@
                         type="object"
                         string="Activar año"
                         class="btn-primary"
-                        invisible="not id or estado == 'activo'"/>
+                        invisible="
+                            not id
+                            or
+                            estado != 'borrador'
+                        "
+                    />
 
                     <button name="action_vincular_datos_existentes"
                             type="object"
@@ -76,7 +81,7 @@
                             class="btn-danger"
                             invisible="not id or estado != 'borrador'"
                             confirm="Esta acción eliminará el año escolar de prueba junto con sus matrículas y listas vinculadas. ¿Deseas continuar?"/>
-                    
+
                     <button name="action_limpiar_y_eliminar_anio_prueba"
                             type="object"
                             string="Limpiar y eliminar año de prueba"
@@ -94,7 +99,10 @@
                         <group>
                             <field name="anio" invisible="id"/>
                             <field name="anio_visual" string="Año" readonly="1" invisible="not id"/>
-                            <field name="anio_anterior_id"/>
+                            <field
+                                name="anio_anterior_id"
+                                readonly="1"
+                            />
                             <field name="fecha_inicio"/>
                             <field name="fecha_fin"/>
                         </group>

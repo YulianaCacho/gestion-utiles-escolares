@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <odoo noupdate="1">
 
-    <record id="anio_escolar_2026" model="anio.escolar">
-        <field name="anio">2026</field>
-        <field name="estado">activo</field>
-    </record>
+    <record
+        id="anio_escolar_2026"
+        model="anio.escolar"
+    >
 
-    <record id="anio_escolar_2027" model="anio.escolar">
-        <field name="anio">2027</field>
-        <field name="anio_anterior_id" ref="gestion_utiles_escolares.anio_escolar_2026"/>
-        <field name="estado">borrador</field>
+        <field name="anio">
+            2026
+        </field>
+
+        <field name="estado">
+            activo
+        </field>
+
     </record>
 
 </odoo>
