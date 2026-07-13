@@ -442,6 +442,628 @@ class AnioEscolar(models.Model):
             "target": "current",
         }
 
+    def action_restaurar_y_eliminar_anio_prueba(
+        self
+    ):
+
+        self.ensure_one()
+
+        anio_prueba = self
+
+
+        # ====================================================
+        # VALIDACIONES DE SEGURIDAD
+        # ====================================================
+
+        if not anio_prueba.es_anio_prueba:
+
+            raise UserError(
+                "No se puede ejecutar esta acción."
+                "\n\n"
+                "El año seleccionado no está "
+                "marcado como Año de prueba."
+            )
+
+
+        anio_anterior = (
+            anio_prueba.anio_anterior_id
+        )
+
+
+        if not anio_anterior:
+
+            anio_anterior = self.search(
+                [
+                    (
+                        "anio",
+                        "<",
+                        anio_prueba.anio,
+                    ),
+                ],
+                order="anio desc",
+                limit=1,
+            )
+
+
+        if not anio_anterior:
+
+            raise UserError(
+                "No se encontró un año anterior "
+                "que pueda restaurarse."
+                "\n\n"
+                "La eliminación fue cancelada "
+                "para proteger la información."
+            )
+
+
+        anios_posteriores = self.search(
+            [
+                (
+                    "anio_anterior_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+            ]
+        )
+
+
+        if anios_posteriores:
+
+            nombres = ", ".join(
+                anios_posteriores.mapped(
+                    "name"
+                )
+            )
+
+            raise UserError(
+                "No se puede eliminar este año "
+                "porque existen años posteriores "
+                "relacionados."
+                "\n\n"
+                f"Años relacionados: {nombres}"
+            )
+
+
+        # ====================================================
+        # MODELOS RELACIONADOS
+        # ====================================================
+
+        Matricula = self.env[
+            "matricula.escolar"
+        ]
+
+        Lista = self.env[
+            "lista.utiles.grado"
+        ]
+
+        Recepcion = self.env[
+            "recepcion.utiles.escolar"
+        ]
+
+        Salida = self.env[
+            "salida.almacen.utiles"
+        ]
+
+        Movimiento = self.env[
+            "almacen.utiles.movimiento"
+        ]
+
+        Sobrante = self.env[
+            "sobrante.utiles.anio"
+        ]
+
+        CierreUtiles = self.env[
+            "cierre.anio.utiles"
+        ]
+
+        RevisionMatriculas = self.env[
+            "cierre.anio.matriculas"
+        ]
+
+
+        # ====================================================
+        # CAMBIAR A LOS USUARIOS AL AÑO ANTERIOR
+        # ====================================================
+
+        usuarios = self.env[
+            "res.users"
+        ].sudo().search(
+            [
+                (
+                    "share",
+                    "=",
+                    False,
+                ),
+            ]
+        )
+
+
+        usuarios.write(
+            {
+                "anio_escolar_actual_id":
+                    anio_anterior.id,
+            }
+        )
+
+
+        # ====================================================
+        # IDENTIFICAR MATRÍCULAS DEL AÑO ANTERIOR
+        # ====================================================
+
+        revisiones = (
+            RevisionMatriculas.search(
+                [
+                    "|",
+                    (
+                        "anio_origen_id",
+                        "=",
+                        anio_prueba.id,
+                    ),
+                    (
+                        "anio_destino_id",
+                        "=",
+                        anio_prueba.id,
+                    ),
+                ]
+            )
+        )
+
+
+        matriculas_a_restaurar = (
+            Matricula.browse()
+        )
+
+
+        for revision in revisiones:
+
+            matriculas_a_restaurar |= (
+                revision.linea_ids.mapped(
+                    "matricula_id"
+                )
+            )
+
+
+        matriculas_nuevo_anio = (
+            Matricula.search(
+                [
+                    (
+                        "anio_escolar_id",
+                        "=",
+                        anio_prueba.id,
+                    ),
+                ]
+            )
+        )
+
+
+        for matricula in (
+            matriculas_nuevo_anio
+        ):
+
+            matricula_anterior = (
+                matricula
+                .matricula_anterior_id
+            )
+
+
+            if matricula_anterior:
+
+                matriculas_a_restaurar |= (
+                    matricula_anterior
+                )
+
+
+                matricula_anterior.with_context(
+                    skip_anio_check=True,
+                    permitir_estado_finalizado=True,
+                ).write(
+                    {
+                        "matricula_siguiente_id":
+                            False,
+                    }
+                )
+
+
+        matriculas_finalizadas = (
+            Matricula.search(
+                [
+                    (
+                        "anio_escolar_id",
+                        "=",
+                        anio_anterior.id,
+                    ),
+                    (
+                        "estado",
+                        "=",
+                        "finalizado",
+                    ),
+                ]
+            )
+        )
+
+
+        matriculas_a_restaurar |= (
+            matriculas_finalizadas
+        )
+
+
+        # ====================================================
+        # ELIMINAR MOVIMIENTOS DE LA PRUEBA
+        # ====================================================
+
+        movimientos = Movimiento.search(
+            [
+                "|",
+                "|",
+                (
+                    "anio_escolar_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+                (
+                    "anio_origen_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+                (
+                    "anio_destino_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+            ]
+        )
+
+
+        if movimientos:
+
+            movimientos.with_context(
+                skip_anio_check=True
+            ).unlink()
+
+
+        # ====================================================
+        # ELIMINAR RECEPCIONES Y ENTREGAS
+        # ====================================================
+
+        recepciones = Recepcion.search(
+            [
+                (
+                    "anio_escolar_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+            ]
+        )
+
+
+        if recepciones:
+
+            recepciones.with_context(
+                skip_anio_check=True
+            ).unlink()
+
+
+        salidas = Salida.search(
+            [
+                (
+                    "anio_escolar_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+            ]
+        )
+
+
+        if salidas:
+
+            salidas.with_context(
+                skip_anio_check=True
+            ).unlink()
+
+
+        # ====================================================
+        # ELIMINAR CIERRES Y SOBRANTES
+        # ====================================================
+
+        cierres_utiles = (
+            CierreUtiles.search(
+                [
+                    "|",
+                    (
+                        "anio_origen_id",
+                        "=",
+                        anio_prueba.id,
+                    ),
+                    (
+                        "anio_destino_id",
+                        "=",
+                        anio_prueba.id,
+                    ),
+                ]
+            )
+        )
+
+
+        if cierres_utiles:
+
+            cierres_utiles.unlink()
+
+
+        sobrantes = Sobrante.search(
+            [
+                "|",
+                (
+                    "anio_origen_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+                (
+                    "anio_destino_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+            ]
+        )
+
+
+        if sobrantes:
+
+            sobrantes.unlink()
+
+
+        # ====================================================
+        # ELIMINAR MATRÍCULAS DEL AÑO DE PRUEBA
+        # ====================================================
+
+        if matriculas_nuevo_anio:
+
+            matriculas_nuevo_anio.with_context(
+                skip_anio_check=True
+            ).unlink()
+
+
+        # ====================================================
+        # RESTAURAR MATRÍCULAS DEL AÑO ANTERIOR
+        # ====================================================
+
+        matriculas_a_restaurar = (
+            matriculas_a_restaurar.filtered(
+                lambda matricula:
+                    matricula.exists()
+                    and
+                    matricula.anio_escolar_id
+                    ==
+                    anio_anterior
+            )
+        )
+
+
+        for matricula in (
+            matriculas_a_restaurar
+        ):
+
+            matricula.with_context(
+                skip_anio_check=True,
+                permitir_estado_finalizado=True,
+            ).write(
+                {
+                    "estado":
+                        "activo",
+
+                    "situacion_siguiente_anio":
+                        "promovido",
+
+                    "matricula_siguiente_id":
+                        False,
+                }
+            )
+
+
+            estudiante = (
+                matricula.estudiante_id
+            )
+
+
+            if estudiante:
+
+                valores_estudiante = {}
+
+
+                if matricula.grado_escolar:
+
+                    valores_estudiante[
+                        "grado_escolar"
+                    ] = (
+                        matricula
+                        .grado_escolar
+                    )
+
+
+                if (
+                    "lista_utiles_id"
+                    in
+                    estudiante._fields
+                ):
+
+                    valores_estudiante[
+                        "lista_utiles_id"
+                    ] = (
+                        matricula
+                        .lista_utiles_id
+                        .id
+                        if
+                        matricula
+                        .lista_utiles_id
+                        else
+                        False
+                    )
+
+
+                if valores_estudiante:
+
+                    estudiante.write(
+                        valores_estudiante
+                    )
+
+
+        # ====================================================
+        # ELIMINAR REVISIONES DE PROMOCIÓN
+        # ====================================================
+
+        if revisiones:
+
+            revisiones.unlink()
+
+
+        # ====================================================
+        # ELIMINAR LISTAS DEL AÑO DE PRUEBA
+        # ====================================================
+
+        listas = Lista.search(
+            [
+                (
+                    "anio_escolar_id",
+                    "=",
+                    anio_prueba.id,
+                ),
+            ]
+        )
+
+
+        for lista in listas:
+
+            if lista.linea_ids:
+
+                lista.linea_ids.unlink()
+
+
+        if listas:
+
+            listas.unlink()
+
+
+        # ====================================================
+        # RESTAURAR EL AÑO ANTERIOR
+        # ====================================================
+
+        otros_activos = self.search(
+            [
+                (
+                    "estado",
+                    "=",
+                    "activo",
+                ),
+                (
+                    "id",
+                    "not in",
+                    [
+                        anio_anterior.id,
+                        anio_prueba.id,
+                    ],
+                ),
+            ]
+        )
+
+
+        if otros_activos:
+
+            nombres = ", ".join(
+                otros_activos.mapped(
+                    "name"
+                )
+            )
+
+            raise UserError(
+                "No se puede completar el "
+                "restablecimiento porque existe "
+                "otro año activo."
+                "\n\n"
+                f"Año activo encontrado: "
+                f"{nombres}"
+                "\n\n"
+                "Revise los años escolares "
+                "antes de continuar."
+            )
+
+
+        # Primero se desactiva el año de prueba.
+        # Después se restaura el año anterior.
+        anio_prueba.with_context(
+            skip_anio_check=True
+        ).write(
+            {
+                "estado":
+                    "borrador",
+            }
+        )
+
+
+        anio_anterior.with_context(
+            skip_anio_check=True
+        ).write(
+            {
+                "estado":
+                    "activo",
+            }
+        )
+
+
+        # ====================================================
+        # ELIMINAR EL AÑO DE PRUEBA
+        # ====================================================
+
+        nombre_anio_prueba = (
+            anio_prueba.name
+        )
+
+
+        anio_prueba.with_context(
+            forzar_eliminar_anio_prueba=True
+        ).unlink()
+
+
+        # ====================================================
+        # RESULTADO
+        # ====================================================
+
+        return {
+
+            "type":
+                "ir.actions.act_window",
+
+            "name":
+                "Años escolares",
+
+            "res_model":
+                "anio.escolar",
+
+            "view_mode":
+                "list,form",
+
+            "target":
+                "current",
+
+            "context":
+                {
+                    "notification": {
+                        "title":
+                            "Prueba restablecida",
+
+                        "message":
+                            (
+                                f"{nombre_anio_prueba} "
+                                "fue eliminado y "
+                                f"{anio_anterior.name} "
+                                "fue restaurado como "
+                                "el único año activo."
+                            ),
+
+                        "type":
+                            "success",
+                    },
+                },
+        }
+
     def action_limpiar_y_eliminar_anio_prueba(self):
         Matricula = self.env["matricula.escolar"]
         Lista = self.env["lista.utiles.grado"]
@@ -508,7 +1130,7 @@ class AnioEscolar(models.Model):
 
             if listas:
                 listas.unlink()
-                
+
             cierres = self.env["cierre.anio.utiles"].search([
                 "|",
                 ("anio_origen_id", "=", rec.id),
@@ -866,7 +1488,7 @@ class RecepcionUtilesEscolar(models.Model):
         required=True,
         index=True
     )
-    
+
     @api.depends(
         "matricula_id.anio_escolar_id",
         "anio_escolar_id"
@@ -886,7 +1508,7 @@ class RecepcionUtilesEscolar(models.Model):
                 if anio
                 else ""
             )
-            
+
     @api.onchange(
         "tipo_entrada",
         "matricula_id"
@@ -916,7 +1538,7 @@ class RecepcionUtilesEscolar(models.Model):
                     self.env.user
                     .anio_escolar_actual_id
                 )
-    
+
     def _validar_matricula_del_anio_seleccionado(self, matricula):
         anio_seleccionado = self.env.user.anio_escolar_actual_id
 
@@ -964,7 +1586,7 @@ class RecepcionUtilesEscolar(models.Model):
                     if matricula.anio_escolar_id
                     else anio_id
                 )
-            
+
             if anio_id:
                 anio = self.env["anio.escolar"].browse(anio_id)
                 if anio.estado == "cerrado":
@@ -983,7 +1605,7 @@ class RecepcionUtilesEscolar(models.Model):
 
         if vals.get("matricula_id"):
             matricula = self.env["matricula.escolar"].browse(vals["matricula_id"])
-            
+
         if vals.get("matricula_id"):
             matricula = self.env["matricula.escolar"].browse(
                 vals["matricula_id"]
@@ -1001,7 +1623,7 @@ class RecepcionUtilesEscolar(models.Model):
                     "No se puede asignar una matrícula "
                     "de un año escolar cerrado."
                 )
-            
+
             if matricula.anio_escolar_id and matricula.anio_escolar_id.estado == "cerrado":
                 raise UserError("No se puede asignar una matrícula de un año escolar cerrado.")
 

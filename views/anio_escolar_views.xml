@@ -11,16 +11,9 @@
                 <field name="anio_anterior_id"/>
                 <field name="fecha_inicio"/>
                 <field name="fecha_fin"/>
-                <field
-                    name="es_anio_prueba"
-                    string="Año de prueba"
-                />
+                <field name="es_anio_prueba" string="Año de prueba" />
                 <field name="estado"/>
-                <field
-                    name="es_anio_prueba"
-                    string="Año de prueba"
-                    optional="show"
-                />
+                <field name="es_anio_prueba" string="Año de prueba" optional="show" />
                 <field name="total_matriculas"/>
                 <field name="total_listas"/>
                 <field name="total_movimientos"/>
@@ -34,73 +27,36 @@
         <field name="arch" type="xml">
             <form string="Año escolar">
                 <header>
-                    <button name="action_activar"
-                        type="object"
-                        string="Activar año"
-                        class="btn-primary"
-                        invisible="
+                    <button name="action_activar" type="object" string="Activar año" class="btn-primary" invisible="
                             not id
                             or
                             estado != 'borrador'
-                        "
+                        " />
+
+                    <button name="action_vincular_datos_existentes" type="object" string="Vincular datos existentes" class="btn-secondary" invisible="not id"/>
+
+                    <button name="action_copiar_listas_desde_anio_anterior" type="object" string="Copiar listas del año anterior" class="btn-secondary" invisible="not id"/>
+
+                    <button name="action_generar_matriculas_desde_anio_anterior" type="object" string="Generar matrículas desde año anterior" class="btn-secondary" invisible="not id"/>
+
+                    <button name="action_crear_revision_matriculas" type="object" string="Iniciar revisión de promoción" class="btn-primary" invisible="not id or estado == 'cerrado'" confirm="Se creará la revisión de promoción de alumnos para este año escolar. ¿Deseas continuar?"/>
+
+                    <button name="action_crear_revision_cierre_utiles" type="object" string="Cierre de año" class="btn-primary" invisible="not id or estado == 'cerrado'" confirm="Se creará la revisión de cierre de útiles para este año escolar. ¿Deseas continuar?"/>
+
+                    <button
+                        name="action_restaurar_y_eliminar_anio_prueba"
+                        type="object"
+                        string="Restablecer y eliminar año de prueba"
+                        class="btn-danger"
+                        invisible="
+                            not id
+                            or
+                            not es_anio_prueba
+                            "
+                            confirm="Esta acción eliminará todos los datos generados en el año de prueba y restaurará el año anterior como único año activo. Las matrículas finalizadas volverán a estado Activo. ¿Deseas continuar?"
                     />
 
-                    <button name="action_vincular_datos_existentes"
-                            type="object"
-                            string="Vincular datos existentes"
-                            class="btn-secondary"
-                            invisible="not id"/>
-
-                    <button name="action_copiar_listas_desde_anio_anterior"
-                            type="object"
-                            string="Copiar listas del año anterior"
-                            class="btn-secondary"
-                            invisible="not id"/>
-
-                    <button name="action_generar_matriculas_desde_anio_anterior"
-                            type="object"
-                            string="Generar matrículas desde año anterior"
-                            class="btn-secondary"
-                            invisible="not id"/>
-
-                    <button name="action_crear_revision_matriculas"
-                            type="object"
-                            string="Iniciar revisión de promoción"
-                            class="btn-primary"
-                            invisible="not id or estado == 'cerrado'"
-                            confirm="Se creará la revisión de promoción de alumnos para este año escolar. ¿Deseas continuar?"/>
-
-                    <button name="action_crear_revision_cierre_utiles"
-                            type="object"
-                            string="Cierre de año"
-                            class="btn-primary"
-                            invisible="not id or estado == 'cerrado'"
-                            confirm="Se creará la revisión de cierre de útiles para este año escolar. ¿Deseas continuar?"/>
-
-                    <button name="action_pasar_a_borrador_prueba"
-                        type="object"
-                        string="Pasar a borrador para prueba"
-                        class="btn-secondary"
-                        invisible="not id or estado == 'borrador'"
-                        confirm="Esta acción pasará el año escolar a estado Borrador para poder eliminarlo si era una prueba. ¿Deseas continuar?"/>
-
-                    <button name="action_eliminar_anio_prueba"
-                            type="object"
-                            string="Eliminar año de prueba"
-                            class="btn-danger"
-                            invisible="not id or estado != 'borrador'"
-                            confirm="Esta acción eliminará el año escolar de prueba junto con sus matrículas y listas vinculadas. ¿Deseas continuar?"/>
-
-                    <button name="action_limpiar_y_eliminar_anio_prueba"
-                            type="object"
-                            string="Limpiar y eliminar año de prueba"
-                            class="btn-danger"
-                            invisible="not id"
-                            confirm="Esta acción limpiará listas vacías, matrículas de prueba, sobrantes y movimientos huérfanos del año seleccionado. Solo úsalo si el año fue creado por prueba. ¿Deseas continuar?"/>
-
-                    <field name="estado"
-                        widget="statusbar"
-                        statusbar_visible="borrador,activo,cerrado"/>
+                    <field name="estado" widget="statusbar" statusbar_visible="borrador,activo,cerrado"/>
                 </header>
 
                 <sheet>
@@ -108,10 +64,7 @@
                         <group>
                             <field name="anio" invisible="id"/>
                             <field name="anio_visual" string="Año" readonly="1" invisible="not id"/>
-                            <field
-                                name="anio_anterior_id"
-                                readonly="1"
-                            />
+                            <field name="anio_anterior_id" readonly="1" />
                             <field name="fecha_inicio"/>
                             <field name="fecha_fin"/>
                         </group>
