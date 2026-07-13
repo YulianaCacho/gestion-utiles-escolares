@@ -1,296 +1,1090 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <templates xml:space="preserve">
 
     <t t-name="gestion_utiles_escolares.ReconocimientoIADashboard">
+
         <div class="o_ia_utiles_dashboard">
 
+
+            <!-- ================================================= -->
+            <!-- ENCABEZADO -->
+            <!-- ================================================= -->
+
             <div class="o_ia_utiles_hero">
+
                 <div>
-                    <span class="o_ia_utiles_badge">Modelo YOLO entrenado</span>
-                    <h1>Reconocimiento IA de útiles escolares</h1>
+
+                    <span class="o_ia_utiles_badge">
+                        Modelo YOLO entrenado
+                    </span>
+
+                    <h1>
+                        Reconocimiento IA de útiles escolares
+                    </h1>
+
                     <p>
-                        Sube una imagen del útil escolar y el sistema intentará reconocer el producto usando tu modelo entrenado.
+                        Sube una imagen del útil escolar y el sistema
+                        intentará reconocer el producto usando tu
+                        modelo entrenado.
                     </p>
+
                 </div>
 
-                <div class="o_ia_utiles_status_card">
-                    <div class="o_ia_utiles_status_title">Estado del modelo</div>
 
-                    <div t-if="state.checkingModel" class="o_ia_utiles_status_wait">
+                <!-- ESTADO DEL MODELO -->
+
+                <div class="o_ia_utiles_status_card">
+
+                    <div class="o_ia_utiles_status_title">
+                        Estado del modelo
+                    </div>
+
+
+                    <div
+                        t-if="state.checkingModel"
+                        class="o_ia_utiles_status_wait"
+                    >
                         Verificando modelo...
                     </div>
 
+
                     <div t-if="!state.checkingModel">
-                        <div t-if="modelReady" class="o_ia_utiles_status_ok">
+
+                        <div
+                            t-if="modelReady"
+                            class="o_ia_utiles_status_ok"
+                        >
                             Disponible
                         </div>
 
-                        <div t-if="!modelReady" class="o_ia_utiles_status_bad">
+
+                        <div
+                            t-if="!modelReady"
+                            class="o_ia_utiles_status_bad"
+                        >
                             Pendiente
                         </div>
 
-                        <small>
-                            Peso:
-                            <strong t-esc="state.modelStatus.size_mb"/>
-                            MB
-                        </small>
 
                         <small>
-                            <t t-esc="state.modelStatus.dependency_message"/>
+
+                            Peso:
+
+                            <strong
+                                t-esc="state.modelStatus.size_mb"
+                            />
+
+                            MB
+
                         </small>
+
+
+                        <small>
+
+                            <t
+                                t-esc="
+                                    state.modelStatus
+                                    .dependency_message
+                                "
+                            />
+
+                        </small>
+
                     </div>
+
                 </div>
+
             </div>
+
+
+            <!-- ================================================= -->
+            <!-- CONTENIDO PRINCIPAL -->
+            <!-- ================================================= -->
 
             <div class="o_ia_utiles_grid">
 
+
+                <!-- ============================================= -->
+                <!-- PANEL DE IMAGEN -->
+                <!-- ============================================= -->
+
                 <div class="o_ia_utiles_upload_panel">
+
+
                     <div class="o_ia_utiles_panel_header">
+
                         <div>
-                            <h2>Imagen para analizar</h2>
-                            <p>Selecciona una foto tomada desde celular o cargada desde tu computadora.</p>
+
+                            <h2>
+                                Imagen para analizar
+                            </h2>
+
+                            <p>
+                                Selecciona una foto tomada desde
+                                celular o cargada desde tu
+                                computadora.
+                            </p>
+
                         </div>
+
                     </div>
+
+
+                    <!-- CARGAR IMAGEN -->
 
                     <label class="o_ia_utiles_dropzone">
-                        <input type="file" accept="image/*" t-on-change="onFileChange"/>
 
-                        <div t-if="!state.preview" class="o_ia_utiles_drop_content">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            t-on-change="onFileChange"
+                        />
+
+
+                        <div
+                            t-if="!state.preview"
+                            class="o_ia_utiles_drop_content"
+                        >
+
                             <i class="fa fa-cloud-upload"/>
-                            <strong>Seleccionar imagen</strong>
-                            <span>JPG, PNG o JPEG</span>
+
+                            <strong>
+                                Seleccionar imagen
+                            </strong>
+
+                            <span>
+                                JPG, PNG o JPEG
+                            </span>
+
                         </div>
 
-                        <img t-if="state.preview" t-att-src="state.preview" class="o_ia_utiles_preview"/>
+
+                        <img
+                            t-if="state.preview"
+                            t-att-src="state.preview"
+                            class="o_ia_utiles_preview"
+                        />
+
                     </label>
 
-                    <div t-if="state.filename" class="o_ia_utiles_filename">
+
+                    <!-- NOMBRE DEL ARCHIVO -->
+
+                    <div
+                        t-if="state.filename"
+                        class="o_ia_utiles_filename"
+                    >
+
                         Archivo:
-                        <strong t-esc="state.filename"/>
+
+                        <strong
+                            t-esc="state.filename"
+                        />
+
                     </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- CÁMARA -->
+                    <!-- ========================================= -->
 
                     <div class="o_ia_utiles_camera_box">
+
+
                         <div class="o_ia_utiles_camera_actions">
-                            <button type="button" class="o_ia_utiles_btn secondary" t-on-click="openCamera" t-att-disabled="state.cameraLoading">
+
+
+                            <button
+                                type="button"
+                                class="o_ia_utiles_btn secondary"
+                                t-on-click="openCamera"
+                                t-att-disabled="
+                                    state.cameraLoading
+                                "
+                            >
+
                                 <i class="fa fa-video-camera"/>
-                                <span t-if="!state.cameraLoading">Usar cámara</span>
-                                <span t-if="state.cameraLoading">Abriendo cámara...</span>
+
+
+                                <span
+                                    t-if="
+                                        !state.cameraLoading
+                                    "
+                                >
+                                    Usar cámara
+                                </span>
+
+
+                                <span
+                                    t-if="
+                                        state.cameraLoading
+                                    "
+                                >
+                                    Abriendo cámara...
+                                </span>
+
                             </button>
 
-                            <button t-if="state.cameraActive" type="button" class="o_ia_utiles_btn primary" t-on-click="captureFromCamera">
+
+                            <button
+                                t-if="state.cameraActive"
+                                type="button"
+                                class="o_ia_utiles_btn primary"
+                                t-on-click="captureFromCamera"
+                            >
+
                                 <i class="fa fa-camera"/>
-            Capturar foto
+
+                                Capturar foto
+
                             </button>
 
-                            <button t-if="state.cameraActive" type="button" class="o_ia_utiles_btn secondary" t-on-click="stopCamera">
-            Cerrar cámara
+
+                            <button
+                                t-if="state.cameraActive"
+                                type="button"
+                                class="o_ia_utiles_btn secondary"
+                                t-on-click="stopCamera"
+                            >
+
+                                Cerrar cámara
+
                             </button>
+
                         </div>
 
-                        <div t-if="state.cameraActive" class="o_ia_utiles_camera_preview">
-                            <video class="o_ia_utiles_camera_video" autoplay="autoplay" playsinline="playsinline"/>
+
+                        <!-- VISTA PREVIA DE CÁMARA -->
+
+                        <div
+                            t-if="state.cameraActive"
+                            class="o_ia_utiles_camera_preview"
+                        >
+
+                            <video
+                                class="o_ia_utiles_camera_video"
+                                autoplay="autoplay"
+                                playsinline="playsinline"
+                            />
+
                         </div>
 
-                        <div t-if="state.cameraError" class="o_ia_utiles_error">
-                            <strong>Cámara:</strong>
-                            <t t-esc="state.cameraError"/>
+
+                        <!-- ERROR DE CÁMARA -->
+
+                        <div
+                            t-if="state.cameraError"
+                            class="o_ia_utiles_error"
+                        >
+
+                            <strong>
+                                Cámara:
+                            </strong>
+
+                            <t
+                                t-esc="state.cameraError"
+                            />
+
                         </div>
+
                     </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- ACCIONES -->
+                    <!-- ========================================= -->
 
                     <div class="o_ia_utiles_actions">
-                        <button type="button" class="o_ia_utiles_btn primary" t-on-click="analyzeImage" t-att-disabled="state.loading">
+
+
+                        <button
+                            type="button"
+                            class="o_ia_utiles_btn primary"
+                            t-on-click="analyzeImage"
+                            t-att-disabled="
+                                state.loading
+                            "
+                        >
+
                             <i class="fa fa-magic"/>
-                            <span t-if="!state.loading">Analizar imagen</span>
-                            <span t-if="state.loading">Analizando...</span>
+
+
+                            <span
+                                t-if="
+                                    !state.loading
+                                "
+                            >
+                                Analizar imagen
+                            </span>
+
+
+                            <span
+                                t-if="
+                                    state.loading
+                                "
+                            >
+                                Analizando...
+                            </span>
+
                         </button>
 
-                        <button type="button" class="o_ia_utiles_btn secondary" t-on-click="clearImage">
+
+                        <button
+                            type="button"
+                            class="o_ia_utiles_btn secondary"
+                            t-on-click="clearImage"
+                        >
+
                             Limpiar
+
                         </button>
+
                     </div>
 
-                    <div t-if="state.error" class="o_ia_utiles_error">
-                        <strong>Error:</strong>
-                        <t t-esc="state.error"/>
+
+                    <!-- ERROR GENERAL -->
+
+                    <div
+                        t-if="state.error"
+                        class="o_ia_utiles_error"
+                    >
+
+                        <strong>
+                            Error:
+                        </strong>
+
+                        <t
+                            t-esc="state.error"
+                        />
+
                     </div>
+
                 </div>
 
+
+                <!-- ============================================= -->
+                <!-- PANEL DE RESULTADOS -->
+                <!-- ============================================= -->
+
                 <div class="o_ia_utiles_result_panel">
+
+
                     <div class="o_ia_utiles_panel_header">
+
                         <div>
-                            <h2>Resultado del reconocimiento</h2>
-                            <p>El sistema mostrará la clase detectada, confianza y coincidencias en la recepción.</p>
+
+                            <h2>
+                                Resultado del reconocimiento
+                            </h2>
+
+                            <p>
+                                El sistema mostrará la clase detectada,
+                                confianza y coincidencias en la
+                                recepción.
+                            </p>
+
                         </div>
+
                     </div>
 
-                    <div t-if="!state.result" class="o_ia_utiles_empty_result">
+
+                    <!-- SIN RESULTADOS -->
+
+                    <div
+                        t-if="!state.result"
+                        class="o_ia_utiles_empty_result"
+                    >
+
                         <i class="fa fa-search"/>
-                        <h3>Aún no hay análisis</h3>
-                        <p>Selecciona una imagen y presiona “Analizar imagen”.</p>
+
+                        <h3>
+                            Aún no hay análisis
+                        </h3>
+
+                        <p>
+                            Selecciona una imagen y presiona
+                            “Analizar imagen”.
+                        </p>
+
                     </div>
+
+
+                    <!-- CON RESULTADOS -->
 
                     <div t-if="state.result">
 
-                        <div t-if="topDetection" class="o_ia_utiles_best_result">
-                            <span>Clase más probable</span>
-                            <h3 t-esc="topDetection.label"/>
+
+                        <!-- MEJOR RESULTADO -->
+
+                        <div
+                            t-if="topDetection"
+                            class="o_ia_utiles_best_result"
+                        >
+
+                            <span>
+                                Clase más probable
+                            </span>
+
+
+                            <h3
+                                t-esc="topDetection.label"
+                            />
+
 
                             <div class="o_ia_utiles_confidence">
+
                                 Confianza:
-                                <strong t-esc="confidenceText"/>
+
+                                <strong
+                                    t-esc="confidenceText"
+                                />
+
                             </div>
+
 
                             <div class="o_ia_utiles_ia_class">
+
                                 Clase IA:
-                                <strong t-esc="topDetection.ia_class"/>
+
+                                <strong
+                                    t-esc="
+                                        topDetection.ia_class
+                                    "
+                                />
+
                             </div>
 
-                            <div t-if="topDetection.product_name" class="o_ia_utiles_product_match">
+
+                            <div
+                                t-if="
+                                    topDetection.product_name
+                                "
+                                class="
+                                    o_ia_utiles_product_match
+                                "
+                            >
+
                                 Coincidencia general:
-                                <strong t-esc="topDetection.product_name"/>
+
+                                <strong
+                                    t-esc="
+                                        topDetection
+                                        .product_name
+                                    "
+                                />
+
                             </div>
 
-                            <div t-if="!topDetection.product_name" class="o_ia_utiles_product_nomatch">
-                                Esta clase debe validarse contra la lista de útiles del alumno.
+
+                            <div
+                                t-if="
+                                    !topDetection.product_name
+                                "
+                                class="
+                                    o_ia_utiles_product_nomatch
+                                "
+                            >
+
+                                Esta clase debe validarse contra
+                                la lista de útiles del alumno.
+
                             </div>
+
                         </div>
 
-                        <div t-if="!topDetection" class="o_ia_utiles_empty_result">
-                            <i class="fa fa-exclamation-circle"/>
-                            <h3>No se detectaron productos</h3>
-                            <p>Prueba con una imagen más clara o con el útil más cerca.</p>
+
+                        <!-- SIN DETECCIONES -->
+
+                        <div
+                            t-if="!topDetection"
+                            class="o_ia_utiles_empty_result"
+                        >
+
+                            <i
+                                class="
+                                    fa
+                                    fa-exclamation-circle
+                                "
+                            />
+
+                            <h3>
+                                No se detectaron productos
+                            </h3>
+
+                            <p>
+                                Prueba con una imagen más clara
+                                o con el útil más cerca.
+                            </p>
+
                         </div>
 
-                        <div t-if="state.detections.length" class="o_ia_utiles_table_wrap">
+
+                        <!-- ===================================== -->
+                        <!-- TABLA DE DETECCIONES -->
+                        <!-- ===================================== -->
+
+                        <div
+                            t-if="
+                                state.detections.length
+                            "
+                            class="o_ia_utiles_table_wrap"
+                        >
+
                             <table class="o_ia_utiles_table">
+
+
                                 <thead>
+
                                     <tr>
-                                        <th>#</th>
-                                        <th>Clase detectada</th>
-                                        <th>Clase IA</th>
-                                        <th>Confianza</th>
+
+                                        <th>
+                                            #
+                                        </th>
+
+                                        <th>
+                                            Clase detectada
+                                        </th>
+
+                                        <th>
+                                            Clase IA
+                                        </th>
+
+                                        <th>
+                                            Confianza
+                                        </th>
+
                                     </tr>
+
                                 </thead>
 
+
                                 <tbody>
-                                    <t t-foreach="state.detections" t-as="detection" t-key="detection_index">
+
+
+                                    <t
+                                        t-foreach="
+                                            state.detections
+                                        "
+                                        t-as="detection"
+                                        t-key="
+                                            detection_index
+                                        "
+                                    >
+
                                         <tr>
-                                            <td t-esc="detection_index + 1"/>
+
+
+                                            <td
+                                                t-esc="
+                                                    detection_index
+                                                    +
+                                                    1
+                                                "
+                                            />
+
+
                                             <td>
-                                                <strong t-esc="detection.label"/>
+
+                                                <strong
+                                                    t-esc="
+                                                        detection
+                                                        .label
+                                                    "
+                                                />
+
                                             </td>
+
+
                                             <td>
-                                                <t t-esc="detection.ia_class"/>
+
+                                                <t
+                                                    t-esc="
+                                                        detection
+                                                        .ia_class
+                                                    "
+                                                />
+
                                             </td>
+
+
                                             <td>
-                                                <t t-esc="detection.confidence"/>
+
+                                                <t
+                                                    t-esc="
+                                                        detection
+                                                        .confidence
+                                                    "
+                                                />
+
                                                 %
+
                                             </td>
+
                                         </tr>
+
                                     </t>
+
                                 </tbody>
+
                             </table>
+
                         </div>
 
-                        <div t-if="state.candidateLoading" class="o_ia_utiles_candidates">
-                            Buscando productos candidatos en la recepción...
+
+                        <!-- ===================================== -->
+                        <!-- CARGANDO CANDIDATOS -->
+                        <!-- ===================================== -->
+
+                        <div
+                            t-if="
+                                state.candidateLoading
+                            "
+                            class="o_ia_utiles_candidates"
+                        >
+
+                            Buscando productos candidatos
+                            pendientes en la recepción...
+
                         </div>
 
-                        <div t-if="state.candidatePanel" class="o_ia_utiles_candidates">
-                            <h3>Validación en la recepción del alumno</h3>
+
+                        <!-- ===================================== -->
+                        <!-- VALIDACIÓN EN LA RECEPCIÓN -->
+                        <!-- ===================================== -->
+
+                        <div
+                            t-if="
+                                state.candidatePanel
+                            "
+                            class="o_ia_utiles_candidates"
+                        >
+
+
+                            <h3>
+                                Validación en la recepción
+                                del alumno
+                            </h3>
+
 
                             <p>
+
                                 Clase detectada:
-                                <strong t-esc="state.candidatePanel.ia_class"/>
+
+                                <strong
+                                    t-esc="
+                                        state
+                                        .candidatePanel
+                                        .ia_class
+                                    "
+                                />
+
                                 —
+
                                 Confianza:
-                                <strong t-esc="state.candidatePanel.confidence"/>
+
+                                <strong
+                                    t-esc="
+                                        state
+                                        .candidatePanel
+                                        .confidence
+                                    "
+                                />
+
                                 %
+
                             </p>
 
-                            <div t-if="!hasCandidates" class="o_ia_utiles_no_candidates">
-                                No se encontraron productos relacionados en la lista de útiles del alumno.
-                                Revisa que el producto tenga asignada su Clase IA.
+
+                            <!-- ================================= -->
+                            <!-- SIN PRODUCTOS PENDIENTES -->
+                            <!-- ================================= -->
+
+                            <div
+                                t-if="
+                                    !hasCandidates
+                                "
+                                class="
+                                    o_ia_utiles_no_candidates
+                                "
+                            >
+
+                                <t
+                                    t-esc="
+                                        state
+                                        .candidatePanel
+                                        .message
+                                        ||
+                                        'No existen productos pendientes relacionados con la detección.'
+                                    "
+                                />
+
                             </div>
+
+
+                            <!-- ================================= -->
+                            <!-- PRODUCTOS PENDIENTES -->
+                            <!-- ================================= -->
 
                             <div t-if="hasCandidates">
-                                <div class="o_ia_utiles_candidate_list">
-                                    <t t-foreach="candidates" t-as="candidate" t-key="candidate.linea_id">
-                                        <label t-att-class="candidate.is_complete ? 'o_ia_utiles_candidate complete' : 'o_ia_utiles_candidate'">
-                                            <input type="radio" name="ia_candidate" t-att-value="candidate.linea_id" t-att-checked="state.selectedLineId === candidate.linea_id" t-att-disabled="candidate.is_complete" t-on-change="onCandidateChange"/>
+
+
+                                <div
+                                    class="
+                                        o_ia_utiles_candidate_list
+                                    "
+                                >
+
+
+                                    <t
+                                        t-foreach="
+                                            candidates
+                                        "
+                                        t-as="candidate"
+                                        t-key="
+                                            candidate.linea_id
+                                        "
+                                    >
+
+
+                                        <label
+                                            class="
+                                                o_ia_utiles_candidate
+                                            "
+                                        >
+
+
+                                            <input
+                                                type="radio"
+                                                name="
+                                                    ia_candidate
+                                                "
+                                                t-att-value="
+                                                    candidate
+                                                    .linea_id
+                                                "
+                                                t-att-checked="
+                                                    state
+                                                    .selectedLineId
+                                                    ===
+                                                    candidate
+                                                    .linea_id
+                                                "
+                                                t-on-change="
+                                                    onCandidateChange
+                                                "
+                                            />
+
 
                                             <div>
-                                                <strong t-esc="candidate.producto"/>
-                                                <div class="o_ia_utiles_candidate_meta">
+
+
+                                                <strong
+                                                    t-esc="
+                                                        candidate
+                                                        .producto
+                                                    "
+                                                />
+
+
+                                                <div
+                                                    class="
+                                                        o_ia_utiles_candidate_meta
+                                                    "
+                                                >
+
                                                     Esperado:
-                                                    <t t-esc="candidate.cantidad_esperada"/>
+
+                                                    <t
+                                                        t-esc="
+                                                            candidate
+                                                            .cantidad_esperada
+                                                        "
+                                                    />
+
                                                     |
+
                                                     Entregado:
-                                                    <t t-esc="candidate.cantidad_entregada"/>
+
+                                                    <t
+                                                        t-esc="
+                                                            candidate
+                                                            .cantidad_entregada
+                                                        "
+                                                    />
+
                                                     |
+
                                                     Faltante:
-                                                    <t t-esc="candidate.cantidad_faltante"/>
+
+                                                    <t
+                                                        t-esc="
+                                                            candidate
+                                                            .cantidad_faltante
+                                                        "
+                                                    />
+
                                                 </div>
 
-                                                <div t-if="candidate.is_complete" class="o_ia_utiles_candidate_complete">
-                                                    Producto completo
-                                                </div>
                                             </div>
+
                                         </label>
+
                                     </t>
+
                                 </div>
 
-                                <div class="o_ia_utiles_quantity_box">
-                                    <label>Cantidad a marcar</label>
-                                    <input type="number" min="1" step="1" t-att-value="state.quantityToMark" t-on-input="onQuantityChange"/>
+
+                                <!-- ============================= -->
+                                <!-- CANTIDAD -->
+                                <!-- ============================= -->
+
+                                <div
+                                    t-if="
+                                        hasSelectedCandidate
+                                    "
+                                    class="
+                                        o_ia_utiles_quantity_box
+                                    "
+                                >
+
+
+                                    <label>
+                                        Cantidad a marcar
+                                    </label>
+
+
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        t-att-max="
+                                            selectedCandidate
+                                            .cantidad_faltante
+                                        "
+                                        t-att-value="
+                                            state
+                                            .quantityToMark
+                                        "
+                                        t-att-disabled="
+                                            state
+                                            .applyLoading
+                                        "
+                                        t-on-input="
+                                            onQuantityChange
+                                        "
+                                    />
+
+
                                     <small>
-                                        Ingresa la cantidad entregada por el padre de familia.
+
+                                        Cantidad permitida:
+                                        desde
+
+                                        <strong>
+                                            1
+                                        </strong>
+
+                                        hasta
+
+                                        <strong
+                                            t-esc="
+                                                selectedCandidate
+                                                .cantidad_faltante
+                                            "
+                                        />
+
+                                        unidades.
+
                                     </small>
+
                                 </div>
 
-                                <button type="button" class="o_ia_utiles_btn primary" t-on-click="applySelectedToReception" t-att-disabled="state.applyLoading">
+
+                                <!-- ============================= -->
+                                <!-- BOTÓN DE CONFIRMACIÓN -->
+                                <!-- ============================= -->
+
+                                <button
+                                    t-if="
+                                        hasSelectedCandidate
+                                    "
+                                    type="button"
+                                    class="
+                                        o_ia_utiles_btn
+                                        primary
+                                    "
+                                    t-on-click="
+                                        applySelectedToReception
+                                    "
+                                    t-att-disabled="
+                                        state.applyLoading
+                                        ||
+                                        !state.quantityToMark
+                                    "
+                                >
+
+
                                     <i class="fa fa-check"/>
-                                    <span t-if="!state.applyLoading">Marcar como verificado</span>
-                                    <span t-if="state.applyLoading">Marcando...</span>
+
+
+                                    <span
+                                        t-if="
+                                            !state.applyLoading
+                                        "
+                                    >
+
+                                        Marcar como verificado
+
+                                    </span>
+
+
+                                    <span
+                                        t-if="
+                                            state.applyLoading
+                                        "
+                                    >
+
+                                        Marcando...
+
+                                    </span>
+
                                 </button>
+
                             </div>
+
                         </div>
 
-                        <div t-if="state.applyResult" class="o_ia_utiles_apply_result">
-                            <h3>Producto verificado</h3>
+
+                        <!-- ===================================== -->
+                        <!-- RESULTADO DE LA VERIFICACIÓN -->
+                        <!-- ===================================== -->
+
+                        <div
+                            t-if="
+                                state.applyResult
+                            "
+                            class="
+                                o_ia_utiles_apply_result
+                            "
+                        >
+
+
+                            <h3>
+                                Producto verificado
+                            </h3>
+
+
                             <p>
-                                <strong t-esc="state.applyResult.producto"/>
+
+                                <strong
+                                    t-esc="
+                                        state
+                                        .applyResult
+                                        .producto
+                                    "
+                                />
+
                             </p>
+
+
                             <p>
+
                                 Cantidad marcada:
-                                <strong t-esc="state.applyResult.cantidad_marcada"/>
+
+                                <strong
+                                    t-esc="
+                                        state
+                                        .applyResult
+                                        .cantidad_marcada
+                                    "
+                                />
+
                             </p>
+
+
                             <p>
+
                                 Entregado:
-                                <strong t-esc="state.applyResult.cantidad_entregada"/>
+
+                                <strong
+                                    t-esc="
+                                        state
+                                        .applyResult
+                                        .cantidad_entregada
+                                    "
+                                />
+
                                 /
-                                <strong t-esc="state.applyResult.cantidad_esperada"/>
+
+                                <strong
+                                    t-esc="
+                                        state
+                                        .applyResult
+                                        .cantidad_esperada
+                                    "
+                                />
+
                             </p>
+
                         </div>
 
                     </div>
+
                 </div>
 
             </div>
 
-            <div t-if="state.returnToReceptionDashboard" class="o_ia_utiles_return_box">
-                <button type="button" class="o_ia_utiles_btn secondary" t-on-click="volverAlCotejo">
+
+            <!-- ================================================= -->
+            <!-- VOLVER AL COTEJO -->
+            <!-- ================================================= -->
+
+            <div
+                t-if="
+                    state.returnToReceptionDashboard
+                "
+                class="o_ia_utiles_return_box"
+            >
+
+                <button
+                    type="button"
+                    class="
+                        o_ia_utiles_btn
+                        secondary
+                    "
+                    t-on-click="
+                        volverAlCotejo
+                    "
+                >
+
                     <i class="fa fa-arrow-left"/>
-        Volver al cotejo
+
+                    Volver al cotejo
+
                 </button>
+
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- NOTA -->
+            <!-- ================================================= -->
+
             <div class="o_ia_utiles_note">
-                <strong>Nota:</strong>
-                para marcar útiles en la lista del alumno, abre este panel desde una recepción y valida el producto candidato antes de guardar.
+
+                <strong>
+                    Nota:
+                </strong>
+
+                para marcar útiles en la lista del alumno,
+                abre este panel desde una recepción y valida
+                el producto candidato antes de guardar.
+
             </div>
 
         </div>
+
     </t>
 
 </templates>

@@ -279,110 +279,324 @@ class ReconocimientoIADashboard extends Component {
     }
   }
 
-  async loadCandidatesForReception(detection) {
+    async loadCandidatesForReception(detection) {
     this.state.candidateLoading = true;
     this.state.candidatePanel = null;
     this.state.selectedLineId = false;
-    this.state.quantityToMark = 1;
+    this.state.quantityToMark = 0;
 
     try {
       const result = await this.orm.call(
         "recepcion.utiles.escolar",
         "obtener_candidatos_ia_recepcion",
-        [this.state.recepcionId, detection],
+        [
+          this.state.recepcionId,
+          detection,
+        ],
       );
 
-      this.state.candidatePanel = result;
-      this.state.selectedLineId = result.selected_line_id || false;
-      this.state.quantityToMark = result.cantidad_sugerida || 1;
+      this.state.candidatePanel =
+        result || {};
 
-      if (!result.candidatos || !result.candidatos.length) {
+      const selectedId =
+        Number(
+          result.selected_line_id || 0,
+        );
+
+      const selected =
+        this.candidates.find(
+          (candidate) =>
+            candidate.linea_id
+            ===
+            selectedId,
+        )
+        ||
+        this.candidates[0]
+        ||
+        null;
+
+      this.state.selectedLineId =
+        selected
+          ? selected.linea_id
+          : false;
+
+      this.state.quantityToMark =
+        selected
+          ? 1
+          : 0;
+
+      if (!this.hasCandidates) {
         this.notification.add(
-          "No se encontraron productos candidatos en la lista del alumno.",
-          { type: "warning" },
+          result.message
+          ||
+          "No existen productos pendientes relacionados con la detección.",
+          {
+            type: "warning",
+          },
         );
       }
     } catch (error) {
-      this.state.error = this.getErrorMessage(error);
-      this.notification.add(this.state.error, {
-        type: "danger",
-      });
+      this.state.error =
+        this.getErrorMessage(
+          error,
+        );
+
+      this.notification.add(
+        this.state.error,
+        {
+          type: "danger",
+        },
+      );
     } finally {
-      this.state.candidateLoading = false;
+      this.state.candidateLoading =
+        false;
     }
   }
+
 
   onCandidateChange(ev) {
-    this.state.selectedLineId = parseInt(ev.target.value || "0", 10) || false;
+    const selectedId =
+      Number(
+        ev.target.value || 0,
+      );
 
-    const selected = this.candidates.find(
-      (item) => item.linea_id === this.state.selectedLineId,
-    );
+    const selected =
+      this.candidates.find(
+        (candidate) =>
+          candidate.linea_id
+          ===
+          selectedId,
+      );
 
-    if (selected && selected.cantidad_faltante > 0) {
-      this.state.quantityToMark = Math.min(1, selected.cantidad_faltante);
+    if (!selected) {
+      this.state.selectedLineId =
+        false;
+
+      this.state.quantityToMark =
+        0;
+
+      return;
     }
+
+    this.state.selectedLineId =
+      selected.linea_id;
+
+    this.state.quantityToMark =
+      1;
   }
+
 
   onQuantityChange(ev) {
-    const value = parseFloat(ev.target.value || "0");
-    this.state.quantityToMark = value > 0 ? value : 1;
+    const selected =
+      this.selectedCandidate;
+
+    if (!selected) {
+      this.state.quantityToMark =
+        0;
+
+      ev.target.value = "";
+
+      return;
+    }
+
+    const value =
+      Number(
+        ev.target.value
+      );
+
+    const maxQuantity =
+      Math.floor(
+        Number(
+          selected
+            .cantidad_faltante
+          ||
+          0,
+        ),
+      );
+
+    if (
+      !Number.isInteger(
+        value,
+      )
+      ||
+      value
+      <
+      1
+    ) {
+      this.state.quantityToMark =
+        0;
+
+      ev.target.value = "";
+
+      return;
+    }
+
+    const normalizedValue =
+      Math.min(
+        value,
+        maxQuantity,
+      );
+
+    this.state.quantityToMark =
+      normalizedValue;
+
+    ev.target.value =
+      String(
+        normalizedValue,
+      );
   }
+
 
   async applySelectedToReception() {
     if (!this.state.recepcionId) {
       this.notification.add(
         "Abre este panel desde una recepción para marcar la lista del alumno.",
-        { type: "warning" },
+        {
+          type: "warning",
+        },
       );
+
       return;
     }
 
-    if (!this.state.selectedLineId) {
-      this.notification.add("Selecciona el producto correcto.", {
-        type: "warning",
-      });
+
+    const selected =
+      this.selectedCandidate;
+
+
+    if (!selected) {
+      this.notification.add(
+        "Selecciona un producto pendiente válido.",
+        {
+          type: "warning",
+        },
+      );
+
       return;
     }
 
-    if (!this.state.quantityToMark || this.state.quantityToMark <= 0) {
-      this.notification.add("Ingresa una cantidad válida.", {
-        type: "warning",
-      });
+
+    const quantity =
+      Number(
+        this.state.quantityToMark,
+      );
+
+
+    if (
+      !Number.isInteger(
+        quantity,
+      )
+      ||
+      quantity
+      <=
+      0
+    ) {
+      this.notification.add(
+        "Ingresa una cantidad entera mayor que cero.",
+        {
+          type: "warning",
+        },
+      );
+
       return;
     }
 
-    this.state.applyLoading = true;
-    this.state.applyResult = null;
+
+    const maxQuantity =
+      Number(
+        selected
+          .cantidad_faltante
+        ||
+        0,
+      );
+
+
+    if (
+      maxQuantity
+      <=
+      0
+    ) {
+      this.notification.add(
+        "El producto seleccionado ya se encuentra completo.",
+        {
+          type: "warning",
+        },
+      );
+
+      return;
+    }
+
+
+    if (
+      quantity
+      >
+      maxQuantity
+    ) {
+      this.notification.add(
+        `La cantidad máxima permitida es ${maxQuantity}.`,
+        {
+          type: "warning",
+        },
+      );
+
+      return;
+    }
+
+
+    this.state.applyLoading =
+      true;
+
+    this.state.applyResult =
+      null;
+
 
     try {
-      const result = await this.orm.call(
-        "recepcion.utiles.escolar",
-        "aplicar_verificacion_ia_recepcion",
-        [
-          this.state.recepcionId,
-          this.state.selectedLineId,
-          this.state.quantityToMark,
-          this.topDetection || {},
-        ],
+      const result =
+        await this.orm.call(
+          "recepcion.utiles.escolar",
+          "aplicar_verificacion_ia_recepcion",
+          [
+            this.state.recepcionId,
+            selected.linea_id,
+            quantity,
+            this.topDetection || {},
+          ],
+        );
+
+
+      this.state.applyResult =
+        result;
+
+
+      this.notification.add(
+        "Producto marcado como verificado.",
+        {
+          type: "success",
+        },
       );
 
-      this.state.applyResult = result;
-
-      this.notification.add("Producto marcado como verificado.", {
-        type: "success",
-      });
 
       if (this.topDetection) {
-        await this.loadCandidatesForReception(this.topDetection);
+        await this
+          .loadCandidatesForReception(
+            this.topDetection,
+          );
       }
     } catch (error) {
-      this.state.error = this.getErrorMessage(error);
-      this.notification.add(this.state.error, {
-        type: "danger",
-      });
+      this.state.error =
+        this.getErrorMessage(
+          error,
+        );
+
+      this.notification.add(
+        this.state.error,
+        {
+          type: "danger",
+        },
+      );
     } finally {
-      this.state.applyLoading = false;
+      this.state.applyLoading =
+        false;
     }
   }
 
@@ -423,14 +637,122 @@ class ReconocimientoIADashboard extends Component {
     );
   }
 
-  get candidates() {
-    return this.state.candidatePanel?.candidatos || [];
+    get candidates() {
+    const rawCandidates =
+      this.state
+        .candidatePanel
+        ?.candidatos
+      ||
+      [];
+
+    const uniqueCandidates =
+      new Map();
+
+
+    for (
+      const candidate
+      of
+      rawCandidates
+    ) {
+      const missing =
+        Number(
+          candidate
+            .cantidad_faltante
+          ||
+          0,
+        );
+
+      const expected =
+        Number(
+          candidate
+            .cantidad_esperada
+          ||
+          0,
+        );
+
+
+      if (
+        candidate.is_complete
+        ||
+        missing
+        <=
+        0
+        ||
+        expected
+        <=
+        0
+      ) {
+        continue;
+      }
+
+
+      const key =
+        candidate.product_id
+        ||
+        candidate.linea_id;
+
+
+      const current =
+        uniqueCandidates.get(
+          key,
+        );
+
+
+      if (
+        !current
+        ||
+        missing
+        >
+        Number(
+          current
+            .cantidad_faltante
+          ||
+          0,
+        )
+      ) {
+        uniqueCandidates.set(
+          key,
+          candidate,
+        );
+      }
+    }
+
+
+    return [
+      ...uniqueCandidates.values(),
+    ];
   }
 
-  get hasCandidates() {
-    return this.candidates.length > 0;
+
+  get selectedCandidate() {
+    return (
+      this.candidates.find(
+        (candidate) =>
+          candidate.linea_id
+          ===
+          this.state.selectedLineId,
+      )
+      ||
+      null
+    );
   }
-}
+
+
+  get hasCandidates() {
+    return (
+      this.candidates.length
+      >
+      0
+    );
+  }
+
+
+  get hasSelectedCandidate() {
+    return Boolean(
+      this.selectedCandidate,
+    );
+    }
+  }
 
 registry
   .category("actions")
