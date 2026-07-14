@@ -37,33 +37,6 @@ class ProductTemplate(models.Model):
         compute="_compute_codigo_ubicacion_fisica",
         store=True,
     )
-    
-class ProductCategory(models.Model):
-    _inherit = "product.category"
-
-    @api.constrains("name")
-    def _check_nombre_categoria_duplicado(self):
-        for categoria in self:
-            nombre = (categoria.name or "").strip()
-
-            if not nombre:
-                continue
-
-            categoria_duplicada = self.search(
-                [
-                    ("id", "!=", categoria.id),
-                    ("name", "=ilike", nombre),
-                ],
-                limit=1,
-            )
-
-            if categoria_duplicada:
-                raise ValidationError(
-                    "No se puede guardar la categoría.\n\n"
-                    f"Ya existe una categoría registrada con el nombre "
-                    f"'{nombre}'.\n\n"
-                    "Ingrese un nombre diferente."
-                )
 
     @api.depends("ubicacion_fisica_id")
     def _compute_codigo_ubicacion_fisica(self):
@@ -79,6 +52,7 @@ class ProductCategory(models.Model):
         for product in self:
             if len(product.responsable_escolar_ids) > 3:
                 raise ValidationError("Solo se pueden seleccionar hasta 3 responsables.")
+
     @api.constrains("name", "default_code")
     def _check_producto_duplicado(self):
         ProductProduct = self.env["product.product"].with_context(
@@ -125,4 +99,32 @@ class ProductCategory(models.Model):
                     "No se puede guardar el producto:\n\n- "
                     + "\n- ".join(errores)
                     + "\n\nIngrese un nombre y una referencia interna diferentes."
+                )
+
+
+class ProductCategory(models.Model):
+    _inherit = "product.category"
+
+    @api.constrains("name")
+    def _check_nombre_categoria_duplicado(self):
+        for categoria in self:
+            nombre = (categoria.name or "").strip()
+
+            if not nombre:
+                continue
+
+            categoria_duplicada = self.search(
+                [
+                    ("id", "!=", categoria.id),
+                    ("name", "=ilike", nombre),
+                ],
+                limit=1,
+            )
+
+            if categoria_duplicada:
+                raise ValidationError(
+                    "No se puede guardar la categoría.\n\n"
+                    f"Ya existe una categoría registrada con el nombre "
+                    f"'{nombre}'.\n\n"
+                    "Ingrese un nombre diferente."
                 )
