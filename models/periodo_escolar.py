@@ -603,6 +603,10 @@ class AnioEscolar(models.Model):
             "cierre.anio.matriculas"
         ]
 
+        RevisionMatriculasLinea = self.env[
+            "cierre.anio.matriculas.linea"
+        ]
+
 
         # ====================================================
         # CAMBIAR A LOS USUARIOS AL AÑO ANTERIOR
@@ -675,6 +679,32 @@ class AnioEscolar(models.Model):
                         anio_prueba.id,
                     ),
                 ]
+            )
+        )
+
+
+        # También se incluyen revisiones que tengan líneas
+        # vinculadas directamente a matrículas del año de prueba.
+        # Esto evita que la restricción ondelete="restrict" de
+        # matricula_id impida eliminar dichas matrículas.
+        lineas_revision_dependientes = (
+            RevisionMatriculasLinea.search(
+                [
+                    (
+                        "matricula_id",
+                        "in",
+                        matriculas_nuevo_anio.ids,
+                    ),
+                ]
+            )
+            if matriculas_nuevo_anio
+            else RevisionMatriculasLinea.browse()
+        )
+
+
+        revisiones |= (
+            lineas_revision_dependientes.mapped(
+                "cierre_id"
             )
         )
 
@@ -855,6 +885,19 @@ class AnioEscolar(models.Model):
 
 
         # ====================================================
+        # ELIMINAR REVISIONES DE PROMOCIÓN
+        # ====================================================
+
+        # Deben eliminarse antes que las matrículas del año de
+        # prueba porque sus líneas usan matricula_id con
+        # ondelete="restrict". Al eliminar la revisión, sus líneas
+        # se eliminan en cascada y dejan libres las matrículas.
+        if revisiones:
+
+            revisiones.unlink()
+
+
+        # ====================================================
         # ELIMINAR MATRÍCULAS DEL AÑO DE PRUEBA
         # ====================================================
 
@@ -947,15 +990,6 @@ class AnioEscolar(models.Model):
                     estudiante.write(
                         valores_estudiante
                     )
-
-
-        # ====================================================
-        # ELIMINAR REVISIONES DE PROMOCIÓN
-        # ====================================================
-
-        if revisiones:
-
-            revisiones.unlink()
 
 
         # ====================================================
