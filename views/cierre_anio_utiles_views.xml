@@ -1,117 +1,348 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <record id="view_cierre_anio_utiles_list" model="ir.ui.view">
-        <field name="name">cierre.anio.utiles.list</field>
-        <field name="model">cierre.anio.utiles</field>
-        <field name="arch" type="xml">
-            <list string="Cierres de año">
-                <field name="name"/>
-                <field name="anio_origen_id"/>
-                <field name="anio_destino_id"/>
-                <field name="fecha_revision"/>
-                <field name="responsable_id"/>
-                <field name="total_productos"/>
-                <field name="total_sistema"/>
-                <field name="total_trasladar"/>
-                <field name="total_no_aprovechable"/>
-                <field name="estado"/>
-            </list>
+    <record
+        id="view_cierre_anio_utiles_list"
+        model="ir.ui.view"
+    >
+        <field name="name">
+            cierre.anio.utiles.list
         </field>
+
+        <field name="model">cierre.anio.utiles</field>
+
+        <field name="arch" type="xml">
+
+            <list string="Cierres de útiles">
+
+                <field name="name"/>
+
+                <field name="anio_origen_id"/>
+
+                <field name="anio_destino_id"/>
+
+                <field name="fecha_revision"/>
+
+                <field name="responsable_id"/>
+
+                <field name="total_productos"/>
+
+                <field name="total_sistema"/>
+
+                <field name="total_trasladar"/>
+
+                <field name="total_recibido"/>
+
+                <field name="estado"/>
+
+            </list>
+
+        </field>
+
     </record>
 
-    <record id="view_cierre_anio_utiles_form" model="ir.ui.view">
-        <field name="name">cierre.anio.utiles.form</field>
+
+    <record
+        id="view_cierre_anio_utiles_form"
+        model="ir.ui.view"
+    >
+
+        <field name="name">
+            cierre.anio.utiles.form
+        </field>
+
         <field name="model">cierre.anio.utiles</field>
+
         <field name="arch" type="xml">
-            <form string="Cierre de año y revisión de sobrantes">
+
+            <form
+                string="Cierre de año y revisión de sobrantes"
+            >
+
                 <header>
-                    <button name="action_generar_revision"
-                            string="Generar reporte de sobrantes"
-                            type="object"
-                            class="btn-secondary"
-                            invisible="estado == 'confirmado'"/>
 
-                    <button name="action_confirmar_traslado"
-                            string="Confirmar traslado al siguiente año"
-                            type="object"
-                            class="btn-primary"
-                            invisible="estado != 'revision'"
-                            confirm="Se registrarán ajustes, salida de fin de año e ingreso al nuevo periodo. ¿Deseas continuar?"/>
+                    <button
+                        name="action_generar_revision"
+                        string="Generar reporte de sobrantes"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="
+                            estado != 'borrador'
+                        "
+                        confirm="Se calcularán los saldos disponibles por producto y grado. ¿Deseas continuar?"
+                    />
 
-                    <field name="estado"
-                           widget="statusbar"
-                           statusbar_visible="borrador,revision,confirmado"/>
+
+                    <button
+                        name="action_validar_cierre"
+                        string="Validar cierre de útiles"
+                        type="object"
+                        class="btn-primary"
+                        invisible="
+                            estado != 'revision'
+                        "
+                        confirm="Se registrarán los ajustes y las salidas de fin de año. Los útiles quedarán pendientes de revisión e ingreso al siguiente periodo. ¿Deseas validar el cierre?"
+                    />
+
+
+                    <button
+                        name="action_validar_ingreso"
+                        string="Validar ingreso al nuevo año"
+                        type="object"
+                        class="btn-primary"
+                        invisible="
+                            estado != 'ingreso_revision'
+                        "
+                        confirm="Se registrará la cantidad recibida como entrada en el nuevo año escolar. ¿Deseas validar el ingreso?"
+                    />
+
+
+                    <field
+                        name="estado"
+                        widget="statusbar"
+                        statusbar_visible="
+                            borrador,
+                            revision,
+                            cierre_validado,
+                            ingreso_revision,
+                            confirmado
+                        "
+                    />
+
                 </header>
 
+
                 <sheet>
+
                     <div class="oe_title">
+
                         <h1>
-                            <field name="name" readonly="1"/>
+
+                            <field
+                                name="name"
+                                readonly="1"
+                            />
+
                         </h1>
+
                     </div>
 
+
                     <group string="Datos del cierre">
+
                         <group>
-                            <field name="anio_origen_id"/>
-                            <field name="anio_destino_id"/>
-                            <field name="fecha_revision"/>
-                            <field name="fecha_confirmacion"/>
+
+                            <field
+                                name="anio_origen_id"
+                            />
+
+                            <field
+                                name="anio_destino_id"
+                                placeholder="Se asignará al crear el siguiente año"
+                            />
+
+                            <field
+                                name="fecha_revision"
+                            />
+
+                            <field
+                                name="fecha_validacion_cierre"
+                            />
+
+                            <field
+                                name="fecha_confirmacion"
+                            />
+
                         </group>
+
+
                         <group>
-                            <field name="responsable_id"/>
-                            <field name="total_productos"/>
-                            <field name="total_sistema"/>
-                            <field name="total_trasladar"/>
-                            <field name="total_no_aprovechable"/>
+
+                            <field
+                                name="responsable_id"
+                            />
+
+                            <field
+                                name="total_productos"
+                            />
+
+                            <field
+                                name="total_sistema"
+                            />
+
+                            <field
+                                name="total_trasladar"
+                            />
+
+                            <field
+                                name="total_no_aprovechable"
+                            />
+
+                            <field
+                                name="total_recibido"
+                            />
+
                         </group>
+
                     </group>
+
 
                     <group string="Observación general">
-                        <field name="observacion"
-                               placeholder="Ejemplo: Revisión física realizada antes de trasladar útiles al nuevo año escolar."/>
+
+                        <field
+                            name="observacion"
+                            readonly="
+                                estado == 'confirmado'
+                            "
+                            placeholder="Registra observaciones sobre la revisión física, el cierre o la recepción de los útiles."
+                        />
+
                     </group>
 
+
                     <notebook>
-                        <page string="Reporte de útiles sobrantes revisados">
-                            <field name="linea_ids" nolabel="1">
-                                <list editable="bottom"
-                                      create="0"
-                                      delete="0"
-                                      string="Útiles sobrantes">
-                                    <field name="grado_escolar"/>
-                                    <field name="product_id"/>
-                                    <field name="categoria_id"/>
-                                    <field name="cantidad_sistema"/>
-                                    <field name="cantidad_revisada"/>
-                                    <field name="cantidad_a_trasladar"/>
-                                    <field name="cantidad_no_aprovechable"/>
-                                    <field name="uom_id"/>
-                                    <field name="motivo_ajuste"/>
-                                    <field name="observacion"/>
+
+                        <page
+                            string="Útiles sobrantes"
+                        >
+
+                            <field
+                                name="linea_ids"
+                                nolabel="1"
+                            >
+
+                                <list
+                                    editable="bottom"
+                                    create="0"
+                                    delete="0"
+                                    string="Útiles sobrantes"
+                                >
+
+                                    <field
+                                        name="grado_escolar"
+                                    />
+
+                                    <field
+                                        name="product_id"
+                                    />
+
+                                    <field
+                                        name="categoria_id"
+                                    />
+
+                                    <field
+                                        name="cantidad_sistema"
+                                    />
+
+                                    <field
+                                        name="cantidad_revisada"
+                                        readonly="
+                                            parent.estado
+                                            !=
+                                            'revision'
+                                        "
+                                    />
+
+                                    <field
+                                        name="cantidad_a_trasladar"
+                                        readonly="
+                                            parent.estado
+                                            !=
+                                            'revision'
+                                        "
+                                    />
+
+                                    <field
+                                        name="cantidad_no_aprovechable"
+                                    />
+
+                                    <field
+                                        name="motivo_ajuste"
+                                        readonly="
+                                            parent.estado
+                                            !=
+                                            'revision'
+                                        "
+                                    />
+
+                                    <field
+                                        name="cantidad_recibida"
+                                        readonly="
+                                            parent.estado
+                                            !=
+                                            'ingreso_revision'
+                                        "
+                                    />
+
+                                    <field
+                                        name="diferencia_ingreso"
+                                    />
+
+                                    <field
+                                        name="uom_id"
+                                    />
+
+                                    <field
+                                        name="observacion"
+                                        readonly="
+                                            parent.estado
+                                            ==
+                                            'confirmado'
+                                        "
+                                    />
+
                                 </list>
+
                             </field>
+
                         </page>
+
                     </notebook>
+
                 </sheet>
+
             </form>
+
         </field>
+
     </record>
 
-    <record id="action_cierre_anio_utiles" model="ir.actions.act_window">
-        <field name="name">Cierres de año</field>
+
+    <record
+        id="action_cierre_anio_utiles"
+        model="ir.actions.act_window"
+    >
+
+        <field name="name">
+            Cierres de año
+        </field>
+
         <field name="res_model">cierre.anio.utiles</field>
+
         <field name="view_mode">list,form</field>
+
     </record>
 
-    <menuitem id="menu_cierre_anio_utiles"
-            name="Cierre de año"
-            parent="menu_almacen_utiles_root"
-            action="action_cierre_anio_utiles"
-            sequence="45"/>
 
-    <record id="menu_cierre_anio_utiles" model="ir.ui.menu">
-        <field name="active" eval="False"/>
+    <menuitem
+        id="menu_cierre_anio_utiles"
+        name="Cierre de año"
+        parent="menu_almacen_utiles_root"
+        action="action_cierre_anio_utiles"
+        sequence="45"
+    />
+
+
+    <record
+        id="menu_cierre_anio_utiles"
+        model="ir.ui.menu"
+    >
+
+        <field
+            name="active"
+            eval="False"
+        />
+
     </record>
 
 </odoo>

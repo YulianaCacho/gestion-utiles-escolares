@@ -8,7 +8,12 @@
             <list string="Revisiones de promoción">
                 <field name="name" />
                 <field name="anio_origen_id" />
-                <field name="anio_destino_id" />
+                <field
+                    name="anio_destino_id"
+                    string="Año siguiente"
+                    readonly="1"
+                    placeholder="Se asignará al crear el siguiente año"
+                />
                 <field name="fecha_revision" />
                 <field name="responsable_id" />
                 <field name="total_alumnos" />
@@ -26,18 +31,21 @@
         <field name="arch" type="xml">
             <form string="Revisión de promoción de alumnos">
                 <header>
-                    <button name="action_generar_revision"
+                    <button
+                        name="action_generar_revision"
                         string="Generar lista de alumnos"
                         type="object"
                         class="btn-secondary"
-                        invisible="estado == 'confirmado'" />
+                        invisible="estado != 'borrador'"
+                        confirm="Se cargarán las matrículas activas del año. ¿Deseas continuar?"
+                    />
 
                     <button name="action_confirmar_revision"
-                        string="Confirmar revisión"
+                        string="Validar resultados"
                         type="object"
                         class="btn-primary"
                         invisible="estado != 'revision'"
-                        confirm="Se guardará la situación de cada alumno (promovido, repite o retirado) para usarse al generar las matrículas del siguiente año. ¿Deseas continuar?" />
+                        confirm=" Se guardará la situación final de cada estudiante y las matrículas del año pasarán a estado Finalizado. ¿Deseas validar los resultados?"/>
 
                     <field name="estado"
                         widget="statusbar"
@@ -69,12 +77,19 @@
 
                     <group string="Observación general">
                         <field name="observacion"
-                            placeholder="Ejemplo: Revisión de promoción realizada con el reporte de notas del año." />
+                                readonly="estado == 'confirmado'"
+                                placeholder="Ejemplo: Revisión de promoción realizada con el reporte de notas del año."
+                        />
                     </group>
 
                     <notebook>
                         <page string="Alumnos revisados">
-                            <field name="linea_ids" nolabel="1">
+                            <field
+                                name="linea_ids"
+                                nolabel="1"
+                                readonly="estado == 'confirmado'"
+                            >
+
                                 <list editable="bottom"
                                     create="0"
                                     delete="0"
