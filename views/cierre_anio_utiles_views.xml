@@ -9,9 +9,7 @@
             cierre.anio.utiles.list
         </field>
 
-        <field name="model">
-            cierre.anio.utiles
-        </field>
+        <field name="model">cierre.anio.utiles</field>
 
         <field name="arch" type="xml">
 
@@ -53,9 +51,7 @@
             cierre.anio.utiles.form
         </field>
 
-        <field name="model">
-            cierre.anio.utiles
-        </field>
+        <field name="model">cierre.anio.utiles</field>
 
         <field name="arch" type="xml">
 
@@ -321,13 +317,9 @@
             Cierres de año
         </field>
 
-        <field name="res_model">
-            cierre.anio.utiles
-        </field>
+        <field name="res_model">cierre.anio.utiles</field>
 
-        <field name="view_mode">
-            list,form
-        </field>
+        <field name="view_mode">list,form</field>
 
     </record>
 

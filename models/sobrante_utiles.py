@@ -42,6 +42,13 @@ class SobranteUtilesAnio(models.Model):
         readonly=True
     )
 
+    product_id = fields.Many2one(
+        "product.product",
+        string="Producto",
+        required=True,
+        readonly=True,
+    )
+
     grado_escolar = fields.Selection(
         GRADO_ESCOLAR_SELECTION,
         string="Grado / sección",
@@ -53,7 +60,7 @@ class SobranteUtilesAnio(models.Model):
         "uom.uom",
         string="Unidad",
         related="product_id.uom_id",
-        readonly=True
+        readonly=True,
     )
 
     cantidad_inicial = fields.Float(

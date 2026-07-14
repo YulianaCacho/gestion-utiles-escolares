@@ -93,13 +93,9 @@
         model="ir.ui.view"
     >
 
-        <field name="name">
-            salida.almacen.utiles.form
-        </field>
+        <field name="name">salida.almacen.utiles.form</field>
 
-        <field name="model">
-            salida.almacen.utiles
-        </field>
+        <field name="model">salida.almacen.utiles</field>
 
         <field name="arch" type="xml">
 
@@ -529,9 +525,7 @@
 
         <field
             name="search_view_id"
-            ref="
-                view_salida_almacen_utiles_search
-            "
+            ref="view_salida_almacen_utiles_search"
         />
 
     </record>
@@ -544,12 +538,8 @@
     <menuitem
         id="menu_salida_almacen_utiles"
         name="↥ Entregas"
-        parent="
-            menu_almacen_utiles_root
-        "
-        action="
-            action_salida_almacen_utiles
-        "
+        parent="menu_almacen_utiles_root"
+        action="action_salida_almacen_utiles"
         sequence="20"
     />
 
