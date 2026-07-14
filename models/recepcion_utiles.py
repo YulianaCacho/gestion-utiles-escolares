@@ -560,6 +560,46 @@ class RecepcionUtilesEscolar(models.Model):
 
                 linea.write(valores)
 
+    def _obtener_lista_correcta_por_matricula(self):
+        """Obtiene la lista del mismo año y grado de la matrícula."""
+
+        self.ensure_one()
+
+        matricula = self.matricula_id
+
+        if not matricula or not matricula.grado_escolar:
+            return self.env["lista.utiles.grado"]
+
+        dominio = [
+            ("grado_escolar", "=", matricula.grado_escolar),
+        ]
+
+        if (
+            "anio_escolar_id" in self.env["lista.utiles.grado"]._fields
+            and matricula.anio_escolar_id
+        ):
+            dominio.append(
+                ("anio_escolar_id", "=", matricula.anio_escolar_id.id)
+            )
+
+        lista = self.env["lista.utiles.grado"].search(
+            dominio,
+            order="id desc",
+            limit=1,
+        )
+
+        if not lista and matricula.anio_escolar_id:
+            lista = self.env["lista.utiles.grado"].search(
+                [
+                    ("grado_escolar", "=", matricula.grado_escolar),
+                    ("anio", "=", str(matricula.anio_escolar_id.anio)),
+                ],
+                order="id desc",
+                limit=1,
+            )
+
+        return lista
+
     @api.onchange("matricula_id")
     def _onchange_matricula_id_cargar_lista(self):
         for rec in self:
@@ -604,12 +644,25 @@ class RecepcionUtilesEscolar(models.Model):
             rec.fecha_envio_almacen = False
             rec.usuario_envio_almacen_id = False
 
-            if not rec.matricula_id or not rec.lista_id:
+            if not rec.matricula_id:
                 continue
+
+            lista_correcta = rec._obtener_lista_correcta_por_matricula()
+
+            if not lista_correcta:
+                return {
+                    "warning": {
+                        "title": "Lista no encontrada",
+                        "message": (
+                            "No se encontró una lista de útiles para "
+                            "el mismo año y grado de la matrícula seleccionada."
+                        ),
+                    }
+                }
 
             comandos = [(5, 0, 0)]
 
-            for linea in rec.lista_id.linea_ids:
+            for linea in lista_correcta.linea_ids:
                 producto = rec._obtener_valor_linea(
                     linea,
                     ["product_id", "producto_id"]
@@ -687,18 +740,30 @@ class RecepcionUtilesEscolar(models.Model):
                 raise UserError("Primero debes seleccionar una matrícula.")
             rec._ensure_matricula_activa_para_recepcion()
 
-            if not rec.lista_id:
-                raise UserError("La matrícula seleccionada no tiene una lista de útiles asociada.")
+            lista_correcta = rec._obtener_lista_correcta_por_matricula()
 
-            if "linea_ids" not in rec.lista_id._fields:
+            if not lista_correcta:
+                raise UserError(
+                    "No se encontró una lista de útiles para el mismo año y "
+                    "grado de la matrícula seleccionada."
+                )
+
+            if "linea_ids" not in lista_correcta._fields:
                 raise UserError(
                     "No se encontró el campo linea_ids en la lista de útiles. "
                     "Revisa cómo se llama el detalle de productos en tu modelo lista.utiles.grado."
                 )
 
+            if rec.matricula_id.lista_utiles_id != lista_correcta:
+                rec.matricula_id.with_context(
+                    skip_anio_check=True
+                ).write({
+                    "lista_utiles_id": lista_correcta.id,
+                })
+
             comandos = [(5, 0, 0)]
 
-            for linea in rec.lista_id.linea_ids:
+            for linea in lista_correcta.linea_ids:
                 producto = rec._obtener_valor_linea(
                     linea,
                     ["product_id", "producto_id"]
@@ -1612,6 +1677,7 @@ class RecepcionUtilesEscolar(models.Model):
                 "recepcion_utiles": "Recepción de útiles",
                 "compra_directa": "Compra directa",
                 "traslado_interno": "Traslado interno",
+                "sobrante_anio_anterior": "Útiles sobrantes del año anterior",
                 "otro": "Otro ingreso",
             }
 
@@ -1621,8 +1687,21 @@ class RecepcionUtilesEscolar(models.Model):
                 grado = rec._grado_label_dashboard(rec.grado_escolar)
             else:
                 alumno = tipo_entrada_labels.get(rec.tipo_entrada, "Ingreso externo")
-                iniciales = rec.tipo_entrada[0].upper() if rec.tipo_entrada else "?"
-                grado = ""
+                iniciales = (
+                    "SA"
+                    if rec.tipo_entrada == "sobrante_anio_anterior"
+                    else rec.tipo_entrada[0].upper()
+                    if rec.tipo_entrada
+                    else "?"
+                )
+                grado = (
+                    rec._grado_label_dashboard(rec.grado_entrada_sobrante)
+                    if (
+                        rec.tipo_entrada == "sobrante_anio_anterior"
+                        and "grado_entrada_sobrante" in rec._fields
+                    )
+                    else ""
+                )
 
             rows.append({
                 "id": rec.id,

@@ -15,6 +15,37 @@ GRADO_ESCOLAR_SELECTION = [
 ]
 
 
+class RecepcionUtilesSobranteAnio(models.Model):
+    _inherit = "recepcion.utiles.escolar"
+
+    tipo_entrada = fields.Selection(
+        selection_add=[
+            (
+                "sobrante_anio_anterior",
+                "Útiles sobrantes del año anterior",
+            ),
+        ],
+        ondelete={
+            "sobrante_anio_anterior": "set default",
+        },
+    )
+
+    grado_entrada_sobrante = fields.Selection(
+        GRADO_ESCOLAR_SELECTION,
+        string="Grado de los sobrantes",
+        readonly=True,
+        copy=False,
+    )
+
+    cierre_anio_utiles_id = fields.Many2one(
+        "cierre.anio.utiles",
+        string="Cierre de útiles relacionado",
+        readonly=True,
+        copy=False,
+        ondelete="set null",
+    )
+
+
 class CierreAnioUtiles(models.Model):
     _name = "cierre.anio.utiles"
     _description = "Cierre de año y revisión de sobrantes"
@@ -828,224 +859,225 @@ class CierreAnioUtiles(models.Model):
                     f"{linea.product_id.display_name}"
                 )
 
-    def action_validar_ingreso(
-        self
-    ):
+    def action_validar_ingreso(self):
 
         self.ensure_one()
 
-        if (
-            self.estado
-            !=
-            "ingreso_revision"
-        ):
-
+        if self.estado != "ingreso_revision":
             raise UserError(
-                "El ingreso solo puede "
-                "validarse cuando se "
-                "encuentra en revisión."
+                "El ingreso solo puede validarse cuando se encuentra en revisión."
             )
 
         if not self.anio_destino_id:
-
             raise UserError(
-                "No se ha asignado el "
-                "año escolar de destino."
+                "No se ha asignado el año escolar de destino."
             )
 
-        if (
-            self.anio_destino_id.estado
-            !=
-            "activo"
-        ):
-
+        if self.anio_destino_id.estado != "activo":
             raise UserError(
-                "El año escolar de destino "
-                "debe estar activo."
+                "El año escolar de destino debe estar activo."
             )
 
         self._validar_lineas_ingreso()
 
-        Movimiento = self.env[
-            "almacen.utiles.movimiento"
-        ]
+        Movimiento = self.env["almacen.utiles.movimiento"]
+        Sobrante = self.env["sobrante.utiles.anio"]
+        Recepcion = self.env["recepcion.utiles.escolar"]
 
-        Sobrante = self.env[
-            "sobrante.utiles.anio"
-        ]
+        lineas_por_grado = {}
 
         for linea in self.linea_ids:
-
             cantidad_recibida = float(
-                linea.cantidad_recibida
-                or
-                0
+                linea.cantidad_recibida or 0
             )
 
-            if (
-                cantidad_recibida
-                <=
-                0
-            ):
-
+            if cantidad_recibida <= 0:
                 continue
 
-            producto = (
-                linea.product_id
+            grado = linea.grado_escolar or False
+            lineas_por_grado.setdefault(
+                grado,
+                self.env["cierre.anio.utiles.linea"],
             )
+            lineas_por_grado[grado] |= linea
 
-            grado = (
-                linea.grado_escolar
-                or
-                False
-            )
+        for grado, lineas_grado in lineas_por_grado.items():
 
-            Movimiento.create(
+            comandos_lineas = []
+
+            for linea in lineas_grado:
+                cantidad_recibida = float(
+                    linea.cantidad_recibida or 0
+                )
+
+                comandos_lineas.append(
+                    (
+                        0,
+                        0,
+                        {
+                            "product_id": linea.product_id.id,
+                            "categoria_id": (
+                                linea.product_id.categ_id.id
+                                if linea.product_id.categ_id
+                                else False
+                            ),
+                            "cantidad_esperada": cantidad_recibida,
+                            "cantidad_entregada": cantidad_recibida,
+                            "unidad_id": (
+                                linea.product_id.uom_id.id
+                                if linea.product_id.uom_id
+                                else False
+                            ),
+                            "tipo_uso_escolar": (
+                                "Sobrante del año anterior"
+                            ),
+                            "destino_recepcion": "almacen",
+                            "cantidad_enviada_almacen": cantidad_recibida,
+                            "observacion": (
+                                f"Ingreso validado desde "
+                                f"{self.anio_origen_id.name}."
+                            ),
+                        },
+                    )
+                )
+
+            recepcion = Recepcion.create(
                 {
-                    "product_id":
-                        producto.id,
-
-                    "unidad_id":
-                        (
-                            producto.uom_id.id
-                            if
-                            producto.uom_id
-                            else
-                            False
-                        ),
-
-                    "categoria_id":
-                        (
-                            producto.categ_id.id
-                            if
-                            producto.categ_id
-                            else
-                            False
-                        ),
-
-                    "grado_escolar":
-                        grado,
-
-                    "responsable_id":
-                        self.env.user.id,
-
-                    "anio_escolar_id":
-                        self.anio_destino_id.id,
-
-                    "anio_origen_id":
-                        self.anio_origen_id.id,
-
-                    "anio_destino_id":
-                        self.anio_destino_id.id,
-
-                    "tipo_movimiento":
-                        "entrada",
-
-                    "cantidad":
-                        cantidad_recibida,
-
-                    "destino":
-                        (
-                            "Almacén del "
-                            "nuevo periodo"
-                        ),
-
-                    "observacion":
-                        (
-                            "Ingreso de útiles "
-                            "sobrantes del año "
-                            f"{self.anio_origen_id.name}. "
-                            f"Cantidad enviada: "
-                            f"{self._fmt_qty(linea.cantidad_a_trasladar)}. "
-                            f"Cantidad recibida: "
-                            f"{self._fmt_qty(cantidad_recibida)}."
-                        ),
+                    "tipo_entrada": "sobrante_anio_anterior",
+                    "anio_escolar_id": self.anio_destino_id.id,
+                    "grado_entrada_sobrante": grado,
+                    "cierre_anio_utiles_id": self.id,
+                    "estado": "validado",
+                    "observacion": (
+                        "Ingreso de útiles sobrantes del año anterior. "
+                        f"Origen: {self.anio_origen_id.name}. "
+                        f"Destino: {self.anio_destino_id.name}."
+                    ),
+                    "linea_ids": comandos_lineas,
                 }
             )
 
-            sobrante = Sobrante.search(
-                [
-                    (
-                        "anio_origen_id",
-                        "=",
-                        self.anio_origen_id.id,
+            lineas_recepcion_por_producto = {
+                linea.product_id.id: linea
+                for linea in recepcion.linea_ids
+            }
+
+            for linea in lineas_grado:
+
+                cantidad_recibida = float(
+                    linea.cantidad_recibida or 0
+                )
+
+                producto = linea.product_id
+                linea_recepcion = (
+                    lineas_recepcion_por_producto.get(
+                        producto.id
+                    )
+                )
+
+                valores_movimiento = {
+                    "product_id": producto.id,
+                    "unidad_id": (
+                        producto.uom_id.id
+                        if producto.uom_id
+                        else False
                     ),
-                    (
-                        "anio_destino_id",
-                        "=",
-                        self.anio_destino_id.id,
+                    "categoria_id": (
+                        producto.categ_id.id
+                        if producto.categ_id
+                        else False
                     ),
-                    (
-                        "product_id",
-                        "=",
-                        producto.id,
+                    "grado_escolar": grado,
+                    "responsable_id": self.env.user.id,
+                    "anio_escolar_id": self.anio_destino_id.id,
+                    "anio_origen_id": self.anio_origen_id.id,
+                    "anio_destino_id": self.anio_destino_id.id,
+                    "recepcion_id": recepcion.id,
+                    "tipo_movimiento": "entrada",
+                    "cantidad": cantidad_recibida,
+                    "destino": "Almacén del nuevo periodo",
+                    "observacion": (
+                        "Ingreso de útiles sobrantes del año "
+                        f"{self.anio_origen_id.name}. "
+                        f"Cantidad enviada: "
+                        f"{self._fmt_qty(linea.cantidad_a_trasladar)}. "
+                        f"Cantidad recibida: "
+                        f"{self._fmt_qty(cantidad_recibida)}."
                     ),
-                    (
-                        "grado_escolar",
-                        "=",
-                        grado,
-                    ),
-                ],
-                limit=1,
-            )
+                }
 
-            vals_sobrante = {
-                "anio_origen_id":
-                    self.anio_origen_id.id,
+                if (
+                    linea_recepcion
+                    and "recepcion_linea_id" in Movimiento._fields
+                ):
+                    valores_movimiento[
+                        "recepcion_linea_id"
+                    ] = linea_recepcion.id
 
-                "anio_destino_id":
-                    self.anio_destino_id.id,
+                Movimiento.create(
+                    valores_movimiento
+                )
 
-                "product_id":
-                    producto.id,
+                sobrante = Sobrante.search(
+                    [
+                        (
+                            "anio_origen_id",
+                            "=",
+                            self.anio_origen_id.id,
+                        ),
+                        (
+                            "anio_destino_id",
+                            "=",
+                            self.anio_destino_id.id,
+                        ),
+                        (
+                            "product_id",
+                            "=",
+                            producto.id,
+                        ),
+                        (
+                            "grado_escolar",
+                            "=",
+                            grado,
+                        ),
+                    ],
+                    limit=1,
+                )
 
-                "grado_escolar":
-                    grado,
-
-                "cantidad_inicial":
-                    cantidad_recibida,
-
-                "cantidad_usada":
-                    0,
-
-                "observacion":
-                    (
-                        "Sobrante revisado y "
-                        "validado al iniciar "
+                vals_sobrante = {
+                    "anio_origen_id": self.anio_origen_id.id,
+                    "anio_destino_id": self.anio_destino_id.id,
+                    "product_id": producto.id,
+                    "grado_escolar": grado,
+                    "cantidad_inicial": cantidad_recibida,
+                    "cantidad_usada": 0,
+                    "observacion": (
+                        "Sobrante revisado y validado al iniciar "
                         f"{self.anio_destino_id.name}. "
                         f"Cantidad enviada: "
                         f"{self._fmt_qty(linea.cantidad_a_trasladar)}. "
                         f"Cantidad recibida: "
                         f"{self._fmt_qty(cantidad_recibida)}."
                     ),
-            }
+                }
 
-            if sobrante:
-
-                sobrante.write(
-                    vals_sobrante
-                )
-
-            else:
-
-                Sobrante.create(
-                    vals_sobrante
-                )
+                if sobrante:
+                    sobrante.write(
+                        vals_sobrante
+                    )
+                else:
+                    Sobrante.create(
+                        vals_sobrante
+                    )
 
         self.write(
             {
-                "estado":
-                    "confirmado",
-
-                "fecha_confirmacion":
-                    fields.Datetime.now(),
+                "estado": "confirmado",
+                "fecha_confirmacion": fields.Datetime.now(),
             }
         )
 
-        return (
-            self
-            ._action_abrir_formulario()
-        )
+        return self._action_abrir_formulario()
 
 
 class CierreAnioUtilesLinea(models.Model):

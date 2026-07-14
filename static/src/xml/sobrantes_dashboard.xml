@@ -64,6 +64,7 @@
 
                 <div class="o_sob_list_header">
                     <div>Producto</div>
+                    <div>Grado</div>
                     <div>Año origen <br/>→ destino</div>
                     <div>Sob. inicial</div>
                     <div>Cant. usada</div>
@@ -88,6 +89,11 @@
                         <div class="o_sob_item_product">
                             <span class="o_sob_code_badge" t-esc="row.codigo"/>
                             <span class="o_sob_product_name" t-esc="row.producto"/>
+                        </div>
+
+                        <!-- GRADO -->
+                        <div>
+                            <span class="o_sob_grade_badge" t-esc="row.grado"/>
                         </div>
 
                         <!-- AÑO ORIGEN / DESTINO -->

@@ -292,7 +292,7 @@ class SobranteUtilesAnio(models.Model):
         records = self.search(
             domain,
             order=(
-                "gradpo_escolar asc,"
+                "grado_escolar asc, "
                 "product_id asc"
             ),
         )
