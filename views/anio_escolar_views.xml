@@ -44,6 +44,21 @@
                     <button name="action_crear_revision_cierre_utiles" type="object" string="Cierre de año" class="btn-primary" invisible="not id or estado == 'cerrado'" confirm="Se creará la revisión de cierre de útiles para este año escolar. ¿Deseas continuar?"/>
 
                     <button
+                        name="action_revisar_ingreso_sobrantes"
+                        type="object"
+                        string="Revisar ingreso de sobrantes"
+                        class="btn-secondary"
+                        invisible="
+                            not id
+                            or
+                            estado != 'activo'
+                            or
+                            not anio_anterior_id
+                            "
+                        confirm="Se cargarán los útiles enviados desde el año anterior para realizar una segunda revisión física antes de registrarlos como entrada. ¿Deseas continuar?"
+                    />
+
+                    <button
                         name="action_restaurar_y_eliminar_anio_prueba"
                         type="object"
                         string="Restablecer y eliminar año de prueba"

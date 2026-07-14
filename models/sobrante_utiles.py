@@ -1,10 +1,26 @@
-from odoo import models, fields, api
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
 
+GRADO_ESCOLAR_SELECTION = [
+    ("inicial_3", "Inicial 3 años"),
+    ("inicial_4", "Inicial 4 años"),
+    ("inicial_5", "Inicial 5 años"),
+    ("1er_grado", "1er grado"),
+    ("2do_grado", "2do grado"),
+    ("3er_grado", "3er grado"),
+    ("4to_grado", "4to grado"),
+    ("5to_grado", "5to grado"),
+    ("6to_grado", "6to grado"),
+]
 
 class SobranteUtilesAnio(models.Model):
     _name = "sobrante.utiles.anio"
     _description = "Sobrantes de útiles del año anterior"
-    _order = "anio_destino_id desc, product_id"
+    _order = (
+        "anio_destino_id desc, "
+        "grado_escolar, "
+        "product_id"
+    )
 
     name = fields.Char(
         string="Referencia",
@@ -26,11 +42,11 @@ class SobranteUtilesAnio(models.Model):
         readonly=True
     )
 
-    product_id = fields.Many2one(
-        "product.product",
-        string="Producto",
-        required=True,
-        readonly=True
+    grado_escolar = fields.Selection(
+        GRADO_ESCOLAR_SELECTION,
+        string="Grado / sección",
+        readonly=True,
+        index=True,
     )
 
     uom_id = fields.Many2one(
@@ -74,21 +90,129 @@ class SobranteUtilesAnio(models.Model):
 
     observacion = fields.Text(string="Observación")
 
-    _sql_constraints = [
-        (
-            "sobrante_unico_por_anio_producto",
-            "unique(anio_origen_id, anio_destino_id, product_id)",
-            "Ya existe un sobrante para este producto entre esos años escolares."
-        )
-    ]
+    def init(self):
 
-    @api.depends("anio_origen_id", "anio_destino_id", "product_id")
-    def _compute_name(self):
+        self.env.cr.execute(
+            """
+            ALTER TABLE sobrante_utiles_anio
+            DROP CONSTRAINT IF EXISTS
+            sobrante_unico_por_anio_producto
+            """
+        )
+
+        self.env.cr.execute(
+            """
+            ALTER TABLE sobrante_utiles_anio
+            DROP CONSTRAINT IF EXISTS
+            sobrante_utiles_anio_sobrante_unico_por_anio_producto
+            """
+        )
+
+    @api.constrains(
+        "anio_origen_id",
+        "anio_destino_id",
+        "product_id",
+        "grado_escolar",
+    )
+    def _check_sobrante_unico_por_grado(
+        self
+    ):
+
         for rec in self:
-            producto = rec.product_id.display_name or ""
-            origen = rec.anio_origen_id.name or ""
-            destino = rec.anio_destino_id.name or ""
-            rec.name = f"{producto} | {origen} → {destino}"
+
+            if (
+                not rec.anio_origen_id
+                or
+                not rec.anio_destino_id
+                or
+                not rec.product_id
+            ):
+
+                continue
+
+            duplicado = self.search_count(
+                [
+                    (
+                        "id",
+                        "!=",
+                        rec.id,
+                    ),
+                    (
+                        "anio_origen_id",
+                        "=",
+                        rec.anio_origen_id.id,
+                    ),
+                    (
+                        "anio_destino_id",
+                        "=",
+                        rec.anio_destino_id.id,
+                    ),
+                    (
+                        "product_id",
+                        "=",
+                        rec.product_id.id,
+                    ),
+                    (
+                        "grado_escolar",
+                        "=",
+                        rec.grado_escolar
+                        or
+                        False,
+                    ),
+                ]
+            )
+
+            if duplicado:
+
+                raise ValidationError(
+                    "Ya existe un registro "
+                    "de sobrantes para el "
+                    "mismo año, producto "
+                    "y grado."
+                )
+
+    @api.depends(
+        "anio_origen_id",
+        "anio_destino_id",
+        "product_id",
+        "grado_escolar",
+    )
+    def _compute_name(self):
+
+        grados = dict(
+            GRADO_ESCOLAR_SELECTION
+        )
+
+        for rec in self:
+
+            producto = (
+                rec.product_id.display_name
+                or
+                ""
+            )
+
+            grado = grados.get(
+                rec.grado_escolar,
+                "Sin grado",
+            )
+
+            origen = (
+                rec.anio_origen_id.name
+                or
+                ""
+            )
+
+            destino = (
+                rec.anio_destino_id.name
+                or
+                ""
+            )
+
+            rec.name = (
+                f"{producto} | "
+                f"{grado} | "
+                f"{origen} → {destino}"
+            )
 
     @api.depends("cantidad_inicial", "cantidad_usada")
     def _compute_cantidad_disponible(self):
@@ -158,7 +282,13 @@ class SobranteUtilesAnio(models.Model):
                 ("anio_destino_id.name", "ilike", search),
             ]
 
-        records = self.search(domain, order="product_id asc")
+        records = self.search(
+            domain,
+            order=(
+                "gradpo_escolar asc,"
+                "product_id asc"
+            ),
+        )
 
         total_productos = len(records)
         unidades_disponibles = sum(records.mapped("cantidad_disponible"))
@@ -202,6 +332,12 @@ class SobranteUtilesAnio(models.Model):
                 "anio_destino_corto": str(rec.anio_destino_id.anio or rec.anio_destino_id.name or ""),
                 "codigo": codigo,
                 "producto": nombre,
+                "grado": dict(
+                    GRADO_ESCOLAR_SELECTION
+                ).get(
+                    rec.grado_escolar,
+                    "Sin grado",
+                ),
                 "cantidad_inicial": "%.2f" % rec.cantidad_inicial,
                 "cantidad_usada": "%.2f" % rec.cantidad_usada,
                 "cantidad_disponible": "%.0f" % rec.cantidad_disponible,
