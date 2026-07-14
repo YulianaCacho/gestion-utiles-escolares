@@ -35,9 +35,15 @@ class CierreAnioMatriculas(models.Model):
 
     anio_destino_id = fields.Many2one(
         "anio.escolar",
-        string="Año destino",
-        required=True,
-        readonly=True
+        string="Año siguiente",
+        required=False,
+        readonly=True,
+        copy=False,
+        ondelete="set null",
+        help=(
+            "Se asignará automáticamente cuando "
+            "se cree el siguiente año escolar."
+        ),
     )
 
     fecha_revision = fields.Datetime(
@@ -100,17 +106,48 @@ class CierreAnioMatriculas(models.Model):
         string="Observación general"
     )
 
-    @api.depends("anio_origen_id", "anio_destino_id")
+    @api.depends(
+        "anio_origen_id",
+        "anio_destino_id",
+    )
     def _compute_name(self):
-        for rec in self:
-            origen = rec.anio_origen_id.name or ""
-            destino = rec.anio_destino_id.name or ""
 
-            rec.name = (
-                f"Revisión de promoción {origen} → {destino}"
-                if origen and destino
-                else "Revisión de promoción"
+        for rec in self:
+
+            origen = (
+                rec.anio_origen_id.name
+                or
+                ""
             )
+
+            destino = (
+                rec.anio_destino_id.name
+                or
+                ""
+            )
+
+
+            if origen and destino:
+
+                rec.name = (
+                    f"Revisión de promoción "
+                    f"{origen} → {destino}"
+                )
+
+
+            elif origen:
+
+                rec.name = (
+                    f"Revisión de promoción "
+                    f"{origen}"
+                )
+
+
+            else:
+
+                rec.name = (
+                    "Revisión de promoción"
+                )
 
     @api.depends(
         "linea_ids",
@@ -443,92 +480,72 @@ class AnioEscolarCierreMatriculas(models.Model):
         string="Revisiones de promoción"
     )
 
-    def action_crear_revision_matriculas(self):
+    def action_crear_revision_matriculas(
+        self
+    ):
 
         self.ensure_one()
 
-        if self.estado == "cerrado":
-            raise UserError(
-                "Este año escolar ya está cerrado."
-            )
 
-        anio_destino = (
-            self.env["anio.escolar"].search(
-                [
-                    (
-                        "anio_anterior_id",
-                        "=",
-                        self.id
-                    )
-                ],
-                limit=1
-            )
-        )
-
-        if not anio_destino:
-
-            anio_destino = (
-                self.env["anio.escolar"].search(
-                    [
-                        (
-                            "anio",
-                            "=",
-                            self.anio + 1
-                        )
-                    ],
-                    limit=1
-                )
-            )
-
-        if not anio_destino:
+        if self.estado != "activo":
 
             raise UserError(
-                f"Primero crea el año escolar "
-                f"{self.anio + 1} y selecciona "
-                f"como año anterior {self.name}."
+                "La revisión de promoción "
+                "solo puede iniciarse desde "
+                "el año escolar activo."
+                "\n\n"
+                f"Año seleccionado: "
+                f"{self.name}"
             )
 
-        cierre = (
-            self.env[
-                "cierre.anio.matriculas"
-            ].search(
-                [
-                    (
-                        "anio_origen_id",
-                        "=",
-                        self.id
-                    ),
-                    (
-                        "anio_destino_id",
-                        "=",
-                        anio_destino.id
-                    ),
-                ],
-                limit=1
-            )
+
+        cierre = self.env[
+            "cierre.anio.matriculas"
+        ].search(
+            [
+                (
+                    "anio_origen_id",
+                    "=",
+                    self.id,
+                ),
+            ],
+            order="id desc",
+            limit=1,
         )
+
 
         if not cierre:
 
-            cierre = (
-                self.env[
-                    "cierre.anio.matriculas"
-                ].create(
-                    {
-                        "anio_origen_id":
-                            self.id,
-
-                        "anio_destino_id":
-                            anio_destino.id,
-                    }
-                )
+            cierre = self.env[
+                "cierre.anio.matriculas"
+            ].create(
+                {
+                    "anio_origen_id":
+                        self.id,
+                }
             )
 
+
         return {
-            "type": "ir.actions.act_window",
-            "name": "Revisión de promoción de alumnos",
-            "res_model": "cierre.anio.matriculas",
-            "view_mode": "form",
-            "res_id": cierre.id,
-            "target": "current",
+
+            "type":
+                "ir.actions.act_window",
+
+            "name":
+                (
+                    "Revisión de promoción "
+                    "de alumnos"
+                ),
+
+            "res_model":
+                "cierre.anio.matriculas",
+
+            "view_mode":
+                "form",
+
+            "res_id":
+                cierre.id,
+
+            "target":
+                "current",
         }

@@ -160,6 +160,14 @@ class AnioEscolar(models.Model):
             if not rec.anio_anterior_id:
                 raise UserError("Primero debes seleccionar el año anterior.")
 
+            if rec.estado != "activo":
+
+                raise UserError(
+                    "Las matrículas solo pueden "
+                    "generarse para el año "
+                    "escolar activo."
+                )
+
             listas_anteriores = Lista.search([
                 ("anio_escolar_id", "=", rec.anio_anterior_id.id),
             ])
@@ -240,29 +248,53 @@ class AnioEscolar(models.Model):
         for rec in self:
 
             if not rec.anio_anterior_id:
+
                 raise UserError(
-                    "Primero debes seleccionar el año anterior."
+                    "Primero debes seleccionar "
+                    "el año anterior."
                 )
+
+
+            if rec.estado != "activo":
+
+                raise UserError(
+                    "Las matrículas solo pueden "
+                    "generarse para el año "
+                    "escolar activo."
+                )
+
 
             revision = Revision.search(
                 [
                     (
                         "anio_origen_id",
                         "=",
-                        rec.anio_anterior_id.id
-                    ),
-                    (
-                        "anio_destino_id",
-                        "=",
-                        rec.id
+                        rec
+                        .anio_anterior_id
+                        .id,
                     ),
                     (
                         "estado",
                         "=",
-                        "confirmado"
+                        "confirmado",
+                    ),
+                    "|",
+                    (
+                        "anio_destino_id",
+                        "=",
+                        False,
+                    ),
+                    (
+                        "anio_destino_id",
+                        "=",
+                        rec.id,
                     ),
                 ],
-                limit=1
+                order=(
+                    "fecha_confirmacion "
+                    "desc, id desc"
+                ),
+                limit=1,
             )
 
             if not revision:
@@ -272,6 +304,17 @@ class AnioEscolar(models.Model):
                     "Debes indicar qué estudiantes fueron "
                     "promovidos, cuáles repiten y cuáles "
                     "no continuarán."
+                )
+
+            if not (
+                revision.anio_destino_id
+            ):
+
+                revision.write(
+                    {
+                        "anio_destino_id":
+                            rec.id,
+                    }
                 )
 
             for linea in revision.linea_ids:
