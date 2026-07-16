@@ -9,6 +9,18 @@ class TestRecepcionUtiles(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
 
+        # Año escolar requerido por la recepción.
+        cls.anio_2026 = cls.env["anio.escolar"].create({
+            "anio": 2026,
+            "estado": "activo",
+            "es_anio_prueba": True,
+        })
+
+        # Establecer 2026 como año seleccionado para el usuario.
+        cls.env.user.write({
+            "anio_escolar_actual_id": cls.anio_2026.id,
+        })
+
         cls.producto = cls.env["product.product"].create({
             "name": "Cuaderno para prueba de recepción",
         })
@@ -17,7 +29,10 @@ class TestRecepcionUtiles(TransactionCase):
             "recepcion.utiles.escolar"
         ].create({
             "tipo_entrada": "recepcion_utiles",
-            "observacion": "Recepción creada para pruebas unitarias",
+            "anio_escolar_id": cls.anio_2026.id,
+            "observacion": (
+                "Recepción creada para pruebas unitarias"
+            ),
         })
 
     def _crear_linea(
