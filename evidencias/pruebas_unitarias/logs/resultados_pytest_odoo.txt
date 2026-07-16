@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-7.4.4, pluggy-1.4.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /mnt/extra-addons/gestion_utiles_escolares
+configfile: pytest.ini
+collecting ... collected 5 items
+
+pytest_tests/test_odoo_groups.py::test_grupo_unitario_odoo[almacen] almacen: 1 pruebas Odoo aprobadas.
+PASSED
+pytest_tests/test_odoo_groups.py::test_grupo_unitario_odoo[listas_utiles] listas_utiles: 5 pruebas Odoo aprobadas.
+PASSED
+pytest_tests/test_odoo_groups.py::test_grupo_unitario_odoo[matricula] matricula: 5 pruebas Odoo aprobadas.
+PASSED
+pytest_tests/test_odoo_groups.py::test_grupo_unitario_odoo[recepcion] recepcion: 11 pruebas Odoo aprobadas.
+PASSED
+pytest_tests/test_odoo_groups.py::test_grupo_unitario_odoo[sobrantes] sobrantes: 3 pruebas Odoo aprobadas.
+PASSED
+
+============================== 5 passed in 57.25s ==============================

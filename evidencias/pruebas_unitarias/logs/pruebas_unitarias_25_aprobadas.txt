@@ -1,0 +1,109 @@
+Running as user 'root' is a security risk.
+2026-07-16 06:44:37,380 1236 WARNING ? odoo.tools.config: missing --http-interface/http_interface, using 0.0.0.0 by default, will change to 127.0.0.1 in 20.0 
+2026-07-16 06:44:37,381 1236 INFO ? odoo: Odoo version 19.0-20260513 
+2026-07-16 06:44:37,382 1236 INFO ? odoo: Using configuration file at /etc/odoo/odoo.conf 
+2026-07-16 06:44:37,382 1236 INFO ? odoo: addons paths: _NamespacePath(['/usr/lib/python3/dist-packages/odoo/addons', '/root/.local/share/Odoo/addons/19.0', '/mnt/extra-addons', '/usr/lib/python3/dist-packages/addons']) 
+2026-07-16 06:44:37,383 1236 INFO ? odoo: database: odoo@db:5432 
+2026-07-16 06:44:37,954 1236 INFO ? odoo.service.server: HTTP service (werkzeug) running on ffe36a0a4340:8071 
+2026-07-16 06:44:37,990 1236 INFO genios_unit_test odoo.tests.common: Importing test framework 
+2026-07-16 06:44:38,051 1236 INFO genios_unit_test odoo.modules.loading: loading 1 modules... 
+2026-07-16 06:44:38,060 1236 INFO genios_unit_test odoo.modules.loading: 1 modules loaded in 0.01s, 0 queries (+0 extra) 
+2026-07-16 06:44:38,125 1236 INFO genios_unit_test odoo.modules.loading: updating modules list 
+2026-07-16 06:44:38,130 1236 INFO genios_unit_test odoo.addons.base.models.ir_module: ALLOW access to module.update_list on [] to user __system__ #1 via n/a 
+2026-07-16 06:44:40,542 1236 INFO genios_unit_test odoo.addons.base.models.ir_module: ALLOW access to module.button_upgrade on ['Gestión de Útiles Escolares'] to user __system__ #1 via n/a 
+2026-07-16 06:44:40,543 1236 INFO genios_unit_test odoo.addons.base.models.ir_module: ALLOW access to module.update_list on ['Gestión de Útiles Escolares'] to user __system__ #1 via n/a 
+2026-07-16 06:44:42,459 1236 INFO genios_unit_test odoo.addons.base.models.ir_module: ALLOW access to module.button_install on [] to user __system__ #1 via n/a 
+2026-07-16 06:44:42,511 1236 INFO genios_unit_test odoo.modules.loading: loading 42 modules... 
+2026-07-16 06:44:43,397 1236 INFO genios_unit_test odoo.modules.loading: Loading module gestion_utiles_escolares (41/42) 
+2026-07-16 06:44:43,670 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:43,677 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:43,715 1236 INFO genios_unit_test odoo.registry: module gestion_utiles_escolares: creating or updating database tables 
+2026-07-16 06:44:43,877 1236 WARNING genios_unit_test odoo.addons.base.models.ir_model: Two fields (anio_escolar_id, anio) of lista.utiles.grado() have the same label: Año escolar. [Modules: gestion_utiles_escolares and gestion_utiles_escolares] 
+2026-07-16 06:44:43,878 1236 WARNING genios_unit_test odoo.addons.base.models.ir_model: Two fields (anio_escolar_id, anio) of recepcion.utiles.escolar() have the same label: Año escolar. [Modules: gestion_utiles_escolares and gestion_utiles_escolares] 
+2026-07-16 06:44:43,879 1236 WARNING genios_unit_test odoo.addons.base.models.ir_model: Two fields (anio_escolar_visual, anio_escolar) of matricula.escolar() have the same label: Año escolar. [Modules: gestion_utiles_escolares and gestion_utiles_escolares] 
+2026-07-16 06:44:43,879 1236 WARNING genios_unit_test odoo.addons.base.models.ir_model: Two fields (anio_escolar_id, anio_escolar) of matricula.escolar() have the same label: Año escolar. [Modules: gestion_utiles_escolares and gestion_utiles_escolares] 
+2026-07-16 06:44:43,879 1236 WARNING genios_unit_test odoo.addons.base.models.ir_model: Two fields (anio_visual, anio) of anio.escolar() have the same label: Año. [Modules: gestion_utiles_escolares and gestion_utiles_escolares] 
+2026-07-16 06:44:44,119 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/security/security.xml 
+2026-07-16 06:44:44,128 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/security/ir.model.access.csv 
+2026-07-16 06:44:44,167 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/data/sequence.xml 
+2026-07-16 06:44:44,179 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/res_partner_views.xml 
+2026-07-16 06:44:44,200 1236 WARNING genios_unit_test odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view res.partner.form.gestion.utiles.escolares (gestion_utiles_escolares.view_partner_form_gestion_utiles_escolares): use the hasclass(*classes) function to filter elements by their classes 
+2026-07-16 06:44:44,248 1236 WARNING genios_unit_test odoo.addons.base.models.ir_ui_view: Error-prone use of @class in view res.partner.form.gestion.utiles.escolares (gestion_utiles_escolares.view_partner_form_gestion_utiles_escolares): use the hasclass(*classes) function to filter elements by their classes 
+2026-07-16 06:44:44,273 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/product_template_views.xml 
+2026-07-16 06:44:44,490 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/stock_picking_views.xml 
+2026-07-16 06:44:44,559 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/almacen_utiles_views.xml 
+2026-07-16 06:44:44,588 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/recepcion_utiles_views.xml 
+2026-07-16 06:44:44,646 1236 INFO genios_unit_test odoo.models.unlink: User #1 deleted ir.actions.act_window.view records with IDs: [62, 63] 
+2026-07-16 06:44:44,657 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/matricula_escolar_views.xml 
+2026-07-16 06:44:44,739 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/lista_utiles_views.xml 
+2026-07-16 06:44:44,771 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/salida_almacen_utiles_views.xml 
+2026-07-16 06:44:44,828 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/reports/reporte_recepcion_utiles.xml 
+2026-07-16 06:44:44,852 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/reports/reporte_linea_tiempo_movimientos.xml 
+2026-07-16 06:44:44,871 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/reports/reporte_almacen_movimientos_pdf.xml 
+2026-07-16 06:44:44,891 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/favicon_views.xml 
+2026-07-16 06:44:44,930 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/dashboard_utiles_views.xml 
+2026-07-16 06:44:44,946 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/reportes_menu_views.xml 
+2026-07-16 06:44:44,973 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/reporte_recepcion_dashboard_views.xml 
+2026-07-16 06:44:44,981 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/reporte_almacen_movimientos_views.xml 
+2026-07-16 06:44:44,994 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/anio_escolar_views.xml 
+2026-07-16 06:44:45,028 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/sobrante_utiles_views.xml 
+2026-07-16 06:44:45,066 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/cierre_anio_utiles_views.xml 
+2026-07-16 06:44:45,116 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/cierre_anio_matriculas_views.xml 
+2026-07-16 06:44:45,161 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/recepcion_ia_views.xml 
+2026-07-16 06:44:45,199 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/reconocimiento_ia_views.xml 
+2026-07-16 06:44:45,210 1236 INFO genios_unit_test odoo.modules.loading: loading gestion_utiles_escolares/views/product_ia_views.xml 
+2026-07-16 06:44:45,415 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_almacen: Starting TestAlmacenUtiles.test_01_stock_entradas_menos_salidas ... 
+2026-07-16 06:44:45,507 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:45,538 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:45,637 1236 INFO genios_unit_test odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-07-16 06:44:45,828 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_lista_utiles: Starting TestListaUtiles.test_01_crear_lista_nombre_calculado ... 
+2026-07-16 06:44:45,837 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_lista_utiles: Starting TestListaUtiles.test_02_contar_productos_lista ... 
+2026-07-16 06:44:45,849 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_lista_utiles: Starting TestListaUtiles.test_03_rechazar_lista_duplicada ... 
+2026-07-16 06:44:45,859 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_lista_utiles: Starting TestListaUtiles.test_04_rechazar_cantidad_cero ... 
+2026-07-16 06:44:45,869 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_lista_utiles: Starting TestListaUtiles.test_05_rechazar_cantidad_negativa ... 
+2026-07-16 06:44:45,949 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:45,995 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:46,092 1236 INFO genios_unit_test odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-07-16 06:44:46,185 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_matricula: Starting TestMatriculaEscolar.test_01_crear_matricula ... 
+2026-07-16 06:44:46,223 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_matricula: Starting TestMatriculaEscolar.test_02_estado_activo_por_defecto ... 
+2026-07-16 06:44:46,231 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_matricula: Starting TestMatriculaEscolar.test_03_nombre_calculado ... 
+2026-07-16 06:44:46,238 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_matricula: Starting TestMatriculaEscolar.test_04_matricula_duplicada ... 
+2026-07-16 06:44:46,253 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_matricula: Starting TestMatriculaEscolar.test_05_anio_visual ... 
+2026-07-16 06:44:46,340 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:46,368 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:46,459 1236 INFO genios_unit_test odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-07-16 06:44:46,577 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_01_calcular_cantidad_faltante ... 
+2026-07-16 06:44:46,598 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_02_estado_pendiente_sin_entrega ... 
+2026-07-16 06:44:46,615 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_03_estado_faltante_entrega_parcial ... 
+2026-07-16 06:44:46,629 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_04_estado_completo_entrega_total ... 
+2026-07-16 06:44:46,641 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_05_rechazar_cantidad_negativa ... 
+2026-07-16 06:44:46,658 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_06_rechazar_cantidad_decimal ... 
+2026-07-16 06:44:46,675 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_07_rechazar_entrega_superior ... 
+2026-07-16 06:44:46,693 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_08_destino_estudiante_no_aplica_almacen ... 
+2026-07-16 06:44:46,708 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_09_envio_almacen_pendiente ... 
+2026-07-16 06:44:46,722 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_10_envio_almacen_parcial ... 
+2026-07-16 06:44:46,736 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_recepcion: Starting TestRecepcionUtiles.test_11_envio_almacen_completo ... 
+2026-07-16 06:44:46,822 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:46,846 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:46,937 1236 INFO genios_unit_test odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-07-16 06:44:47,058 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_sobrantes: Starting TestSobrantesUtiles.test_01_calcular_cantidad_disponible ... 
+2026-07-16 06:44:47,076 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_sobrantes: Starting TestSobrantesUtiles.test_02_estado_disponible ... 
+2026-07-16 06:44:47,083 1236 INFO genios_unit_test odoo.addons.gestion_utiles_escolares.tests.test_sobrantes: Starting TestSobrantesUtiles.test_03_estado_agotado ... 
+2026-07-16 06:44:47,158 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:47,189 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:47,289 1236 INFO genios_unit_test odoo.addons.base.models.ir_attachment: filestore gc 0 checked, 0 removed 
+2026-07-16 06:44:47,291 1236 INFO genios_unit_test odoo.modules.loading: Module gestion_utiles_escolares loaded in 3.89s (incl. 1.97s test), 952 queries (+482 test, +952 other) 
+2026-07-16 06:44:47,295 1236 INFO genios_unit_test odoo.modules.loading: 42 modules loaded in 4.78s, 952 queries (+1434 extra) 
+2026-07-16 06:44:47,388 1236 WARNING genios_unit_test odoo.fields: product.product.ia_clase_util: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:47,417 1236 WARNING genios_unit_test odoo.fields: cierre.anio.matriculas.linea.grado_escolar: selection attribute will be ignored as the field is related 
+2026-07-16 06:44:47,763 1236 INFO genios_unit_test odoo.registry: verifying fields for every extended model 
+2026-07-16 06:44:48,420 1236 INFO genios_unit_test odoo.modules.loading: Modules loaded. 
+2026-07-16 06:44:48,449 1236 INFO genios_unit_test odoo.registry: Registry changed, signaling through the database 
+2026-07-16 06:44:48,456 1236 INFO genios_unit_test odoo.registry: Registry loaded in 10.500s 
+2026-07-16 06:44:48,457 1236 INFO genios_unit_test odoo.service.server: Starting post tests 
+2026-07-16 06:44:48,459 1236 INFO genios_unit_test odoo.service.server: 0 post-tests in 0.00s, 0 queries 
+2026-07-16 06:44:48,460 1236 INFO genios_unit_test odoo.tests.stats: gestion_utiles_escolares: 35 tests 1.95s 482 queries 
+2026-07-16 06:44:48,461 1236 INFO genios_unit_test odoo.tests.result: 0 failed, 0 error(s) of 25 tests when loading database 'genios_unit_test' 
+2026-07-16 06:44:48,461 1236 INFO genios_unit_test odoo.service.server: Initiating shutdown 
+2026-07-16 06:44:48,461 1236 INFO genios_unit_test odoo.service.server: Hit CTRL-C again or send a second signal to force the shutdown. 
+2026-07-16 06:44:48,505 1236 INFO genios_unit_test odoo.sql_db: ConnectionPool(read/write;used=0/count=0/max=64): Closed 2 connections  
