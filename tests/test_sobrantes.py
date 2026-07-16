@@ -13,13 +13,15 @@ class TestSobrantesUtiles(TransactionCase):
         })
 
         cls.anio_2026 = cls.env["anio.escolar"].create({
-            "name": "2026",
             "anio": 2026,
+            "estado": "cerrado",
+            "es_anio_prueba": True,
         })
 
         cls.anio_2027 = cls.env["anio.escolar"].create({
-            "name": "2027",
             "anio": 2027,
+            "estado": "borrador",
+            "es_anio_prueba": True,
         })
 
     def _crear_sobrante(self, inicial, usada):
