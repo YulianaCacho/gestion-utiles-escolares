@@ -873,17 +873,6 @@
                             "
                         >
 
-                            <field
-                                name="linea_compra_ids"
-                                nolabel="1"
-                                context="{
-                                    'default_destino_recepcion':
-                                        'almacen',
-                                    'default_cantidad_esperada':
-                                        0
-                                }"
-                            >
-
                                 <list
                                     editable="bottom"
                                     create="1"
@@ -931,17 +920,6 @@
                             string="Productos trasladados"
                             invisible="tipo_entrada != 'traslado_interno' "
                         >
-
-                            <field
-                                name="linea_traslado_ids"
-                                nolabel="1"
-                                context="{
-                                    'default_cantidad_esperada':
-                                        0,
-                                    'default_destino_recepcion':
-                                        'almacen'
-                                }"
-                            >
 
                                 <list
                                     editable="bottom"

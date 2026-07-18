@@ -186,18 +186,6 @@ class RecepcionUtilesEscolar(models.Model):
         string="Productos recibidos"
     )
 
-    linea_compra_ids = fields.One2many(
-        "recepcion.utiles.linea",
-        "recepcion_id",
-        string="Productos comprados"
-    )
-
-    linea_traslado_ids = fields.One2many(
-        "recepcion.utiles.linea",
-        "recepcion_id",
-        string="Productos trasladados"
-    )
-
     movimiento_almacen_ids = fields.One2many(
         "almacen.utiles.movimiento",
         "recepcion_id",
@@ -1181,7 +1169,7 @@ class RecepcionUtilesEscolar(models.Model):
                     "encargada de la entrega."
                 )
 
-            if not rec.linea_traslado_ids:
+            if not rec.linea_ids:
 
                 errores.append(
                     "Debe agregar al menos un "
@@ -1190,7 +1178,7 @@ class RecepcionUtilesEscolar(models.Model):
 
             cantidades_por_producto = {}
 
-            for linea in rec.linea_traslado_ids:
+            for linea in rec.linea_ids:
 
                 producto = linea.product_id
 
@@ -1394,7 +1382,7 @@ class RecepcionUtilesEscolar(models.Model):
                 rec.grado_destino_traslado
             )
 
-            for linea in rec.linea_traslado_ids:
+            for linea in rec.linea_ids:
 
                 cantidad = (
                     linea.cantidad_entregada
