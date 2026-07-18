@@ -873,6 +873,11 @@
                             "
                         >
 
+                            <field
+                                name="linea_ids"
+                                nolabel="1"
+                            >
+
                                 <list
                                     editable="bottom"
                                     create="1"
@@ -920,6 +925,11 @@
                             string="Productos trasladados"
                             invisible="tipo_entrada != 'traslado_interno' "
                         >
+
+                            <field
+                                name="linea_ids"
+                                nolabel="1"
+                            >
 
                                 <list
                                     editable="bottom"
